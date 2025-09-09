@@ -1,0 +1,28 @@
+# Arquivos de referência e teste
+*eferenc*.ps1
+Test-*.ps1
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.temp
+
+# Arquivos de backup
+*.bak
+*.backup
+*~
+
+# Arquivos do sistema Windows
+Thumbs.db
+Desktop.ini
+
+# Arquivos do Visual Studio Code
+.vscode/
+
+# Arquivos do PowerShell ISE
+*.psess
+*.vsp
+*.vsps
+
+# Arquivos compilados (opcional - descomente se não quiser versionar)
+PostInstall.ps1

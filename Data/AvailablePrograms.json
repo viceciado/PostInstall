@@ -1,0 +1,109 @@
+﻿{
+  "programs": [
+    {
+      "name": "WinRAR",
+      "programId": "RARLab.WinRAR",
+      "category": "Compressão",
+      "description": "Compactador de arquivos",
+      "recommended": true
+    },
+    {
+      "name": "7-Zip",
+      "programId": "7zip.7zip",
+      "category": "Compressão",
+      "description": "Compactador de arquivos",
+      "recommended": false
+    },
+    {
+      "name": "AnyDesk",
+      "programId": "AnyDesk.AnyDesk",
+      "category": "Acesso Remoto",
+      "description": "Software de acesso remoto",
+      "recommended": true
+    },
+    {
+      "name": "VLC Media Player",
+      "programId": "VideoLAN.VLC",
+      "category": "Multimídia",
+      "description": "Player de vídeo e áudio",
+      "recommended": false
+    },
+    {
+      "name": "Free Download Manager",
+      "programId": "SoftDeluxe.FreeDownloadManager",
+      "category": "Download",
+      "description": "Gerenciador de downloads",
+      "recommended": false
+    },
+    {
+      "name": "Google Chrome",
+      "programId": "Google.Chrome",
+      "category": "Navegador",
+      "description": "Navegador web",
+      "recommended": false
+    },
+    {
+      "name": "Google Drive",
+      "programId": "Google.GoogleDrive",
+      "category": "Armazenamento",
+      "description": "Sincronização de arquivos na nuvem",
+      "recommended": false
+    },
+    {
+      "name": "Mozilla Firefox",
+      "programId": "Mozilla.Firefox",
+      "category": "Navegador",
+      "description": "Navegador web",
+      "recommended": false
+    },
+    {
+      "name": "Terminal do Windows",
+      "programId": "Microsoft.WindowsTerminal",
+      "category": "Desenvolvimento",
+      "description": "Terminal moderno do Windows",
+      "recommended": false
+    },
+    {
+      "name": "Telegram",
+      "programId": "Telegram.TelegramDesktop",
+      "category": "Comunicação",
+      "description": "Aplicativo de mensagens",
+      "recommended": false
+    },
+    {
+      "name": "Discord",
+      "programId": "Discord.Discord",
+      "category": "Comunicação",
+      "description": "Chat para gamers e comunidades",
+      "recommended": false
+    },
+    {
+      "name": "Notepad++",
+      "programId": "Notepad++.Notepad++",
+      "category": "Desenvolvimento",
+      "description": "Editor de texto avançado",
+      "recommended": false
+    },
+    {
+      "name": "Adobe Acrobat Reader DC",
+      "programId": "Adobe.Acrobat.Reader.64-bit",
+      "category": "Documentos",
+      "description": "Leitor de PDF",
+      "recommended": false
+    },
+    {
+      "name": "Steam",
+      "programId": "Valve.Steam",
+      "category": "Jogos",
+      "description": "Plataforma de jogos",
+      "recommended": false
+    },
+    {
+      "name": "Epic Games Launcher",
+      "programId": "EpicGames.EpicGamesLauncher",
+      "category": "Jogos",
+      "description": "Loja de jogos Epic Games",
+      "recommended": false
+    }
+  ]
+}

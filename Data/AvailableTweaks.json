@@ -1,0 +1,154 @@
+﻿{
+    "Tweaks": [
+        {
+            "Name": "Apagar histórico de arquivos",
+            "Description": "Apaga o histórico de arquivos e pastas abertas pelo usuário atual",
+            "Category": [ "Essenciais", "Finalização" ],
+            "Win11Only": false,
+            "IsBoolean": false,
+            "IsRecommended": true,
+            "Command": [
+                "Get-ChildItem -Path \"$env:APPDATA\\Microsoft\\Windows\\Recent\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
+                "Remove-Item \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths\" -Confirm:$false -Recurse"
+            ]
+        },
+        {
+            "Name": "Restaurar o menu de contexto clássico",
+            "Description": "Restaurar o menu de contexto clássico do Windows, ideal para PCs fracos",
+            "Category": "Otimização",
+            "Win11Only": true,
+            "RefreshRequired": true,
+            "IsBoolean": true,
+            "Command": [
+                "New-Item -Path \"HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\" -Name \"InprocServer32\" -force -value \"\""
+            ],
+            "UndoCommand": [
+                "Remove-Item -Path \"HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\" -Recurse -Confirm:$false -Force"
+            ]
+        },
+        {
+            "Name": "Apagar arquivos temporários",
+            "Description": "Apaga os arquivos temporários",
+            "Category": "Finalização",
+            "Win11Only": false,
+            "IsBoolean": false,
+            "IsRecommended": true,
+            "Command": [
+                "Get-ChildItem -Path \"$env:windir\\Temp\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
+                "Get-ChildItem -Path \"$env:TMP\" *.* | Remove-Item -Confirm:$false -Force -Recurse"
+            ]
+        },
+        {
+            "Name": "Desativar Bing no Menu Iniciar",
+            "Description": "Desativa a pesquisa do Bing no Menu Iniciar",
+            "Category": "Otimização",
+            "Win11Only": false,
+            "IsBoolean": true,
+            "IsRecommended": true,
+            "Registry": [
+                {
+                    "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+                    "Name": "BingSearchEnabled",
+                    "Value": "1",
+                    "OriginalValue": "0",
+                    "DefaultState": "true",
+                    "Type": "DWord"
+                }
+            ]
+        },
+        {
+            "Name": "Mensagens de boot detalhadas",
+            "Description": "Exibe mensagens detalhadas durante o boot ou desligamento do sistema",
+            "Category": ["Customização", "Técnico"],
+            "Win11Only": false,
+            "IsBoolean": true,
+            "IsRecommended": false,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+                    "Name": "VerboseStatus",
+                    "Value": "1",
+                    "OriginalValue": "0",
+                    "DefaultState": "false",
+                    "Type": "DWord"
+                }
+            ]
+        },
+        {
+            "Name": "Mostrar arquivos ocultos",
+            "Description": "Mostra arquivos ocultos no Explorador de Arquivos",
+            "Category": ["Customização", "Técnico"],
+            "Win11Only": false,
+            "RefreshRequired": true,
+            "IsBoolean": true,
+            "IsRecommended": false,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+                    "Name": "Hidden",
+                    "Value": "1",
+                    "OriginalValue": "0",
+                    "DefaultState": "false",
+                    "Type": "DWord"
+                }
+            ]
+        },
+        {
+            "Name": "Mostrar extensões de arquivos",
+            "Description": "Mostra as extensões de arquivos no Explorador de Arquivos",
+            "Category": ["Customização", "Técnico"],
+            "Win11Only": false,
+            "RefreshRequired": true,
+            "IsBoolean": true,
+            "IsRecommended": false,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+                    "Name": "HideFileExt",
+                    "Value": "0",
+                    "OriginalValue": "1",
+                    "DefaultState": "true",
+                    "Type": "DWord"
+                }
+            ]
+        },
+        {
+            "Name": "Desativar o Fast Startup",
+            "Description": "Desativa o modo de inicialização rápida/hibernação ao desligar o computador",
+            "Category": ["Customização", "Técnico"],
+            "Win11Only": false,
+            "RefreshRequired": false,
+            "IsBoolean": true,
+            "IsRecommended": false,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power",
+                    "Name": "HiberbootEnabled",
+                    "Value": "0",
+                    "OriginalValue": "1",
+                    "DefaultState": "true",
+                    "Type": "DWord"
+                }
+            ]
+        },
+        {
+            "Name": "Desativar efeitos de transparência",
+            "Description": "Desativa os efeitos de transparência no Windows",
+            "Category": ["Customização", "Técnico"],
+            "Win11Only": false,
+            "RefreshRequired": true,
+            "IsBoolean": true,
+            "IsRecommended": false,
+            "Registry": [
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                    "Name": "EnableTransparency",
+                    "Value": "0",
+                    "OriginalValue": "1",
+                    "DefaultState": "true",
+                    "Type": "DWord"
+                }
+            ]
+        }
+    ]
+}
