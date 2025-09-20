@@ -31,7 +31,7 @@ function global:Get-AvailableItems {
         [string]$JsonPath,
         
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Programs", "Tweaks")]
+        [ValidateSet("Programs", "Tweaks", "TweaksCategories")]
         [string]$ItemType
     )
     
@@ -64,7 +64,15 @@ function global:Get-AvailableItems {
                 return @()
             }
             $itemsArray = $jsonData.programs
-        } else {
+        }
+        elseif ($ItemType -eq "TweaksCategories") {
+            if (-not $jsonData.TweaksCategories) {
+                Write-InstallLog "Estrutura inválida no arquivo JSON: propriedade 'TweaksCategories' não encontrada" -Status "ERRO"
+                return @()
+            }
+            $itemsArray = $jsonData.TweaksCategories
+        }
+        else {
             if (-not $jsonData.Tweaks) {
                 Write-InstallLog "Estrutura inválida no arquivo JSON: propriedade 'Tweaks' não encontrada" -Status "ERRO"
                 return @()
@@ -83,93 +91,60 @@ function global:Get-AvailableItems {
                         ProgramId = $item.programId
                         Category = if ($item.category) { $item.category } else { "Geral" }
                         Description = if ($item.description) { $item.description } else { "" }
-                        Recommended = if ($item.recommended -ne $null) { $item.recommended } else { $false }
+                        Recommended = if ($null -ne $item.recommended) { $item.recommended } else { $false }
                     }
-                } else {
+                }
+                else {
                     Write-InstallLog "Programa inválido ignorado: faltam propriedades obrigatórias (name, programId)" -Status "AVISO"
                 }
-            } else {
-                # Validar tweak
+            }
+            elseif ($ItemType -eq "TweaksCategories") {
                 if ($item.Name) {
                     $validItems += [PSCustomObject]@{
-                        Name = $item.Name
-                        Description = if ($item.Description) { $item.Description } else { "" }
-                        Category = if ($item.Category) { $item.Category } else { @("Geral") }
-                        Win11Only = if ($item.Win11Only -ne $null) { $item.Win11Only } else { $false }
-                        IsBoolean = if ($item.IsBoolean -ne $null) { $item.IsBoolean } else { $false }
-                        RefreshRequired = if ($item.RefreshRequired -ne $null) { $item.RefreshRequired } else { $false }
-                        Command = if ($item.Command) { $item.Command } else { @() }
-                        UndoCommand = if ($item.UndoCommand) { $item.UndoCommand } else { @() }
-                        Registry = if ($item.Registry) { $item.Registry } else { @() }
+                        Name          = [string]$item.Name
+                        Description   = if ($item.Description) { [string]$item.Description } else { "" }
+                        Icon          = if ($item.Icon) { [string]$item.Icon } else { "" }
+                        Color         = if ($item.Color) { [string]$item.Color } else { "White" }
+                        IsRecommended = if ($null -ne $item.IsRecommended) { [bool]$item.IsRecommended } else { $false }
                     }
-                } else {
-                    Write-InstallLog "Tweak inválido ignorado: falta propriedade obrigatória (Name)" -Status "AVISO"
+                }
+                else {
+                    Write-InstallLog "Categoria de tweak inválida ignorada: falta propriedade obrigatória (Name)" -Status "AVISO"
+                }
+            }
+            else {
+                # Validar tweak
+                if ($item.Name) {
+                    # Garantir tipos corretos e valores padrão limpos
+                    $cat = @("Geral")
+                    if ($null -ne $item.Category) {
+                        if ($item.Category -is [System.Array]) { $cat = @($item.Category) } else { $cat = @($item.Category) }
+                    }
+                    $cmd = if ($null -ne $item.Command) { @($item.Command) } else { @() }
+                    $undo = if ($null -ne $item.UndoCommand) { @($item.UndoCommand) } else { @() }
+                    $reg = if ($null -ne $item.Registry) { @($item.Registry) } else { @() }
+
+                    $validItems += [PSCustomObject]@{
+                        Name            = [string]$item.Name
+                        Description     = if ($item.Description) { [string]$item.Description } else { "" }
+                        Category        = $cat
+                        Win11Only       = [bool]($item.Win11Only)
+                        IsBoolean       = [bool]($item.IsBoolean)
+                        RefreshRequired = [bool]($item.RefreshRequired)
+                        IsRecommended   = if ($null -ne $item.IsRecommended) { [bool]$item.IsRecommended } else { $false }
+                        Command         = $cmd
+                        UndoCommand     = $undo
+                        Registry        = $reg
+                    }
                 }
             }
         }
-        
-        Write-InstallLog "Carregados $($validItems.Count) $ItemType do arquivo JSON"
         return $validItems
         
     } catch {
         Write-InstallLog "Erro ao carregar $ItemType do JSON: $($_.Exception.Message)" -Status "ERRO"
         return @()
     }
-}
-
-# Função de compatibilidade para manter o código existente funcionando
-function global:Get-AvailablePrograms {
-    <#
-    .SYNOPSIS
-    Carrega a lista de programas disponíveis do arquivo JSON (função de compatibilidade)
-    
-    .DESCRIPTION
-    Esta é uma função de compatibilidade que chama Get-AvailableItems com ItemType="Programs"
-    
-    .PARAMETER JsonPath
-    Caminho para o arquivo JSON. Se não especificado, usa o caminho padrão
-    
-    .EXAMPLE
-    $programs = Get-AvailablePrograms
-    foreach ($program in $programs) {
-        Write-Host "$($program.Name) - $($program.ProgramId)"
-    }
-    #>
-    
-    param(
-        [Parameter(Mandatory = $false)]
-        [string]$JsonPath
-    )
-    
-    return Get-AvailableItems -ItemType "Programs" -JsonPath $JsonPath
-}
-
-# Nova função para carregar tweaks
-function global:Get-AvailableTweaks {
-    <#
-    .SYNOPSIS
-    Carrega a lista de tweaks disponíveis do arquivo JSON
-    
-    .DESCRIPTION
-    Lê o arquivo AvailableTweaks.json e retorna uma lista de tweaks
-    disponíveis para aplicação no sistema
-    
-    .PARAMETER JsonPath
-    Caminho para o arquivo JSON. Se não especificado, usa o caminho padrão
-    
-    .EXAMPLE
-    $tweaks = Get-AvailableTweaks
-    foreach ($tweak in $tweaks) {
-        Write-Host "$($tweak.Name) - $($tweak.Description)"
-    }
-    #>
-    
-    param(
-        [Parameter(Mandatory = $false)]
-        [string]$JsonPath
-    )
-    
-    return Get-AvailableItems -ItemType "Tweaks" -JsonPath $JsonPath
 }
 
 function global:Test-WinGet {
@@ -527,195 +502,20 @@ function global:Get-WingetLatest {
     }
 }
 
-function global:Invoke-Winget {
-    <#
-    .SYNOPSIS
-        Invokes the winget.exe with the provided arguments and returns the exit code.
-    .PARAMETER wingetId
-        The Id of the Program that Winget should Install/Uninstall.
-    .PARAMETER scope
-        Determines the installation mode. Can be "user" or "machine".
-    .PARAMETER credential
-        The PSCredential Object of the user that should be used to run winget.
-    #>
-    param (
-        [string]$wingetId,
-        [string]$scope = "",
-        [PScredential]$credential = $null
-    )
-
-    # Garante que o caminho do Winget esteja disponível globalmente
-    # Se não estiver, tenta localizá-lo novamente (cenário de instalação recém-concluída)
-    if (-not $script:WinGetExePath) {
-        Write-InstallLog "Caminho do Winget não definido. Tentando localizá-lo..."
-        try {
-            $wingetCmd = Get-Command winget -ErrorAction Stop
-            $script:WinGetExePath = $wingetCmd.Source
-            Write-InstallLog "Caminho do Winget encontrado: '$($script:WinGetExePath)'"
-        }
-        catch {
-            Write-InstallLog "Não foi possível encontrar o executável 'winget' no PATH para instalação de '$wingetId'. Erro: $($_.Exception.Message)" -Status "ERRO"
-            return -1 # Código de erro para indicar que Winget não foi encontrado
-        }
-    }
-
-    $commonArguments = "--id `"$wingetId`" --silent" # Aspas para IDs com espaços, se houver
-    $arguments = "install $commonArguments --accept-source-agreements --accept-package-agreements"
-    if ($scope) {
-        $arguments += " --scope $scope"
-    }
-
-    Write-InstallLog "Executando Winget com argumentos: '$arguments'"
-
-    # Captura a saída do processo para o log
-    $tempOutputFile = [System.IO.Path]::GetTempFileName()
-    $tempErrorFile = [System.IO.Path]::GetTempFileName() + ".err"
-
-    try {
-        $process = Start-Process -FilePath $script:WinGetExePath -ArgumentList $arguments -Wait -PassThru -NoNewWindow `
-            -RedirectStandardOutput $tempOutputFile -RedirectStandardError $tempErrorFile -ErrorAction Stop
-
-        # Ler e logar a saída padrão
-        $outputContent = @()
-        if (Test-Path $tempOutputFile) {
-            $outputContent = Get-Content -Path $tempOutputFile
-            $outputContent | ForEach-Object { Write-InstallLog "Winget OUT: $_" }
-        }
-        # Ler e logar a saída de erro
-        if (Test-Path $tempErrorFile) {
-            Get-Content -Path $tempErrorFile | ForEach-Object { Write-InstallLog "Winget ERR: $_" }
-        }
-        
-        # Verificar códigos de erro específicos relacionados à origem msstore e tentar novamente com --source winget
-        if ($process.ExitCode -ne 0) {
-            $exitCodeHex = "0x{0:X8}" -f [uint32]$process.ExitCode
-            Write-InstallLog "Winget falhou com código de saída: $($process.ExitCode) ($exitCodeHex)"
-            
-            # Códigos de erro que indicam problemas com a origem msstore:
-            # 0x8A15003B (-1978335173) = APPINSTALLER_CLI_ERROR_RESTAPI_INTERNAL_ERROR (Rest API internal error)
-            # 0x8A150044 (-1978335164) = APPINSTALLER_CLI_ERROR_RESTAPI_ENDPOINT_NOT_FOUND (Rest source endpoint not found)
-            # 0x8A15000F (-1978335217) = APPINSTALLER_CLI_ERROR_SOURCE_DATA_MISSING (Data required by the source is missing)
-            # 0x8A15000B (-1978335221) = APPINSTALLER_CLI_ERROR_SOURCES_INVALID (The configured source information is corrupt)
-            $msstoreErrorCodes = @(-1978335173, -1978335164, -1978335217, -1978335221)
-            
-            if ($msstoreErrorCodes -contains $process.ExitCode) {
-                # Verificar se há múltiplas fontes disponíveis na saída
-                $multipleSourcesDetected = $false
-                if ($outputContent) {
-                    $multipleSourcesDetected = ($outputContent | Where-Object { 
-                        $_ -like "*winget*" -and ($_ -like "*Source*" -or $_ -like "*Origem*") 
-                    }) -ne $null
-                }
-                
-                if ($multipleSourcesDetected) {
-                    Write-InstallLog "Detectado erro de origem msstore (código: $($process.ExitCode)). Tentando novamente com --source winget..." -Status "AVISO"
-                    
-                    # Tentar novamente com --source winget
-                    $argumentsWithSource = "$arguments --source winget"
-                    Write-InstallLog "Executando Winget com fonte específica: '$($script:WinGetExePath)' com argumentos: '$argumentsWithSource'"
-                    
-                    # Limpar arquivos temporários anteriores
-                    if (Test-Path $tempOutputFile) { Remove-Item $tempOutputFile -Force -ErrorAction SilentlyContinue }
-                    if (Test-Path $tempErrorFile) { Remove-Item $tempErrorFile -Force -ErrorAction SilentlyContinue }
-                    
-                    # Recriar arquivos temporários
-                    $tempOutputFile = [System.IO.Path]::GetTempFileName()
-                    $tempErrorFile = [System.IO.Path]::GetTempFileName() + ".err"
-                    
-                    $processRetry = Start-Process -FilePath $script:WinGetExePath -ArgumentList $argumentsWithSource -Wait -PassThru -NoNewWindow `
-                        -RedirectStandardOutput $tempOutputFile -RedirectStandardError $tempErrorFile -ErrorAction Stop
-                    
-                    # Ler e logar a saída da segunda tentativa
-                    if (Test-Path $tempOutputFile) {
-                        Get-Content -Path $tempOutputFile | ForEach-Object { Write-InstallLog "Winget OUT (retry): $_" }
-                    }
-                    if (Test-Path $tempErrorFile) {
-                        Get-Content -Path $tempErrorFile | ForEach-Object { Write-InstallLog "Winget ERR (retry): $_" }
-                    }
-                    
-                    $retryExitCodeHex = "0x{0:X8}" -f [uint32]$processRetry.ExitCode
-                    Write-InstallLog "Tentativa com --source winget concluída com código: $($processRetry.ExitCode) ($retryExitCodeHex)"
-                    return $processRetry.ExitCode
-                }
-                else {
-                    Write-InstallLog "Erro de origem msstore detectado, mas não há fontes alternativas disponíveis." -Status "AVISO"
-                }
-            }
-        }
-        
-        return $process.ExitCode
-    }
-    catch {
-        Write-InstallLog "Erro ao executar Winget para '$wingetId': $($_.Exception.Message)" -Status "ERRO"
-        return -1 # Código de erro genérico
-    }
-    finally {
-        if (Test-Path $tempOutputFile) { Remove-Item $tempOutputFile -Force -ErrorAction SilentlyContinue }
-        if (Test-Path $tempErrorFile) { Remove-Item $tempErrorFile -Force -ErrorAction SilentlyContinue }
-    }
-}
-
-Function global:Invoke-Install {
-    <#
-    .SYNOPSIS
-        Contains the Install Logic and return code handling from winget.
-    .PARAMETER Program
-        The Winget ID of the Program that should be installed.
-    #>
-    param (
-        [string]$Program
-    )
-
-    Write-InstallLog "Iniciando instalação de '$Program'..."
-
-    # 1. Tentar instalação no escopo 'machine' (sistema)
-    $status = Invoke-Winget -wingetId $Program -scope "machine"
-    if ($status -eq 0) {
-        Write-InstallLog "'$Program' instalado com sucesso no escopo 'machine'." -Status "SUCESSO"
-        return $true
-    }
-    elseif ($status -eq -1978335189) {
-        # Winget exit code for "No applicable update found" or "already installed"
-        Write-InstallLog "'$Program' já instalado ou nenhuma atualização aplicável encontrada." -Status "SUCESSO"
-        return $true
-    }
-    else {
-        Write-InstallLog "Instalação de '$Program' no escopo 'machine' falhou (código: $status). Tentando escopo 'user'..." -Status "AVISO"
-    }
-
-    # 2. Tentar instalação no escopo 'user' (usuário atual)
-    $status = Invoke-Winget -wingetId $Program -scope "user"
-    if ($status -eq 0) {
-        Write-InstallLog "'$Program' instalado com sucesso no escopo 'user'." -Status "SUCESSO"
-        return $true
-    }
-    elseif ($status -eq -1978335189) {
-        Write-InstallLog "'$Program' já instalado (usuário) ou nenhuma atualização aplicável encontrada." -Status "SUCESSO"
-        return $true
-    }
-    else {
-        Write-InstallLog "Instalação de '$Program' no escopo 'user' falhou (código: $status). Não será tentado com credenciais interativas." -Status "AVISO"
-        # Não faremos a parte de Get-Credential aqui, pois o script é invocado externamente
-        # e a interação com o usuário pode não ser desejável ou possível em um contexto de automação.
-        # Se for um cenário de unattend, um prompt de credencial pararia o processo.
-    }
-    
-    Write-InstallLog "Falha ao instalar '$Program'." -Status "ERRO"
-    return $false
-}
-
 function global:Install-WingetWrapper {
     <#
     .SYNOPSIS
         Wrapper function to ensure Winget is installed and its path is set globally.
+        Returns hashtable with Success and RequiresRestart properties.
     #>
     
     $isWingetInstalledStatus = Test-WinGet -winget
+    $wasNotInstalled = $isWingetInstalledStatus -eq "not-installed"
 
     if ($isWingetInstalledStatus -eq "installed") {
         Write-InstallLog "Winget já está instalado e atualizado"
         # O caminho já deve ter sido populado por Test-WinGet
-        return $true
+        return @{ Success = $true; RequiresRestart = $false }
     }
     elseif ($isWingetInstalledStatus -eq "outdated") {
         Write-InstallLog "O Winget está desatualizado. Iniciando processo de atualização..."
@@ -732,101 +532,308 @@ function global:Install-WingetWrapper {
         Start-Sleep -Seconds 5 
         $finalWingetStatus = Test-WinGet -winget
         if ($finalWingetStatus -eq "installed" -or $finalWingetStatus -eq "outdated") {
-            return $true
+            # Se o winget não estava instalado antes, uma reinicialização pode ser necessária
+            return @{ Success = $true; RequiresRestart = $wasNotInstalled }
         }
         else {
             Write-InstallLog "Winget não está operacional mesmo após a tentativa de instalação/atualização." -Status "ERRO"
-            return $false
+            return @{ Success = $false; RequiresRestart = $false }
         }
     }
     else {
         Write-InstallLog "Falha ao instalar/atualizar o Winget" -Status "ERRO"
-        return $false
+        return @{ Success = $false; RequiresRestart = $false }
     }
 }
 
-# Função principal para instalar programas via Winget
 function global:Install-Programs {
     <#
     .SYNOPSIS
-        Instala programas via Winget.
+    Versão otimizada para execução em janela PowerShell elevada
+    
+    .DESCRIPTION
+    Esta versão é especificamente projetada para ser executada via Invoke-ElevatedProcess
+    com melhor visibilidade e controle da janela
+    
     .PARAMETER ProgramIDs
-        Array de IDs dos programas a serem instalados.
+    Array de IDs dos programas a serem instalados
+    
+    .EXAMPLE
+    Install-Programs -ProgramIDs @("Google.Chrome", "Mozilla.Firefox")
     #>
-    param (
+    
+    [CmdletBinding()]
+    param(
         [Parameter(Mandatory = $true)]
         [string[]]$ProgramIDs
     )
-
-    Write-InstallLog "Iniciando instalação dos programas."
-    Write-InstallLog "Programas solicitados: $($ProgramIDs -join ', ')"
-    $overallSuccess = $true
-    $browserInstalled = $false
-
-    try {
-        # 1. Garantir que o Winget esteja instalado e pronto
-        Write-InstallLog "Verificando e preparando o Winget..."
-        $wingetReady = Install-WingetWrapper
     
-        if (-not $wingetReady) {
-            Write-InstallLog "O Winget não está pronto para uso. Não é possível instalar programas." -Status "ERRO"
-            $overallSuccess = $false # Marcar falha geral
-        }
-        else {
-            # 2. Instalar os programas solicitados via Winget
-            if ($ProgramIDs -and $ProgramIDs.Count -gt 0) {
-                $knownBrowsers = @("Google.Chrome", "Brave.Brave", "Mozilla.Firefox", "Opera.Opera")
-                $totalPrograms = $ProgramIDs.Count
-                $currentProgram = 0
-            
-                foreach ($programId in $ProgramIDs) {
-                    $currentProgram++
-                    $percentComplete = [math]::Round(($currentProgram / $totalPrograms) * 100)
-                    Write-Progress -Activity "Instalando programas" -Status "Instalando $programId ($currentProgram de $totalPrograms)" -PercentComplete $percentComplete
-                
-                    Write-InstallLog "Tentando instalar '$programId'..."
-                    $installSuccess = Invoke-Install -Program $programId # Nova função para instalação
-
-                    if ($installSuccess) {
-                        Write-InstallLog "'$programId' instalado com sucesso." -Status "SUCESSO"
-
-                        # Verificar se o programa instalado é um navegador conhecido
-                        if ($knownBrowsers -contains $programId) {
-                            $browserInstalled = $true # Marcar que um navegador foi instalado
-                        }
-                    }
-                    else {
-                        Write-InstallLog "Instalação de '$programId' falhou" -Status "ERRO"
-                        $overallSuccess = $false # Marcar falha geral se uma instalação falhar
-                    }
-                }
-            
-                # Finalizar a barra de progresso
-                Write-Progress -Activity "Instalando programas" -Status "Instalação concluída" -PercentComplete 100 -Completed
-            
-                # 3. Lógica para MSEdgeRedirect (se um navegador foi instalado e a versão do Windows é compatível)
-                if ($browserInstalled -and ($global:ScriptContext.isWin11 -eq $true)) {
-                    $msEdgeRedirectId = "rcmaehl.MSEdgeRedirect"
-                    Write-InstallLog "Navegadores foram instalados. Instalando também o MSEdgeRedirect..."
-                
-                    # Chamando Invoke-Install para o MSEdgeRedirect
-                    $msEdgeRedirectSuccess = Invoke-Install -Program $msEdgeRedirectId
-                
-                    if ($msEdgeRedirectSuccess) {
-                        Start-Process "ms-settings:defaultapps"
-                        # a janela de seleção de navegador, mas muitas vezes não funciona em contextos de automação.
-                    }
-                    else {
-                        Write-InstallLog "Falha ao instalar MSEdgeRedirect" -Status "ERRO"
-                        $overallSuccess = $false # Marcar falha se MSEdgeRedirect falhar
-                    }
-                }
-            
-            }
-        }
+    # Configurar janela do console
+    $Host.UI.RawUI.WindowTitle = "PostInstall - Instalando $($ProgramIDs -join ', ')"
+    
+    # Configurar codificação UTF-8 para exibição correta
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.Encoding]::UTF8
+    
+    Clear-Host
+    
+    Write-Host "=== INSTALAÇÃO DE PROGRAMAS VIA WINGET ==="
+    Write-Host "Programas solicitados para instalação: $($ProgramIDs -join ', ')" -ForegroundColor Yellow
+    Write-Host "" # Linha em branco
+    
+    if (-not $ProgramIDs -or $ProgramIDs.Count -eq 0) {
+        Write-Host "ERRO: Nenhum programa especificado para instalação" -ForegroundColor Red
+        Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        return
+    }
+    
+    # Verificar se winget está disponível
+    Write-Host "Verificando disponibilidade do Winget..." -ForegroundColor White
+    try {
+        $wingetPath = (Get-Command winget -ErrorAction Stop).Source
+        Write-Host "Winget encontrado! Prosseguindo para a instalação." -ForegroundColor Green
     }
     catch {
-        Write-InstallLog "Erro inesperado no fluxo principal do script de instalação: $($_.Exception.Message)" -Status "ERRO"
-        $overallSuccess = $false # Garantir código de falha em exceção não tratada
+        Write-Host "[ERRO] Winget não encontrado. Tentando instalar/atualizar..." -ForegroundColor Red
+        
+        # Tentar carregar função de instalação do winget
+        try {
+            $functionsPath = Split-Path $PSScriptRoot -Parent
+            $functionsPath = Join-Path $functionsPath "Functions"
+            if (Test-Path $functionsPath) {
+                Get-ChildItem "$functionsPath\*.ps1" | ForEach-Object { . $_.FullName }
+            }
+            
+            $wingetReady = Install-WingetWrapper
+            if (-not $wingetReady) {
+                Write-Host "[ERRO] Não foi possível preparar o Winget. Cancelando instalações." -ForegroundColor Red
+                Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
+                $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+                return
+            }
+            
+            # Após instalar o winget, precisamos reiniciar o processo PowerShell
+            # para que o winget fique disponível no PATH
+            Write-Host "Winget instalado com sucesso. Reiniciando processo para aplicar mudanças..." -ForegroundColor Yellow
+            Write-Host "Aguarde alguns segundos..." -ForegroundColor Gray
+            Start-Sleep -Seconds 3
+            
+            # Salvar os parâmetros em um arquivo temporário para o novo processo
+            $tempParamsFile = [System.IO.Path]::GetTempFileName() + ".json"
+            $paramsData = @{
+                ProgramIDs = $ProgramIDs
+                ScriptPath = $PSCommandPath
+                FunctionsPath = $functionsPath
+            }
+            $paramsData | ConvertTo-Json -Depth 3 | Out-File -FilePath $tempParamsFile -Encoding UTF8
+            
+            # Criar script temporário para executar a instalação
+            $tempScriptFile = [System.IO.Path]::GetTempFileName() + ".ps1"
+            $restartScript = @"
+# Script de reinicialização para instalação de programas
+`$paramsFile = '$tempParamsFile'
+`$paramsData = Get-Content -Path `$paramsFile -Raw | ConvertFrom-Json
+
+# Carregar todas as funções
+Get-ChildItem "`$(`$paramsData.FunctionsPath)\*.ps1" | ForEach-Object { . `$_.FullName }
+
+# Executar a instalação dos programas
+Install-Programs -ProgramIDs `$paramsData.ProgramIDs
+
+# Limpar arquivos temporários
+Remove-Item -Path `$paramsFile -Force -ErrorAction SilentlyContinue
+Remove-Item -Path `$PSCommandPath -Force -ErrorAction SilentlyContinue
+"@
+            $restartScript | Out-File -FilePath $tempScriptFile -Encoding UTF8
+            
+            # Iniciar novo processo PowerShell com o script temporário
+            $processArgs = @{
+                FilePath = "powershell.exe"
+                ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$tempScriptFile`"")
+                Verb = "RunAs"
+                PassThru = $false
+            }
+            
+            Start-Process @processArgs
+            
+            # Encerrar o processo atual
+            Write-Host "Processo reiniciado. Esta janela será fechada." -ForegroundColor Green
+            Start-Sleep -Seconds 2
+            return
+        }
+        catch {
+            Write-Host "Erro ao preparar Winget: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            return
+        }
+    }
+    
+    Write-Host "" # Linha em branco
+    Write-Host "Iniciando instalação de $($ProgramIDs.Count) programa(s)..."
+    Write-Host "" # Linha em branco
+    
+    $completed = @()
+    $failed = @()
+    $totalPrograms = $ProgramIDs.Count
+    
+    for ($i = 0; $i -lt $totalPrograms; $i++) {
+        $programId = $ProgramIDs[$i]
+        $currentNumber = $i + 1
+        
+        Write-Host "[$currentNumber/$totalPrograms] Instalando: $programId" -ForegroundColor White
+        Write-Host "" # Linha em branco
+        
+        $startTime = Get-Date
+        $installSuccess = $false
+        
+        # Função inline para instalar programa
+        try {
+            # Tentar instalação no escopo machine
+            Write-Host "  -> Tentando instalação no escopo 'machine'..." -ForegroundColor Gray
+            $arguments = "install --id `"$programId`" --scope machine --silent --accept-source-agreements --accept-package-agreements"
+            
+            # Executar winget usando Start-Process para melhor controle
+            $psi = New-Object System.Diagnostics.ProcessStartInfo
+            $psi.FileName = $wingetPath
+            $psi.Arguments = $arguments
+            $psi.UseShellExecute = $false
+            $psi.RedirectStandardOutput = $true
+            $psi.RedirectStandardError = $true
+            $psi.CreateNoWindow = $true
+            
+            $process = New-Object System.Diagnostics.Process
+            $process.StartInfo = $psi
+            [void]$process.Start()
+            $output = $process.StandardOutput.ReadToEnd()
+            $error = $process.StandardError.ReadToEnd()
+            $process.WaitForExit(300000)
+            $exitCode = $process.ExitCode
+
+            
+            # DEBUG: Mostrar conteúdo bruto
+            Write-Host "DEBUG OUTPUT: [$output]" -ForegroundColor Magenta
+            Write-Host "DEBUG ERROR: [$error]" -ForegroundColor Magenta
+            
+            # Mostrar saída relevante do winget
+            $allOutput = "$output`n$error"
+            if ($allOutput.Trim()) {
+                $allOutput -split "`n" | Where-Object { 
+                    $line = $_.Trim()
+                    $line -and $line -ne "True" -and $line -ne "False" -and $line -notmatch "^\s*$"
+                } | ForEach-Object {
+                    Write-Host "    $($_.Trim())" -ForegroundColor DarkGray
+                }
+            }
+            
+            $process.Dispose()
+            
+            # Verificar sucesso
+            $installSuccess = ($exitCode -eq 0) -or ($exitCode -eq -1978335189)
+            
+            if (-not $installSuccess) {
+                Write-Host "  -> Instalação 'machine' falhou (código: $exitCode)" -ForegroundColor Yellow
+                
+                # Tentar no escopo user
+                Write-Host "  -> Tentando instalação no escopo 'user'..." -ForegroundColor Gray
+                $arguments = "install --id `"$programId`" --scope user --silent --accept-source-agreements --accept-package-agreements"
+                
+                $psi.Arguments = $arguments
+            $null = [System.Diagnostics.Process]::Start($psi)
+            $process = New-Object System.Diagnostics.Process
+            $process.StartInfo = $psi
+            [void]$process.Start()
+            $output = $process.StandardOutput.ReadToEnd()
+            $error = $process.StandardError.ReadToEnd()
+            $process.WaitForExit(300000)
+            $exitCode = $process.ExitCode
+            $process.Dispose()
+                
+                # Mostrar saída relevante do winget
+                $allOutput = "$output`n$error"
+                if ($allOutput.Trim()) {
+                    $allOutput -split "`n" | Where-Object { 
+                        $line = $_.Trim()
+                        $line -and $line -ne "True" -and $line -ne "False" -and $line -notmatch "^\s*$"
+                    } | ForEach-Object {
+                        Write-Host "    $($_.Trim())" -ForegroundColor DarkGray
+                    }
+                }
+                
+                $installSuccess = ($exitCode -eq 0) -or ($exitCode -eq -1978335189)
+                
+                if (-not $installSuccess -and $exitCode -in @(-1978335173, -1978335164, -1978335217, -1978335221)) {
+                    Write-Host "  -> Erro de fonte detectado, tentando com fonte 'winget'..." -ForegroundColor Yellow
+                    $arguments = "install --id `"$programId`" --scope machine --source winget --silent --accept-source-agreements --accept-package-agreements"
+                    
+                    $psi.Arguments = $arguments
+                    $process = New-Object System.Diagnostics.Process
+                    $process.StartInfo = $psi
+                    [void]$process.Start()
+                    $output = $process.StandardOutput.ReadToEnd()
+                    $error = $process.StandardError.ReadToEnd()
+                    $process.WaitForExit(300000)
+                    $exitCode = $process.ExitCode
+                    $process.Dispose()
+                    
+                    # Mostrar saída relevante do winget
+                    $allOutput = "$output`n$error"
+                    if ($allOutput.Trim()) {
+                        $allOutput -split "`n" | Where-Object { 
+                            $line = $_.Trim()
+                            $line -and $line -ne "True" -and $line -ne "False" -and $line -notmatch "^\s*$"
+                        } | ForEach-Object {
+                            Write-Host "    $($_.Trim())" -ForegroundColor DarkGray
+                        }
+                    }
+                    
+                    $installSuccess = ($exitCode -eq 0) -or ($exitCode -eq -1978335189)
+                }
+            }
+        }
+        catch {
+            Write-Host "  [ERRO] Erro durante instalação: $($_.Exception.Message)" -ForegroundColor Red
+            $installSuccess = $false
+        }
+        
+        $duration = (Get-Date) - $startTime
+        
+        if ($installSuccess) {
+            $completed += $programId
+            Write-Host "  [OK] '$programId' instalado com sucesso em $([math]::Round($duration.TotalSeconds, 1))s" -ForegroundColor Green
+        } else {
+            $failed += $programId
+            Write-Host "  [ERRO] Instalação de '$programId' falhou após $([math]::Round($duration.TotalSeconds, 1))s" -ForegroundColor Red
+        }
+        
+        Write-Host "" # Linha em branco
+    }
+    
+    # Relatório final
+    Write-Host "Total de programas: $totalPrograms"
+    Write-Host "Sucessos: $($completed.Count)" -ForegroundColor Green
+    Write-Host "Falhas: $($failed.Count)" -ForegroundColor Red
+    
+    if ($completed.Count -gt 0) {
+        Write-Host "" # Linha em branco
+        Write-Host "Programas instalados:"
+        $completed | ForEach-Object { Write-Host $_ }
+    }
+    
+    if ($failed.Count -gt 0) {
+        Write-Host "" # Linha em branco
+        Write-Host "Programas que falharam:" -ForegroundColor Red
+        $failed | ForEach-Object { Write-Host "  [ERRO] $_" -ForegroundColor Red }
+    }
+    
+    Write-Host "" # Linha em branco
+    
+    if ($failed.Count -gt 0) {
+        Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    } else {
+        Write-Host "Essa janela será fechada em 5 segundos..." -ForegroundColor Gray
+        Start-Sleep -Seconds 5
     }
 }

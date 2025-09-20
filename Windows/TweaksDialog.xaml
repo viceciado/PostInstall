@@ -3,7 +3,7 @@
         Title="Ajustes gerais" Width="750" Height="Auto" SizeToContent="Height"
         WindowStyle="None" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize" MaxHeight="700"
         AllowsTransparency="True" Background="Transparent" Foreground="White" FontFamily="Futura">
-    
+
     <Window.Resources>
         <Style x:Key="DialogButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
@@ -36,8 +36,7 @@
                 <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="White"/></Trigger>
             </Style.Triggers>
         </Style>
-        
-        <!-- Estilo para o botão de fechar -->
+
         <Style x:Key="CloseButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
@@ -50,9 +49,9 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border Background="{TemplateBinding Background}"
                                 CornerRadius="15">
-                            <ContentPresenter HorizontalAlignment="Center" 
+                            <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
                                               TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
@@ -68,8 +67,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
-        <!-- Estilo para botões de ação lateral -->
+
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontFamily" Value="Futura"/>
@@ -95,12 +93,36 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
+        <Style x:Key="FilterButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="#3F3F46"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.85"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter Property="Opacity" Value="0.7"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
     </Window.Resources>
 
-    <Border x:Name="DialogBorder" 
-            Background="#1E1E1E" 
-            BorderBrush="#3F3F46" 
-            BorderThickness="1" 
+    <Border x:Name="DialogBorder"
+            Background="#1E1E1E"
+            BorderBrush="#3F3F46"
+            BorderThickness="1"
             CornerRadius="5"
             Effect="{x:Null}">
         
@@ -109,29 +131,27 @@
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
-            <!-- Barra de título -->
+
             <Border Grid.Row="0" CornerRadius="5,5,0,0">
                 <Grid>
-                    <TextBlock x:Name="TitleText" 
-                               Text="Ajustes gerais" 
-                               Foreground="White" 
-                               FontSize="14" 
+                    <TextBlock x:Name="TitleText"
+                               Text="Ajustes gerais"
+                               Foreground="White"
+                               FontSize="14"
                                FontWeight="SemiBold"
-                               VerticalAlignment="Center" 
-                               HorizontalAlignment="Left" 
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
                                Margin="15,0"/>
                     
-                    <Button x:Name="CloseButton" 
-                            Content="✕" 
+                    <Button x:Name="CloseButton"
+                            Content="✕"
                             Style="{StaticResource CloseButtonStyle}"
-                            HorizontalAlignment="Right" 
-                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Margin="0,0,5,0"/>
                 </Grid>
             </Border>
             
-            <!-- Conteúdo principal -->
             <Grid Grid.Row="1" Margin="15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -139,141 +159,131 @@
                     <ColumnDefinition Width="250"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- Área Esquerda - Tweaks -->
                 <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <!-- Círculo com número 1 -->
-                    <Border Width="30" 
-                            Height="30" 
-                            Background="#383838" 
-                            CornerRadius="15" 
+                    <Border Width="30"
+                            Height="30"
+                            Background="#383838"
+                            CornerRadius="15"
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center">
                         <TextBlock Text="&#xE15E;"
-                                   FontFamily="Segoe MDL2 Assets" 
+                                   FontFamily="Segoe MDL2 Assets"
                                    FontSize="16"
                                    Foreground="White"
-                                   HorizontalAlignment="Center" 
+                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
                     
-                    <!-- Conteúdo do Passo 1 -->
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="Ajustes" 
-                                FontSize="14" 
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,5"
-                                HorizontalAlignment="Center"/>
-                        <TextBlock Text="Selecione os ajustes que deseja aplicar ao sistema" 
-                                   FontSize="12" 
+                        <TextBlock Text="Ajustes"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,5"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Selecione os ajustes que deseja aplicar ao sistema"
+                                   FontSize="12"
                                    Margin="0,0,0,10"
                                    HorizontalAlignment="Center"/>
-                                   
+                        
+                        <StackPanel x:Name="FilterButtonsPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                        </StackPanel>
+                        
                         <ScrollViewer x:Name="TweaksScrollViewer"
                                       VerticalScrollBarVisibility="Auto"
-                                      MinHeight="500"
-                                      Margin="0,0,0,15" 
-                                      Background="#383838" 
-                                      Padding="10" 
-                                      BorderBrush="#505050" 
+                                      Height="400"
+                                      Margin="0,0,0,15"
+                                      Background="#383838"
+                                      Padding="10"
+                                      BorderBrush="#505050"
                                       BorderThickness="1"
-                                      Width="450">
+                                      Width="400">
                             <StackPanel x:Name="TweaksStackPanel" Orientation="Vertical"/>
                         </ScrollViewer>
                         
-
                     </StackPanel>
                 </StackPanel>
                 
-                <!-- Separador -->
-                <Border Grid.Column="1" 
-                        Width="1" 
-                        Background="#505050" 
+                <Border Grid.Column="1"
+                        Width="1"
+                        Background="#505050"
                         HorizontalAlignment="Center"/>
                 
-                <!-- Área Direita - Botões de Ação -->
                 <StackPanel Grid.Column="2" Orientation="Vertical">
-                    <!-- Círculo com número 2 -->
-                    <Border Width="30" 
-                            Height="30" 
-                            Background="#383838" 
-                            CornerRadius="15" 
+                    <Border Width="30"
+                            Height="30"
+                            Background="#383838"
+                            CornerRadius="15"
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center">
                         <TextBlock Text="&#xE945;"
                                    FontFamily="Segoe MDL2 Assets"
                                    FontSize="16"
-                                   Foreground="White" 
-                                   HorizontalAlignment="Center" 
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
                     
-                    <TextBlock Text="Ações rápidas" 
-                               FontSize="14" 
+                    <TextBlock Text="Ações rápidas"
+                               FontSize="14"
                                FontWeight="SemiBold"
                                Margin="0,0,0,10"
                                HorizontalAlignment="Center"/>
                     
-                    <!-- Botões de Ação Principal -->
-                    <Button x:Name="RecommendedTweaksButton" 
-                            Content="Marcar recomendadas" 
-                            Style="{StaticResource ActionButtonStyle}" 
+                    <Button x:Name="RecommendedTweaksButton"
+                            Content="Marcar recomendados"
+                            Style="{StaticResource ActionButtonStyle}"
                             Background="#107C10"/>
                     
-                    <Button x:Name="RestoreDefaultsButton" 
-                            Content="Restaurar padrões" 
-                            Style="{StaticResource ActionButtonStyle}" 
-                            Background="#D13438"/>
+                    <Button x:Name="RestoreDefaultsButton"
+                            Content="Restaurar padrões"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#2D2D30"
+                            IsEnabled="False"/> 
                     
-                    <Button x:Name="ApplySelectedTweaksButton" 
-                            Content="Aplicar" 
-                            Style="{StaticResource ActionButtonStyle}" 
-                            Background="#993233"/>
+                    <Button x:Name="ApplySelectedTweaksButton"
+                            Content="Aplicar"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#2D2D30"
+                            IsEnabled="False"/> 
                     
-                    <!-- Separador -->
-                    <Border Height="1" 
-                            Background="#505050" 
-                            Margin="10,15"/>
+                    <Border Height="1"
+                            Background="#505050"
+                            Margin="0,15"/>
 
-                    <Border Width="30" 
-                            Height="30" 
-                            Background="#383838" 
-                            CornerRadius="15" 
+                    <Border Width="30"
+                            Height="30"
+                            Background="#383838"
+                            CornerRadius="15"
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center">
                         <TextBlock Text="&#xF259;"
                                    FontFamily="Segoe MDL2 Assets"
                                    FontSize="16"
-                                   Foreground="White" 
-                                   HorizontalAlignment="Center" 
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
                     
-                    <TextBlock Text="Ferramentas" 
-                               FontSize="14" 
+                    <TextBlock Text="Ferramentas"
+                               FontSize="14"
                                FontWeight="SemiBold"
                                Margin="0,0,0,10"
-                               HorizontalAlignment="Center"/>    
+                               HorizontalAlignment="Center"/>
                     
-                    <!-- Ferramentas do Sistema -->
-                    <Button x:Name="SystemPropPerfButton" 
-                            Content="Aparência e desemepnho" 
-                            Style="{StaticResource ActionButtonStyle}" 
+                    <Button x:Name="SystemPropPerfButton"
+                            Content="Aparência e desemepnho"
+                            Style="{StaticResource ActionButtonStyle}"
                             Background="#0078D4"/>
+
+                    <Button x:Name="InstalledUpdatesButton"
+                            Content="Ver atualizações instaladas"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#3F3F46"/>
                     
-                    <Button x:Name="RegistryBackupButton" 
-                            Content="Backup do Registro" 
-                            Style="{StaticResource ActionButtonStyle}" 
-                            Background="#8A2BE2"/>
-                    
-                    <Button x:Name="SystemInfoButton" 
-                            Content="Informações do Sistema" 
-                            Style="{StaticResource ActionButtonStyle}" 
-                            Background="#FF8C00"/>
-                    
-                    <Button x:Name="RarRegButton" 
-                            Content="Registrar o WinRAR" 
-                            Style="{StaticResource ActionButtonStyle}" 
-                            Background="#696969"/>
+                    <Button x:Name="RarRegButton"
+                            Content="Registrar o WinRAR"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#3F3F46"/>
                 </StackPanel>
             </Grid>
         </Grid>

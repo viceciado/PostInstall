@@ -114,78 +114,238 @@ function global:Get-DefaultDialogConfiguration {
             return {
                 param($tweaksDialogWindow)
                 
+                $FilterButtonsPanel = $tweaksDialogWindow.FindName("FilterButtonsPanel")
+                $filterButtonStyle = $tweaksDialogWindow.Resources["FilterButtonStyle"]
                 $TweaksStackPanel = $tweaksDialogWindow.FindName("TweaksStackPanel")
-
-                # Inicializar a coleção de checkboxes
-                $script:checkboxesCollection = @{}
-                
-                if ($TweaksStackPanel) {
-                    try {
-                        $availableTweaks = Get-AvailableItems -ItemType "Tweaks"
-                        if ($availableTweaks.Count -gt 0) {
-                            Write-InstallLog "Populando interface com $($availableTweaks.Count) tweaks"
-                            
-                            # Criar checkboxes para cada tweak
-                            foreach ($tweak in $availableTweaks) {
-                                try {
-                                    $checkBox = New-Object System.Windows.Controls.CheckBox
-                                    $checkBox.Content = "$($tweak.Name)"
-                                    if ($tweak.Description) {
-                                        $checkBox.ToolTip = "$($tweak.Description)"
-                                    }
-                                    $checkBox.Tag = $tweak.Name
-                                    
-                                    # Pré-selecionar tweaks recomendados
-                                    if ($tweak.Recommended -eq $true) {
-                                        $checkBox.IsChecked = $true
-                                    }
-                                    
-                                    $TweaksStackPanel.Children.Add($checkBox)
-                                    $script:checkboxesCollection[$tweak.Name] = $checkBox
-                                }
-                                catch {
-                                    Write-InstallLog "Erro ao criar checkbox para $($tweak.Name): $($_.Exception.Message)" -Status "ERRO"
-                                }
-                            }
-                        }
-                        else {
-                            <# Action when all if and elseif conditions are false #>
-                        }
-                    }
-                    catch {
-                        Write-InstallLog "Erro ao popular tweaks: $($_.Exception.Message)" -Status "ERRO"
-                    }
-                }
-
-                # Botões
                 $RecommendedTweaksButton = $tweaksDialogWindow.FindName("RecommendedTweaksButton")
                 $RestoreDefaultsButton = $tweaksDialogWindow.FindName("RestoreDefaultsButton")
                 $ApplySelectedTweaksButton = $tweaksDialogWindow.FindName("ApplySelectedTweaksButton")
                 $SystemPropPerfButton = $tweaksDialogWindow.FindName("SystemPropPerfButton")
+                $InstalledUpdatesButton = $tweaksDialogWindow.FindName("InstalledUpdatesButton")
                 $RarRegButton = $tweaksDialogWindow.FindName("RarRegButton")
 
+                if ($ApplySelectedTweaksButton -and ($ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
+                    $script:originalApplyButtonBackground = $ApplySelectedTweaksButton.Background
+                }
+                else {
+                    $script:originalApplyButtonBackground = $null
+                }
 
+                $script:updateApplyButtonState = {
+                    $hasChecked = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true } | Select-Object -First 1
+
+                    if ($ApplySelectedTweaksButton -and ($ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
+                        $ApplySelectedTweaksButton.IsEnabled = [bool]$hasChecked
+                        try {
+                            if ($ApplySelectedTweaksButton.IsEnabled) {
+                                $bc = New-Object System.Windows.Media.BrushConverter
+                                $ApplySelectedTweaksButton.Background = $bc.ConvertFromString("#993233")
+                            }
+                            else {
+                                if ($script:originalApplyButtonBackground) {
+                                    $ApplySelectedTweaksButton.Background = $script:originalApplyButtonBackground
+                                }
+                            }
+                        }
+                        catch {}
+                    }
+                }
+                
+                # Inicializar a coleção de checkboxes
+                $script:checkboxesCollection = @{}
+                
+                # Carregar Tweaks e Categorias a partir do JSON (sem depender de $configData)
+                $allTweaks = Get-AvailableItems -ItemType "Tweaks"
+                # Filtrar tweaks para excluir aqueles que pertencem apenas à categoria 'Finalização'
+                $availableTweaks = $allTweaks | Where-Object { $_.Category -notcontains "Finalização" }
+                Write-InstallLog "Total de tweaks disponíveis: $($availableTweaks.Count)"
+
+                # Carregar categorias via Get-AvailableItems, evitando caminho direto
+                $tweaksCategories = Get-AvailableItems -ItemType "TweaksCategories"
+                if (-not $tweaksCategories) { $tweaksCategories = @() }
+                $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalização" }
+                
+                # Adicionar o botão "Todos"
+                $allButton = New-Object System.Windows.Controls.Button
+                $allButton.Style = $filterButtonStyle
+                $iconTextAll = New-Object System.Windows.Controls.TextBlock
+                $iconTextAll.Text = [char]0xE179 # Ícone genérico para "Todos" (da fonte Segoe MDL2 Assets)
+                $iconTextAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
+                $iconTextAll.FontSize = 16
+                $allButton.Content = $iconTextAll
+                $allButton.ToolTip = "Mostrar todos os tweaks"
+                $allButton.Tag = "All"
+                $FilterButtonsPanel.Children.Add($allButton)
+                
+                # Handler do botão "Todos"
+                $allButton.Add_Click({
+                    $script:checkboxesCollection.Values | ForEach-Object { $_.Visibility = "Visible" }
+                })
+
+                # Adicionar os botões para cada categoria do JSON
+                foreach ($category in $filteredCategories) {
+                    $button = New-Object System.Windows.Controls.Button
+                    $button.Style = $filterButtonStyle
+        
+                    # Criar o TextBlock para o ícone (conversão inline da entidade)
+                    $iconText = New-Object System.Windows.Controls.TextBlock
+                    $iconValue = ""
+                    if (-not [string]::IsNullOrWhiteSpace($category.Icon)) {
+                        if ($category.Icon -match '&#x([0-9A-Fa-f]+);') { $iconValue = [char]([Convert]::ToInt32($matches[1],16)) }
+                        elseif ($category.Icon -match '&#([0-9]+);') { $iconValue = [char]([int]$matches[1]) }
+                        else { $iconValue = [string]$category.Icon }
+                    }
+                    $iconText.Text = $iconValue
+                    $iconText.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
+                    $iconText.FontSize = 16
+        
+                    # Aplicar a cor (conversão inline)
+                    $colorBrush = [System.Windows.Media.Brushes]::White
+                    try {
+                        if (-not [string]::IsNullOrWhiteSpace($category.Color)) {
+                            $bc = New-Object System.Windows.Media.BrushConverter
+                            $conv = $bc.ConvertFromString($category.Color)
+                            if ($conv) { $colorBrush = $conv }
+                        }
+                    } catch {}
+                    
+                    # Definir o ícone como conteúdo do botão
+                    $button.Content = $iconText
+                    $button.Background = $colorBrush
+                    $button.ToolTip = "$($category.Name): $($category.Description)"
+                    $button.Tag = $category.Name # Usar a propriedade Tag para armazenar o nome da categoria
+        
+                    # Adicionar o botão ao painel
+                    $FilterButtonsPanel.Children.Add($button)
+        
+                    # Adicionar o manipulador de evento para filtrar
+                    $button.Add_Click({
+                        $clickedCategory = $_.Source.Tag
+                        foreach ($cb in $script:checkboxesCollection.Values) {
+                            $tweak = $cb.Tag
+                            if ($tweak -and $tweak.Category -contains $clickedCategory) {
+                                $cb.Visibility = "Visible"
+                            }
+                            else {
+                                $cb.Visibility = "Collapsed"
+                            }
+                        }
+                    })
+                }
+
+                if ($availableTweaks.Count -gt 0) {
+                    if ($global:ScriptContext.isWin11 -eq $false) {
+                        $availableTweaks = $availableTweaks | Where-Object { $_.Win11Only -eq $false }
+                    }
+                    foreach ($tweak in $availableTweaks) {
+                        $checkBox = New-Object System.Windows.Controls.CheckBox
+                        $checkBox.Content = "$($tweak.Name)"
+                        if ($tweak.Description) {
+                            $checkBox.ToolTip = "$($tweak.Description)"
+                        }
+                        $checkBox.Tag = $tweak
+                        
+                        # Pré-selecionar tweaks recomendados
+                        if ($tweak.IsRecommended -eq $true) {
+                            $checkBox.IsChecked = $true
+                        }
+                        
+                        $TweaksStackPanel.Children.Add($checkBox)
+                        $script:checkboxesCollection[$tweak.Name] = $checkBox
+
+                        # Atualizar estado do botão Aplicar quando o usuário marcar/desmarcar
+                        $checkBox.Add_Checked({ & $script:updateApplyButtonState })
+                        $checkBox.Add_Unchecked({ & $script:updateApplyButtonState })
+                    }
+                }
+                else {
+                    # Nenhum tweak encontrado
+                    Write-InstallLog "Nenhum tweak encontrado no arquivo JSON" -Status "AVISO"
+                }
+
+                $RestoreDefaultsButton.Add_Click({
+                        $script:checkboxesCollection.Values | ForEach-Object {
+                            $_.IsChecked = $false
+                        }
+                        & $script:updateApplyButtonState
+                    })
+
+                $RecommendedTweaksButton.Add_Click({
+                        $script:checkboxesCollection.Values | ForEach-Object {
+                            if ($_.Tag.IsRecommended -eq $true) {
+                                $_.IsChecked = $true
+                            }
+                        }
+                        & $script:updateApplyButtonState
+                    })
+
+                $ApplySelectedTweaksButton.Add_Click({
+                        Show-MessageDialog -Title "Recurso em desenvolvimento" -Message "Função não implementada ainda."
+                        <# $selectedTweaks = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
+                    if ($selectedTweaks.Count -gt 0) {
+                        $selectedTweaks | ForEach-Object {
+                            Write-InstallLog "Aplicando tweak: $($_.Tag)"
+                            # Apply-Tweak -Name $_.Tag
+                        }
+                    } #>
+                    })
+
+                # Estado inicial do botão Aplicar
+                & $script:updateApplyButtonState
                 $SystemPropPerfButton.Add_Click({
                         Start-Process "SystemPropertiesPerformance"
                     })
 
+                $InstalledUpdatesButton.Add_Click({
+                        Start-Process "shell:AppUpdatesFolder"
+                    })
+
                 $RarRegButton.Add_Click({
-                        $RarRegKeyDialog = New-Object System.Windows.Forms.OpenFileDialog
-                        $RarRegKeyDialog.CheckFileExists = $true
-                        $RarRegKeyDialog.AutoUpgradeEnabled = $true
-                        $RarRegKeyDialog.Filter = "RarREG.key (*.key)|*.key"
-                        $RarRegKeyDialog.Title = "Selecione o arquivo de ativação do WinRAR"
-                        if ($RarRegKeyDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-                            $RarRegKeyFilePath = $RarRegKeyDialog.FileName
-                            
-                            $WinrarInstallLocations = @("$env:ProgramFiles\WinRAR", "$env:ProgramFiles(x86)\WinRAR")
-                            foreach ($Path in $WinrarInstallLocations) {
-                                if (Test-Path -Path $Path) {
-                                    Invoke-ElevatedProcess 
+                        $WinrarInstallLocations = @("$env:ProgramFiles\WinRAR", "$env:ProgramFiles(x86)\WinRAR")
+                        $isWinRarInstalled = $false
+
+                        foreach ($Path in $WinrarInstallLocations) {
+                            if (Test-Path -Path $Path) {
+                                if (Test-Path -Path "$Path\rarreg.key") {
+                                    Show-MessageDialog -Title "Ativação do WinRAR" -Message "O arquivo rarreg.key já existe na pasta do WinRAR."
+                                    return
                                 }
                                 else {
+                                    $RarRegKeyDialog = New-Object System.Windows.Forms.OpenFileDialog
+                                    $RarRegKeyDialog.CheckFileExists = $true
+                                    $RarRegKeyDialog.AutoUpgradeEnabled = $true
+                                    $RarRegKeyDialog.Filter = "RarREG.key (*.key)|*.key"
+                                    $RarRegKeyDialog.Title = "Selecione o arquivo de ativação do WinRAR"
+                                    if ($RarRegKeyDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+                                        $RarRegKeyFilePath = $RarRegKeyDialog.FileName
+                                
+                                    }
+                                    else { return }
+    
+                                    $Parameters = @{
+                                        Path        = $RarRegKeyFilePath
+                                        Destination = $Path
+                                    }
+    
+                                    $RarRegKeyCopyResult = Invoke-ElevatedProcess -FunctionName "Copy-Item" -Parameters $Parameters -PassThru
+                                    if ($RarRegKeyCopyResult -eq $sucess) {
+                                        Show-Notification -Title "WinRAR ativado" -Message "Arquivo rarreg.key copiado para a pasta do WinRAR."
+                                        Write-InstallLog "Arquivo rarreg.key copiado para a pasta do WinRAR"
+                                    }
+                                    else {
+                                        Show-MessageDialog -Title "Erro" -Message "Ocorreu um erro ao copiar o arquivo." -MessageType "Error"
+                                        Write-InstallLog "Erro ao copiar arquivo rarreg.key para a pasta do WinRAR" -Status "ERRO"
+                                    }
+    
+                                    $isWinRarInstalled = $true
                                 }
+
                             }
+                        }
+
+                        # Verifica a flag após o loop
+                        if (-not $isWinRarInstalled) {
+                            Show-MessageDialog -Title "WinRAR não encontrado" -Message "O WinRAR não foi encontrado no sistema. Tente novamente após a instalação" -MessageType Warning
                         }
                     })
             }
@@ -203,96 +363,59 @@ function global:Get-DefaultDialogConfiguration {
                 $script:checkboxesCollection = @{}
                 
 
-                if ($programsStackPanel) {
-                    try {
-                        # Carregar programas do JSON
-                        $availablePrograms = Get-AvailableItems -ItemType "Programs"
-                        
-                        if ($availablePrograms.Count -gt 0) {
-                            Write-InstallLog "Populando interface com $($availablePrograms.Count) programas"
-                            
-                            # Criar checkboxes para cada programa
-                            foreach ($program in $availablePrograms) {
-                                $checkBox = New-Object System.Windows.Controls.CheckBox
-                                $checkBox.Content = "$($program.Name)"
-                                if ($program.Description) {
-                                    $checkBox.ToolTip = "$($program.Description)"
-                                }
-                                $checkBox.Tag = $program.ProgramId
-                                
-                                # Pré-selecionar programas recomendados
-                                if ($program.Recommended -eq $true) {
-                                    $checkBox.IsChecked = $true
-                                }
-                                
-                                $programsStackPanel.Children.Add($checkBox)
-                                $script:checkboxesCollection[$program.ProgramId] = $checkBox
-                            }
+                # Carregar programas do JSON
+                $availablePrograms = Get-AvailableItems -ItemType "Programs"
+                
+                if ($availablePrograms.Count -gt 0) {
+                    
+                    # Criar checkboxes para cada programa
+                    foreach ($program in $availablePrograms) {
+                        $checkBox = New-Object System.Windows.Controls.CheckBox
+                        $checkBox.Content = "$($program.Name)"
+                        if ($program.Description) {
+                            $checkBox.ToolTip = "$($program.Description)"
                         }
-                        else {
+                        $checkBox.Tag = $program.ProgramId
                         
-                            Write-InstallLog "Nenhum programa encontrado no arquivo JSON" -Status "AVISO"
-                            # Criar StackPanel para organizar ícone e mensagem
-                            $errorContainer = New-Object System.Windows.Controls.StackPanel
-                            $errorContainer.Orientation = "Vertical"
-                            $errorContainer.HorizontalAlignment = "Center"
-                            $errorContainer.Margin = "0,20,0,0"
-                            
-                            # Ícone de erro
-                            $errorIcon = New-Object System.Windows.Controls.TextBlock
-                            $errorIcon.Text = [char]0xE783  # Ícone de erro do Segoe MDL2 Assets
-                            $errorIcon.FontFamily = "Segoe MDL2 Assets"
-                            $errorIcon.FontSize = 32
-                            $errorIcon.Foreground = "Orange"
-                            $errorIcon.HorizontalAlignment = "Center"
-                            $errorIcon.Margin = "0,0,0,10"
-                            
-                            # Mensagem explicativa
-                            $errorLabel = New-Object System.Windows.Controls.TextBlock
-                            $errorLabel.Text = "Falha ao ler a lista de programas padrão`nRealize a instalação manualmente."
-                            $errorLabel.Foreground = "Orange"
-                            $errorLabel.FontSize = 14
-                            $errorLabel.TextAlignment = "Center"
-                            $errorLabel.HorizontalAlignment = "Center"
-                            $errorLabel.TextWrapping = "Wrap"
-                            
-                            # Adicionar elementos ao container
-                            $errorContainer.Children.Add($errorIcon)
-                            $errorContainer.Children.Add($errorLabel)
-                            $programsStackPanel.Children.Add($errorContainer)
+                        # Pré-selecionar programas recomendados
+                        if ($program.Recommended -eq $true) {
+                            $checkBox.IsChecked = $true
                         }
+                        
+                        $programsStackPanel.Children.Add($checkBox)
+                        $script:checkboxesCollection[$program.ProgramId] = $checkBox
                     }
-                    catch {
-                        Write-InstallLog "Erro ao popular lista de programas: $($_.Exception.Message)" -Status "ERRO"
-                        # Criar StackPanel para organizar ícone e mensagem de erro crítico
-                        $criticalErrorContainer = New-Object System.Windows.Controls.StackPanel
-                        $criticalErrorContainer.Orientation = "Vertical"
-                        $criticalErrorContainer.HorizontalAlignment = "Center"
-                        $criticalErrorContainer.Margin = "0,20,0,0"
-                        
-                        # Ícone de erro crítico
-                        $criticalErrorIcon = New-Object System.Windows.Controls.TextBlock
-                        $criticalErrorIcon.Text = [char]0xE711  # Ícone de erro crítico do Segoe MDL2 Assets
-                        $criticalErrorIcon.FontFamily = "Segoe MDL2 Assets"
-                        $criticalErrorIcon.FontSize = 32
-                        $criticalErrorIcon.Foreground = "Red"
-                        $criticalErrorIcon.HorizontalAlignment = "Center"
-                        $criticalErrorIcon.Margin = "0,0,0,10"
-                        
-                        # Mensagem de erro crítico
-                        $criticalErrorLabel = New-Object System.Windows.Controls.TextBlock
-                        $criticalErrorLabel.Text = "Erro ao carregar programas.`nVerifique os logs para mais detalhes."
-                        $criticalErrorLabel.Foreground = "Red"
-                        $criticalErrorLabel.FontSize = 14
-                        $criticalErrorLabel.TextAlignment = "Center"
-                        $criticalErrorLabel.HorizontalAlignment = "Center"
-                        $criticalErrorLabel.TextWrapping = "Wrap"
-                        
-                        # Adicionar elementos ao container
-                        $criticalErrorContainer.Children.Add($criticalErrorIcon)
-                        $criticalErrorContainer.Children.Add($criticalErrorLabel)
-                        $programsStackPanel.Children.Add($criticalErrorContainer)
-                    }
+                }
+                else {
+                    Write-InstallLog "Nenhum programa encontrado no arquivo JSON" -Status "AVISO"
+                    # Criar StackPanel para organizar ícone e mensagem
+                    $errorContainer = New-Object System.Windows.Controls.StackPanel
+                    $errorContainer.Orientation = "Vertical"
+                    $errorContainer.HorizontalAlignment = "Center"
+                    $errorContainer.Margin = "0,20,0,0"
+                    
+                    # Ícone de erro
+                    $errorIcon = New-Object System.Windows.Controls.TextBlock
+                    $errorIcon.Text = [char]0xE783  # Ícone de erro do Segoe MDL2 Assets
+                    $errorIcon.FontFamily = "Segoe MDL2 Assets"
+                    $errorIcon.FontSize = 32
+                    $errorIcon.Foreground = "Orange"
+                    $errorIcon.HorizontalAlignment = "Center"
+                    $errorIcon.Margin = "0,0,0,10"
+                    
+                    # Mensagem explicativa
+                    $errorLabel = New-Object System.Windows.Controls.TextBlock
+                    $errorLabel.Text = "Falha ao ler a lista de programas padrão`nRealize a instalação manualmente."
+                    $errorLabel.Foreground = "Orange"
+                    $errorLabel.FontSize = 14
+                    $errorLabel.TextAlignment = "Center"
+                    $errorLabel.HorizontalAlignment = "Center"
+                    $errorLabel.TextWrapping = "Wrap"
+                    
+                    # Adicionar elementos ao container
+                    $errorContainer.Children.Add($errorIcon)
+                    $errorContainer.Children.Add($errorLabel)
+                    $programsStackPanel.Children.Add($errorContainer)
                 }
                 
                 # Botão Instalar Selecionados
@@ -312,7 +435,6 @@ function global:Get-DefaultDialogConfiguration {
                             # Captura IDs de programas personalizados
                             $customText = $script:customProgramIDsTextBox.Text
                             $customProgramIDs = $customText -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-                            Write-InstallLog "IDs inseridos manualmente: $($customProgramIDs -join ', ')"
                             if ($customProgramIDs) {
                                 $selectedProgramIDs += $customProgramIDs
                             }
@@ -339,6 +461,7 @@ function global:Get-DefaultDialogConfiguration {
                             
                             if ($selectedProgramIDs.Count -gt 0) {
                                 $params = @{ ProgramIDs = $selectedProgramIDs }
+                                Show-Notification -Title "Instalação de programas" -Message "$($selectedProgramIDs.Count) programas escolhidos para instalação. Você pode continuar usando o script enquanto isso."
                                 Invoke-ElevatedProcess -FunctionName "Install-Programs" -Parameters $params -ForceAsync
                             }
                             else {
@@ -351,7 +474,17 @@ function global:Get-DefaultDialogConfiguration {
                 $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
                 if ($UpdateAllProgramsButton) {
                     $UpdateAllProgramsButton.Add_Click({
-                            Invoke-ElevatedProcess -FilePath "winget.exe" -ArgumentList "upgrade --all"
+                            $isWingetAvailable = Test-WinGet -winget
+                            if ($isWingetAvailable -eq "not-installed") {
+                                $noWingetInstalled = Show-MessageDialog -Title "Winget não encontrado" -Message "O Winget não foi encontrado no sistema. Deseja instalá-lo agora? Após a instalação, será necessário tentar a atualização novamente." -MessageType "Question" -Buttons "YesNo"
+                                if ($noWingetInstalled -eq "Yes") {
+                                    Invoke-ElevatedProcess -FunctionName "Install-WingetWrapper" -ForceAsync
+                                    Show-Notification -Title "Winget" -Message "Instalação do Winget iniciada. Tente atualizar os programas novamente após alguns minutos."
+                                }
+                            }
+                            else {
+                                Invoke-ElevatedProcess -FunctionName "Update-AllProgramsModern" -ForceAsync
+                            }
                         })
                 }
             }
@@ -576,13 +709,148 @@ function global:Get-DefaultDialogConfiguration {
                     $unifiedLogTextBox.Text = $errorMessage
                     Write-InstallLog  $errorMessage -Status "ERRO"
                 }
+            }
+        }
+
+        'FinalizeDialog' {
+            return {
+                param($finalizeDialogWindow)
+
+                $FinalizeTweaksStackPanel = $finalizeDialogWindow.FindName("FinalizeTweaksStackPanel")
+
+                # Inicializar a coleção de checkboxes
+                $script:checkboxesCollection = @{}
                 
-                $readOnlyButton = $logViewerWindow.FindName("ReadOnlyButton")
-                if ($readOnlyButton) {
-                    $readOnlyButton.Add_Click({
-                            Show-MessageDialog -Title "Log Somente Leitura" -Message "Os logs são gerados automaticamente pelo script e refletem o histórico de execução. Para garantir a integridade e a precisão dos registros, a edição não é permitida." -MessageType "Info" -Buttons "OK"
-                        })
+                if ($FinalizeTweaksStackPanel) {
+                    try {
+                        $finalizeTweaks = Get-AvailableItems -ItemType "Tweaks" | Where-Object { $_.Category -contains "Finalização" }
+                        if ($finalizeTweaks.Count -gt 0) {
+                            Write-InstallLog "Populando interface com $($finalizeTweaks.Count) tweaks"
+                            
+                            # Criar checkboxes para cada tweak
+                            foreach ($tweak in $finalizeTweaks) {
+                                try {
+                                    $checkBox = New-Object System.Windows.Controls.CheckBox
+                                    $checkBox.Content = $($tweak.Name)
+                                    $checkBox.Tag = $tweak
+
+                                    if ($tweak.Description) {
+                                        $checkBox.ToolTip = "$(($tweak.Description))"
+                                    }
+                                    
+                                    # Pré-selecionar tweaks recomendados
+                                    if ($tweak.IsRecommended -eq $true) {
+                                        $checkBox.IsChecked = $true
+                                    }
+                                    
+                                    $FinalizeTweaksStackPanel.Children.Add($checkBox)
+                                    $script:checkboxesCollection[$tweak.Name] = $checkBox
+                                }
+                                catch {
+                                    Write-InstallLog "Erro ao criar checkbox para $($tweak.Name): $($_.Exception.Message)" -Status "ERRO"
+                                }
+                            }
+                        }
+                        else {
+                            Show-MessageDialog -Title "Nenhum tweak disponível" -Message "Nenhum tweak foi encontrado no arquivo AvailableTweaks.json. Por favor, verifique se o arquivo está corretamente configurado." -MessageType "Info" -Buttons "OK"
+                        }
+                    }
+                    catch {
+                        Write-InstallLog "Erro ao popular tweaks: $($_.Exception.Message)" -Status "ERRO"
+                    } 
                 }
+                
+                
+                $OSNumberTextBox = $finalizeDialogWindow.FindName("OsNumberTextBox")
+                $ClientNameTextBox = $finalizeDialogWindow.FindName("ClientNameTextBox")
+                $TechnicianTextBox = $finalizeDialogWindow.FindName("TechnicianTextBox")
+                $finalizeOkButton = $finalizeDialogWindow.FindName("FinalizeOkButton")
+
+                # Pré-popular os campos a partir do ScriptContext
+                if ($null -ne $global:ScriptContext.OsNumber)       { $OSNumberTextBox.Text     = [string]$global:ScriptContext.OsNumber }
+                if ($null -ne $global:ScriptContext.ClientName)     { $ClientNameTextBox.Text   = [string]$global:ScriptContext.ClientName }
+                if ($null -ne $global:ScriptContext.TechnicianName) { $TechnicianTextBox.Text   = [string]$global:ScriptContext.TechnicianName }
+
+                $finalizeOkButton.Add_Click({
+                        param($sender, $e)
+                        # Reobter janela e controles para evitar problemas de captura de variáveis
+                        $wnd = [System.Windows.Window]::GetWindow($sender)
+                        if (-not $wnd) { $wnd = $finalizeDialogWindow }
+
+                        $osBox = if ($wnd) { $wnd.FindName("OsNumberTextBox") } else { $null }
+                        if (-not $osBox) { $osBox = $OSNumberTextBox }
+                        $clientBox = if ($wnd) { $wnd.FindName("ClientNameTextBox") } else { $null }
+                        if (-not $clientBox) { $clientBox = $ClientNameTextBox }
+                        $techBox = if ($wnd) { $wnd.FindName("TechnicianTextBox") } else { $null }
+                        if (-not $techBox) { $techBox = $TechnicianTextBox }
+
+                        # Capturar valores dos campos com segurança
+                        $osValue = if ($osBox) { $osBox.Text } else { $null }
+                        $clientValue = if ($clientBox) { $clientBox.Text } else { $null }
+                        $technicianValue = if ($techBox) { $techBox.Text } else { $null }
+
+                        $global:ScriptContext.OsNumber = $osValue
+                        $global:ScriptContext.ClientName = $clientValue
+                        $global:ScriptContext.TechnicianName = $technicianValue
+
+                        $registeredOrganization = "MasterNet Informática | (88) 99284-1517"
+
+                        $logEntry = "$($global:ScriptContext.OsNumber), Cliente: $($global:ScriptContext.ClientName), Técnico responsável: $($global:ScriptContext.TechnicianName)"
+                        $placeholder = "Informações não fornecidas"
+
+                        $allEmpty = ([string]::IsNullOrWhiteSpace($global:ScriptContext.OsNumber) -and 
+                                     [string]::IsNullOrWhiteSpace($global:ScriptContext.ClientName) -and 
+                                     [string]::IsNullOrWhiteSpace($global:ScriptContext.TechnicianName))
+
+                        if ($allEmpty) {
+                            Write-InstallLog $placeholder
+                        }
+                        else {
+                            $logContent = Get-Content -Path $global:LogPath -Raw -ErrorAction SilentlyContinue
+                            if ($logContent -match [regex]::Escape($placeholder)) {
+                                $newLogContent = $logContent -replace [regex]::Escape($placeholder), $logEntry
+                                $newLogContent | Tee-Object -FilePath $global:LogPath
+                                Write-InstallLog "Informações adicionadas ao log"
+                                Write-InstallLog  $logEntry
+                            }
+                            else {
+                                Write-InstallLog "O log não possuía o placeholder específico para as informações da OS. Registrando abaixo"
+                                Write-InstallLog $logEntry
+                            }
+
+                            try {
+                                $ownerString = "OS ($($global:ScriptContext.OsNumber)) - $($global:ScriptContext.ClientName)"
+
+                                $params = @{
+                                    Path        = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                                    Name        = "RegisteredOwner"
+                                    Value       = $ownerString
+                                    ErrorAction = "Stop"
+                                }
+                                $null = Invoke-ElevatedProcess -FunctionName "Set-ItemProperty" -Parameters $params -PassThru
+                            }
+                            catch {
+                                Show-MessageDialog -Title "Informações do serviço" -Message "Erro ao salvar as informações do serviço no registro" -MessageType "Error"
+                            }
+                        }
+
+                        # Sempre aplicar RegisteredOrganization, independentemente de campos vazios
+                        try {
+                            $OrgParams = @{
+                                Path        = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                                Name        = "RegisteredOrganization"
+                                Value       = $registeredOrganization
+                                ErrorAction = "Stop"
+                            }
+                            $null = Invoke-ElevatedProcess -FunctionName "Set-ItemProperty" -Parameters $OrgParams -PassThru
+                        }
+                        catch {
+                            Show-MessageDialog -Title "Informações do serviço" -Message "Erro ao salvar as informações do serviço no registro" -MessageType "Error"
+                        }
+
+                        $wnd.Close()
+                        $xamlWindow.Close()
+                    })  
             }
         }
     }

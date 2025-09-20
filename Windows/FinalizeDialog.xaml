@@ -37,6 +37,16 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="LightGray"/>
+            <Setter Property="FontFamily" Value="Futura"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="White"/></Trigger>
+            </Style.Triggers>
+        </Style>
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#2D2D30"/>
             <Setter Property="Foreground" Value="White"/>
@@ -97,7 +107,7 @@
             </Grid.RowDefinitions>
             
             <!-- Barra de título -->
-            <Border Grid.Row="0" Background="#2D2D30" CornerRadius="5,5,0,0">
+            <Border Grid.Row="0" CornerRadius="5,5,0,0">
                 <Grid>
                     <TextBlock x:Name="TitleText" 
                                Text="Finalizar instalação" 
@@ -118,45 +128,77 @@
             </Border>
             
             <!-- Conteúdo principal -->
-            <Grid Grid.Row="1" Margin="20">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/> <!-- Linha para OS e Cliente (lado a lado, com labels acima) -->
-                    <RowDefinition Height="Auto"/> <!-- Label Técnico -->
-                    <RowDefinition Height="Auto"/> <!-- TextBox Técnico -->
-                    <RowDefinition Height="Auto"/> <!-- Texto Informativo -->
-                    <RowDefinition Height="Auto"/> <!-- Botões -->
-                </Grid.RowDefinitions>
+            <StackPanel Grid.Row="1" Margin="15">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,0,10">
+                    <Border Width="30" 
+                                Height="30" 
+                                Background="#383838" 
+                                CornerRadius="15" 
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE13D;"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    Foreground="White" 
+                                    FontSize="16"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Informações sobre o serviço" 
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Margin="0,0,0,10"
+                                    HorizontalAlignment="Center"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="LightGray">
+                        Estas informações são opcionais. Se fornecidas, serão usadas para registrar o proprietário no sistema (visível em 'winver') e para o log de instalação.
+                    </TextBlock>
+                </StackPanel>
 
                 <!-- Linha para OS e Cliente -->
-                <Grid Grid.Row="0" Margin="0,0,0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/> 
-                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/> 
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Nº OS:"/>
-                    <TextBox x:Name="OsNumberTextBox" Width="70"/>
-                </StackPanel>
-                
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Cliente:"/>
-                    <TextBox x:Name="ClientNameTextBox"/> <!-- Ocupará a largura da coluna "*" -->
-                </StackPanel>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Nº OS:"/>
+                        <TextBox x:Name="OsNumberTextBox" Width="70"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Cliente:"/>
+                        <TextBox x:Name="ClientNameTextBox"/> <!-- Ocupará a largura da coluna "*" -->
+                    </StackPanel>
                 </Grid>
 
-                <TextBlock Grid.Row="1" Text="Técnico responsável:" Margin="0,10,0,0"/>
-                <TextBox x:Name="TechnicianTextBox" Grid.Row="2"/>
-                
-                <TextBlock Grid.Row="3" TextWrapping="Wrap" FontSize="11" Foreground="LightGray" Margin="0,5,0,15">
-                    Estas informações são opcionais. Se fornecidas, serão usadas para registrar o proprietário no sistema (visível em 'winver') e para o log de instalação.
-                </TextBlock>
+                <TextBlock Grid.Row="2" Text="Técnico:" Margin="0,0,0,5"/>
+                <TextBox x:Name="TechnicianTextBox" Grid.Row="3"/>
 
-                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <!-- Separador 1 -->
+                <Border Height="1" 
+                        Background="#505050" 
+                        Margin="0,0,0,10"/>
+
+                <TextBlock Text="Parâmetros de finalização" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"
+                               HorizontalAlignment="Left"/>
+
+                <ScrollViewer x:Name="FinalizeTweaksScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
+                                      MaxHeight="150"
+                                      Margin="0,0,0,15" 
+                                      Background="#1E1E1E"
+                                      BorderBrush="#505050" 
+                                      BorderThickness="1">
+                            <StackPanel x:Name="FinalizeTweaksStackPanel" Orientation="Vertical"/>
+                        </ScrollViewer>
+                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                     <Button x:Name="FinalizeOkButton" Content="Finalizar" Style="{StaticResource DialogButtonStyle}" Background="#4CAF50" Width="120" Height="35"/>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

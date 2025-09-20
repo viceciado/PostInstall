@@ -1,4 +1,4 @@
-function global:Invoke-ElevatedProcess {
+﻿function global:Invoke-ElevatedProcess {
     <#
     .SYNOPSIS
     Executa processos externos ou funções PowerShell com privilégios elevados quando necessário

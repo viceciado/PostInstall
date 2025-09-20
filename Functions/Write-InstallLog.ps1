@@ -1,4 +1,4 @@
-
+﻿
 function Initialize-LogPath {
     # Definir caminhos
     $global:PrimaryLogPath = "$env:SystemRoot\Setup\Scripts\Install.log"

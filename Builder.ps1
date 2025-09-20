@@ -75,7 +75,8 @@ function Update-Progress {
 # Cabeçalho do arquivo compilado
 $header = @"
 ################################################################################################################
-###                                        PostInstall - Versão Compilada                                    ###
+###                                            Script PostInstall                                            ###
+###                                                @viceciado                                                ###
 ###                                                                                                          ###
 ### AVISO: Este arquivo foi gerado automaticamente. NÃO modifique este arquivo diretamente, pois ele será    ###
 ###        sobrescrito na próxima compilação.                                                                ###
@@ -120,6 +121,7 @@ $script_content = [System.Collections.Generic.List[string]]::new()
 
 Update-Progress "Adicionando cabeçalho..." 10
 $script_content.Add($header)
+$script_content.Add("")
 
 # Adicionar assemblies necessários
 Update-Progress "Adicionando assemblies..." 15
@@ -131,6 +133,7 @@ Add-Type -AssemblyName System.Xaml
 Add-Type -AssemblyName System.Management
 "@
 $script_content.Add($assemblies)
+$script_content.Add("")
 
 # Adicionar contexto global
 Update-Progress "Configurando contexto global..." 20
@@ -156,7 +159,7 @@ $functionsPath = Join-Path $workingdir "Functions"
 $functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File | Sort-Object Name
 
 if ($functionFiles.Count -eq 0) {
-    Write-Warning "Nenhuma função encontrada na pasta Functions/"
+    Write-Warning "Nenhuma função encontrada na pasta Functions"
 }
 else {
     foreach ($file in $functionFiles) {
@@ -170,7 +173,7 @@ else {
             $functionContent = $functionContent -replace '.*<##>.*\r?\n?', ''
             
             # Remover blocos de documentação PowerShell (<# #>)
-            $functionContent = $functionContent -replace '(?s)\s*<#.*?#>\s*', ''
+            # $functionContent = $functionContent -replace '(?s)\s*<#.*?#>\s*', ''
             
             # Adicionar comentário identificando a função
             $script_content.Add($functionContent)
@@ -189,7 +192,6 @@ $dataPath = Join-Path $workingdir "Data"
 $jsonFiles = Get-ChildItem -Path $dataPath -Filter "*.json" -File
 
 if ($jsonFiles.Count -gt 0) {
-    $script_content.Add("`n# === DADOS JSON COMPILADOS ===")
     
     foreach ($file in $jsonFiles) {
         try {
@@ -199,7 +201,7 @@ if ($jsonFiles.Count -gt 0) {
             # Validar JSON
             $null = $jsonContent | ConvertFrom-Json -ErrorAction Stop
             
-            $script_content.Add("`n# Dados: $($file.Name)")
+            # $script_content.Add("`n# Dados: $($file.Name)")
             $script_content.Add("`$$variableName = @'")
             $script_content.Add($jsonContent)
             $script_content.Add("'@ | ConvertFrom-Json")
@@ -218,7 +220,6 @@ $windowsPath = Join-Path $workingdir "Windows"
 $xamlFiles = Get-ChildItem -Path $windowsPath -Filter "*.xaml" -File
 
 if ($xamlFiles.Count -gt 0) {
-    $script_content.Add("`n# === INTERFACES XAML COMPILADAS ===")
     
     foreach ($file in $xamlFiles) {
         try {
@@ -228,7 +229,7 @@ if ($xamlFiles.Count -gt 0) {
             $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
             $variableName = $baseName.Substring(0,1).ToLower() + $baseName.Substring(1) + 'Xaml'
             
-            $script_content.Add("`n# Interface: $($file.Name)")
+            # $script_content.Add("`n# Interface: $($file.Name)")
             $script_content.Add("`$$variableName = @'")
             $script_content.Add($xamlContent)
             $script_content.Add("'@")
@@ -244,27 +245,6 @@ if ($xamlFiles.Count -gt 0) {
         }
     }
 }
-
-# Adicionar função Test-WindowsVersion (necessária antes do código principal)
-Update-Progress "Adicionando funções auxiliares..." 80
-$testWindowsVersion = @"
-
-# === FUNÇÃO AUXILIAR PARA DETECÇÃO DE VERSÃO ===
-function global:Test-WindowsVersion {
-    `$osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop | Select-Object BuildNumber
-    `$buildNumber = `$osInfo.BuildNumber
-    
-    if (`$buildNumber -gt 19045) {
-        `$global:ScriptContext.isWin11 = `$true
-    }
-    else {
-        `$global:ScriptContext.isWin11 = `$false
-    }
-}
-
-Test-WindowsVersion
-"@
-$script_content.Add($testWindowsVersion)
 
 # Adicionar código principal do Main.ps1 (excluindo partes já compiladas)
 Update-Progress "Integrando código principal..." 90
@@ -332,7 +312,7 @@ try {
     $fileSize = [math]::Round((Get-Item $OutputName).Length / 1KB, 2)
     Write-Host "`n[SUCESSO] Compilação concluída!" -ForegroundColor Green
     Write-Host "Arquivo gerado: $OutputName ($fileSize KB)" -ForegroundColor Cyan
-    Write-Host "Funcoes compiladas: $($functionFiles.Count)" -ForegroundColor Cyan
+    Write-Host "Funções compiladas: $($functionFiles.Count)" -ForegroundColor Cyan
     Write-Host "Interfaces compiladas: $($xamlFiles.Count)" -ForegroundColor Cyan
     Write-Host "Dados compilados: $($jsonFiles.Count)" -ForegroundColor Cyan
 }

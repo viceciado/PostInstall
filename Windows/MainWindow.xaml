@@ -57,10 +57,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#333333"/>
+                                <Setter Property="Opacity" Value="0.85"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#555555"/>
+                                <Setter Property="Opacity" Value="0.5"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -113,6 +113,38 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="15,0,0,0"/>
+        </Style>
+
+        <Style x:Key="FooterButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Tag" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Style="{StaticResource FooterTextStyle}"
+                                       TextDecorations="{TemplateBinding Tag}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Margin="3,0"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Tag" Value="Underline"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Background" Value="#555555"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Tag" Value="Underline"/>
+                    <Setter Property="Foreground" Value="LightBlue"/>
+                    <Setter Property="Background" Value="#777777"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -218,7 +250,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Button x:Name="FooterStatusButton" ToolTip="Clique para ver o log de instalação." Content="Status:" Grid.Column="0"
-                            HorizontalAlignment="Left" Margin="15,4,0,4">
+                            HorizontalAlignment="Left" Margin="15,4,0,4" Style="{StaticResource FooterButtonStyle}">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="{TemplateBinding Background}" CornerRadius="3">
@@ -231,65 +263,13 @@
                                 </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderBrush" Value="Transparent"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Tag" Value="{x:Null}"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Tag" Value="Underline"/>
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                        <Setter Property="Background" Value="#555555"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Tag" Value="Underline"/>
-                                        <Setter Property="Foreground" Value="LightBlue"/>
-                                        <Setter Property="Background" Value="#777777"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
                     </Button>
 
                     <TextBlock x:Name="ScriptVersionText" Style="{StaticResource FooterTextStyle}"
-                                HorizontalAlignment="Right" Grid.Column="1" Margin="0,0,5,0"/>
+                                HorizontalAlignment="Right" Grid.Column="1" Margin="10,0"/>
 
-                    <Button x:Name="MasterNetButton" Content="MasterNet Informática" Grid.Column="2"
-                                HorizontalAlignment="Right" Margin="0,4,15,4">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="3">
-                                    <TextBlock Text="{TemplateBinding Content}"
-                                               Style="{StaticResource FooterTextStyle}"
-                                               TextDecorations="{TemplateBinding Tag}"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Margin="3,0"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderBrush" Value="Transparent"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Tag" Value="{x:Null}"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Tag" Value="Underline"/>
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                        <Setter Property="Background" Value="#555555"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Tag" Value="Underline"/>
-                                        <Setter Property="Foreground" Value="LightBlue"/>
-                                        <Setter Property="Background" Value="#777777"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <Button x:Name="AboutButton" Content="Sobre o sistema" Grid.Column="2"
+                                HorizontalAlignment="Right" Margin="0,4,15,4" Style="{StaticResource FooterButtonStyle}"/>
                 </Grid>
             </Border>
         </Grid>

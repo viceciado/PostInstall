@@ -1,4 +1,4 @@
-﻿Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
@@ -15,6 +15,9 @@ $global:ScriptContext = @{
     AvailableTweaks   = @()
     AvoidSleep        = $false
     isWin11           = $null
+    OsNumber          = $null
+    ClientName        = $null
+    TechnicianName    = $null
 }
 
 # === SISTEMA DE CARREGAMENTO DINÂMICO DE FUNÇÕES ===
@@ -71,42 +74,42 @@ try {
     $functionsPath = Join-Path -Path $PSScriptRoot -ChildPath "Functions"
     
     if (Test-Path -Path $functionsPath) {
-        $functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File
-        
-        Write-Host "[INFO] Descobrindo funções na pasta: $functionsPath" -ForegroundColor Cyan
-        Write-Host "[INFO] Encontrados $($functionFiles.Count) arquivo(s) de função" -ForegroundColor Cyan
-        
-        $loadedFunctions = @()
-        $failedFunctions = @()
-        
-        foreach ($file in $functionFiles) {
-            $success = Import-FunctionFile -FunctionFileName $file.Name -FunctionsPath $PSScriptRoot
-            
-            if ($success) {
-                $loadedFunctions += $file.BaseName
-            }
-            else {
-                $failedFunctions += $file.BaseName
-            }
-        }
-        
-        Write-Host "[SUCESSO] Sistema de carregamento dinâmico de funções inicializado" -ForegroundColor Green
-        Write-Host "[INFO] Funções carregadas: $($loadedFunctions -join ', ')" -ForegroundColor Cyan
-        
-        if ($failedFunctions.Count -gt 0) {
-            Write-Host "[AVISO] Funções com falha: $($failedFunctions -join ', ')" -ForegroundColor Yellow
-        }
+         $functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File
+         
+         Write-Host "[INFO] Descobrindo funções na pasta: $functionsPath" -ForegroundColor Cyan
+         Write-Host "[INFO] Encontrados $($functionFiles.Count) arquivo(s) de função" -ForegroundColor Cyan
+         
+         $loadedFunctions = @()
+         $failedFunctions = @()
+         
+         foreach ($file in $functionFiles) {
+             $success = Import-FunctionFile -FunctionFileName $file.Name -FunctionsPath $PSScriptRoot
+             
+             if ($success) {
+                 $loadedFunctions += $file.BaseName
+             }
+             else {
+                 $failedFunctions += $file.BaseName
+             }
+         }
+         
+         Write-Host "[SUCESSO] Sistema de carregamento dinâmico de funções inicializado" -ForegroundColor Green
+         Write-Host "[INFO] Funções carregadas: $($loadedFunctions -join ', ')" -ForegroundColor Cyan
+         
+         if ($failedFunctions.Count -gt 0) {
+             Write-Host "[AVISO] Funções com falha: $($failedFunctions -join ', ')" -ForegroundColor Yellow
+         }
 
-        Write-InstallLog "Sistema de funções carregado com sucesso" -Status "SUCESSO"
-    }
-    else {
-        Write-Host "[AVISO] Pasta Functions não encontrada: $functionsPath" -ForegroundColor Yellow
-    }
-}
-catch {
-    Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
-    exit 1
-}
+         Write-InstallLog "Sistema de funções carregado com sucesso" -Status "SUCESSO"
+     }
+     else {
+         Write-Host "[AVISO] Pasta Functions não encontrada: $functionsPath" -ForegroundColor Yellow
+     }
+ }
+ catch {
+     Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
+     exit 1
+ }
 
 # Função para listar funções carregadas
 function Get-LoadedFunctions {
@@ -131,20 +134,6 @@ function Get-LoadedFunctions {
     else {
         Write-Warning "Pasta Functions não encontrada"
         return @()
-    }
-}
-
-# Função para verificar a versão do Windows (mantida, pois é usada para MSEdgeRedirect)
-function global:Test-WindowsVersion {
-
-    $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop | Select-Object BuildNumber
-    $buildNumber = $osInfo.BuildNumber
-    
-    if ($buildNumber -gt 19045) {
-        $global:ScriptContext.isWin11 = $true
-    }
-    else {
-        $global:ScriptContext.isWin11 = $false
     }
 }
 
@@ -232,14 +221,14 @@ try {
         $avoidSleepButton = $xamlWindow.FindName("AvoidSleepButton")
         if ($avoidSleepButton) {
             $avoidSleepButton.Add_Click({ 
-                if ($global:ScriptContext.AvoidSleep -eq $true) {
-                    Set-AvoidSleep
-                }
-                else {
-                    Set-AvoidSleep -AvoidSleep $true
-                }
-                Update-ButtonUI -Button $avoidSleepButton
-            })
+                    if ($global:ScriptContext.AvoidSleep -eq $true) {
+                        Set-AvoidSleep
+                    }
+                    else {
+                        Set-AvoidSleep -AvoidSleep $true
+                    }
+                    Update-ButtonUI -Button $avoidSleepButton
+                })
         }
 
         $appInstallButton = $xamlWindow.FindName("SelectAndInstallProgramsButton")
@@ -358,8 +347,11 @@ try {
 
                     Write-InstallLog "Imagem montada na unidade ${mountImgLetter}:"
                     Show-MessageDialog -Message "Execute o arquivo de instalação a partir da próxima tela.`n`nQuando a instalação terminar, clique para desmontar a imagem." -Title "Instalação do Office"
-
-                    Start-Process "${mountImgLetter}:/"
+                    if (Test-Path -Path "$($mountImgLetter):\setup.exe") {
+                        Start-Process -FilePath "explorer.exe" -ArgumentList ("/select,$($mountImgLetter):\setup.exe")
+                    } else {
+                        Start-Process "${mountImgLetter}:\"
+                    }
                 })
         }
 
@@ -397,6 +389,7 @@ try {
         $TweaksButton = $xamlWindow.FindName("TweaksButton")
         if ($TweaksButton) {
             $TweaksButton.Add_Click({
+                    # Show-MessageDialog -Title "Recurso em desenvolvimento" -Message "Essa tela possui recursos ainda em desenvolvimento. Agradecemos a compreensão."
                     Invoke-XamlDialog -WindowName 'TweaksDialog'
                 })
         }
@@ -637,7 +630,8 @@ try {
                                 $importDriversButton.Content = "Erro!"
                                 Show-MessageDialog -Message $errorMessage -Title "Importação de drivers" -MessageType "Error" 
                             }
-                        } else {
+                        }
+                        else {
                             $importDriversButton.Content = $originalDriversButtonContent
                             $importDriversButton.IsEnabled = $true
                             return
@@ -655,13 +649,6 @@ try {
             $deviceManagerButton.Add_Click({
                     Write-InstallLog "Abrindo Gerenciador de Dispositivos"
                     Start-Process "devmgmt.msc"
-                })
-        }
-
-        $masterNetButton = $xamlWindow.FindName("MasterNetButton")
-        if ($masterNetButton) {
-            $masterNetButton.Add_Click({
-                    Invoke-XamlDialog -WindowName 'AboutDialog'
                 })
         }
 
@@ -719,7 +706,7 @@ try {
         $SplashScreen.Close()
 
         # Desativar a suspensão do computador
-        Set-AvoidSleep -AvoidSleep $true
+        Set-AvoidSleep -AvoidSleep $true -Silent $true
     
         # Exibir a MainWindow (bloqueante)
         $xamlWindow.ShowDialog() | Out-Null
@@ -770,7 +757,7 @@ finally {
 
     # Restaurar as configurações de suspensão
     if ($global:ScriptContext.AvoidSleep) {
-        Set-AvoidSleep
+        Set-AvoidSleep -Silent $true
     }
 
     # Limpar o contexto global do script

@@ -54,7 +54,8 @@ function global:Show-XamlDialog {
             $dialogBorder.Add_MouseDown({
                 param($sender, $e)
                 if ($e.LeftButton -eq 'Pressed') {
-                    $dialog.DragMove()
+                    $wnd = [System.Windows.Window]::GetWindow($sender)
+                    if ($wnd) { $wnd.DragMove() }
                 }
             })
         }
@@ -64,7 +65,8 @@ function global:Show-XamlDialog {
         if ($closeButton) {
             $closeButton.Add_Click({
                     param($senderParam, $eParam)
-                    $dialog.Close()
+                    $wnd = [System.Windows.Window]::GetWindow($senderParam)
+                    if ($wnd) { $wnd.Close() }
                 })
         }
         
@@ -72,7 +74,7 @@ function global:Show-XamlDialog {
         $dialog.Add_KeyDown({
             param($sender, $e)
             if ($e.Key -eq 'Escape') {
-                $dialog.Close()
+                if ($sender -is [System.Windows.Window]) { $sender.Close() }
             }
         })
         

@@ -1,6 +1,7 @@
 ﻿function global:Set-AvoidSleep {
     param (
-        [bool]$AvoidSleep = $false
+        [bool]$AvoidSleep = $false,
+        [bool]$Silent = $false
     )
 
     if (-not ([System.Management.Automation.PSTypeName]'PowerUtil').Type) {
@@ -24,9 +25,12 @@ public class PowerUtil {
         $result = [PowerUtil]::SetThreadExecutionState($flags)
         if ($result -eq 0) {
             Write-InstallLog "Falha ao configurar para evitar o modo de suspensão. Código de erro: $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())" -Status "ERRO"
-        } else {
+        }
+        else {
             Write-InstallLog "O computador está configurado para não entrar em suspensão."
-            Show-Notification -Title "Configuração de suspensão" -Message "O computador está configurado temporariamente para não entrar em suspensão."
+            if ($Silent -eq $false) {
+                Show-Notification -Title "Configuração de suspensão" -Message "O computador está configurado temporariamente para não entrar em suspensão."
+            }
             $global:ScriptContext.AvoidSleep = $true
         }
     }
@@ -34,9 +38,12 @@ public class PowerUtil {
         $result = [PowerUtil]::SetThreadExecutionState([PowerUtil]::ES_CONTINUOUS)
         if ($result -eq 0) {
             Write-InstallLog "Falha ao restaurar as configurações de suspensão. Código de erro: $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())" -Status "ERRO"
-        } else {
+        }
+        else {
             Write-InstallLog "As configurações de suspensão foram restauradas."
-            Show-Notification -Title "Configuração de suspensão" -Message "As configurações de suspensão foram restauradas ao padrão."
+            if ($Silent -eq $false) {
+                Show-Notification -Title "Configuração de suspensão" -Message "As configurações de suspensão foram restauradas ao padrão."
+            }
             $global:ScriptContext.AvoidSleep = $false
         }
     }

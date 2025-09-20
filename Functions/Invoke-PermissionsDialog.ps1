@@ -42,7 +42,7 @@ Remove-Item "$scriptPath" -Force
         
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force
         
-        Write-InstallLog "Tarefa agendada criada com sucesso: $taskName" -Status "SUCESSO"
+        Write-InstallLog "Tarefa agendada criada: $taskName" -Status "SUCESSO"
         return $true
     } catch {
         Write-InstallLog "Falha ao agendar tarefa: $_" -Status "ERRO"
