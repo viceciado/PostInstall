@@ -1,4 +1,4 @@
-function global:New-XamlDialog {
+﻿function global:New-XamlDialog {
     <#
     .SYNOPSIS
     Cria uma nova instância de um diálogo XAML

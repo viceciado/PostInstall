@@ -1,4 +1,4 @@
-function global:Get-AvailableItems {
+﻿function global:Get-AvailableItems {
     <#
     .SYNOPSIS
     Carrega a lista de itens disponíveis do arquivo JSON (programas ou tweaks)

@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Windows.Forms
+﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
@@ -561,6 +561,7 @@ try {
 
                             if ($CreateTask -eq $true) {
                                 Show-Notification -Title "Limpeza de permissões" -Message "A tarefa foi criada com sucesso"
+                                $global:ScriptContext.PersistedSelectedFolders = @()
                             }
                             else {
                                 $ShowLogOnError = Show-MessageDialog -Message "Erro ao criar a tarefa.`n`nDeseja consultar o log para ver o problema?" -Title "Erro" -MessageType "Error" -Buttons "YesNo"

@@ -119,35 +119,47 @@ function global:Get-DefaultDialogConfiguration {
                 $TweaksStackPanel = $tweaksDialogWindow.FindName("TweaksStackPanel")
                 $RecommendedTweaksButton = $tweaksDialogWindow.FindName("RecommendedTweaksButton")
                 $RestoreDefaultsButton = $tweaksDialogWindow.FindName("RestoreDefaultsButton")
-                $ApplySelectedTweaksButton = $tweaksDialogWindow.FindName("ApplySelectedTweaksButton")
+                $script:ApplySelectedTweaksButton = $tweaksDialogWindow.FindName("ApplySelectedTweaksButton")
                 $SystemPropPerfButton = $tweaksDialogWindow.FindName("SystemPropPerfButton")
                 $InstalledUpdatesButton = $tweaksDialogWindow.FindName("InstalledUpdatesButton")
                 $RarRegButton = $tweaksDialogWindow.FindName("RarRegButton")
 
-                if ($ApplySelectedTweaksButton -and ($ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
-                    $script:originalApplyButtonBackground = $ApplySelectedTweaksButton.Background
+                if ($script:ApplySelectedTweaksButton -and ($script:ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
+                    $script:originalApplyButtonBackground = $script:ApplySelectedTweaksButton.Background
                 }
                 else {
                     $script:originalApplyButtonBackground = $null
                 }
 
                 $script:updateApplyButtonState = {
-                    $hasChecked = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true } | Select-Object -First 1
+                    try {
+                        # Calcular quantos checkboxes estão marcados
+                        $checkedCount = ($script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }).Count
+                        $hasAnyChecked = $checkedCount -gt 0
 
-                    if ($ApplySelectedTweaksButton -and ($ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
-                        $ApplySelectedTweaksButton.IsEnabled = [bool]$hasChecked
-                        try {
-                            if ($ApplySelectedTweaksButton.IsEnabled) {
-                                $bc = New-Object System.Windows.Media.BrushConverter
-                                $ApplySelectedTweaksButton.Background = $bc.ConvertFromString("#993233")
+                        if ($script:ApplySelectedTweaksButton -and ($script:ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
+                            # Atualizar estado do botão diretamente (mesmo padrão do findOemKey)
+                            $script:ApplySelectedTweaksButton.IsEnabled = $hasAnyChecked
+                            
+                            # Atualizar texto do botão com contador
+                            if ($hasAnyChecked) {
+                                $script:ApplySelectedTweaksButton.Content = "Aplicar ($checkedCount)"
                             }
                             else {
-                                if ($script:originalApplyButtonBackground) {
-                                    $ApplySelectedTweaksButton.Background = $script:originalApplyButtonBackground
-                                }
+                                $script:ApplySelectedTweaksButton.Content = "Aplicar"
+                            }
+                            
+                            if ($hasAnyChecked) {
+                                # Botão habilitado - cor vermelha
+                                $script:ApplySelectedTweaksButton.Background = "#993233"
+                            }
+                            else {
+                                $script:ApplySelectedTweaksButton.Background = "#2D2D30"
                             }
                         }
-                        catch {}
+                    }
+                    catch {
+                        Write-InstallLog "Erro ao atualizar estado do botão Aplicar: $($_.Exception.Message)" -Status "AVISO"
                     }
                 }
                 
@@ -156,9 +168,23 @@ function global:Get-DefaultDialogConfiguration {
                 
                 # Carregar Tweaks e Categorias a partir do JSON (sem depender de $configData)
                 $allTweaks = Get-AvailableItems -ItemType "Tweaks"
-                # Filtrar tweaks para excluir aqueles que pertencem apenas à categoria 'Finalização'
-                $availableTweaks = $allTweaks | Where-Object { $_.Category -notcontains "Finalização" }
+                # Filtrar tweaks para excluir aqueles que pertencem APENAS à categoria 'Finalização'
+                $availableTweaks = $allTweaks | Where-Object {($_.Category -notcontains "Finalização")}
                 Write-InstallLog "Total de tweaks disponíveis: $($availableTweaks.Count)"
+                
+                # Debug: verificar quantos tweaks recomendados existem antes do filtro
+                $recommendedBeforeFilter = $allTweaks | Where-Object { $_.IsRecommended -eq $true }
+                Write-InstallLog "Tweaks recomendados antes do filtro: $($recommendedBeforeFilter.Count)" -Status "INFO"
+                
+                # Debug: verificar quantos tweaks recomendados existem depois do filtro
+                $recommendedAfterFilter = $availableTweaks | Where-Object { $_.IsRecommended -eq $true }
+                Write-InstallLog "Tweaks recomendados depois do filtro: $($recommendedAfterFilter.Count)" -Status "INFO"
+                
+                # Debug: listar os nomes dos tweaks recomendados
+                if ($recommendedAfterFilter.Count -gt 0) {
+                    $recommendedNames = $recommendedAfterFilter | ForEach-Object { $_.Name }
+                    Write-InstallLog "Tweaks recomendados encontrados: $($recommendedNames -join ', ')" -Status "INFO"
+                }
 
                 # Carregar categorias via Get-AvailableItems, evitando caminho direto
                 $tweaksCategories = Get-AvailableItems -ItemType "TweaksCategories"
@@ -169,7 +195,7 @@ function global:Get-DefaultDialogConfiguration {
                 $allButton = New-Object System.Windows.Controls.Button
                 $allButton.Style = $filterButtonStyle
                 $iconTextAll = New-Object System.Windows.Controls.TextBlock
-                $iconTextAll.Text = [char]0xE179 # Ícone genérico para "Todos" (da fonte Segoe MDL2 Assets)
+                $iconTextAll.Text = [char]0xF0E2 # Ícone genérico para "Todos" (da fonte Segoe MDL2 Assets)
                 $iconTextAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
                 $iconTextAll.FontSize = 16
                 $allButton.Content = $iconTextAll
@@ -179,8 +205,17 @@ function global:Get-DefaultDialogConfiguration {
                 
                 # Handler do botão "Todos"
                 $allButton.Add_Click({
-                    $script:checkboxesCollection.Values | ForEach-Object { $_.Visibility = "Visible" }
-                })
+                        $script:checkboxesCollection.Values | ForEach-Object { $_.Visibility = "Visible" }
+                    })
+
+                    # Adicionar um separador visual
+                $separator = New-Object System.Windows.Controls.Border
+                $separator.Width = 1
+                $separator.Height = 20
+                $separator.Background = [System.Windows.Media.Brushes]::Gray
+                $separator.Margin = New-Object System.Windows.Thickness(5, 0, 5, 0)
+                $separator.VerticalAlignment = "Center"
+                $FilterButtonsPanel.Children.Add($separator)
 
                 # Adicionar os botões para cada categoria do JSON
                 foreach ($category in $filteredCategories) {
@@ -191,7 +226,7 @@ function global:Get-DefaultDialogConfiguration {
                     $iconText = New-Object System.Windows.Controls.TextBlock
                     $iconValue = ""
                     if (-not [string]::IsNullOrWhiteSpace($category.Icon)) {
-                        if ($category.Icon -match '&#x([0-9A-Fa-f]+);') { $iconValue = [char]([Convert]::ToInt32($matches[1],16)) }
+                        if ($category.Icon -match '&#x([0-9A-Fa-f]+);') { $iconValue = [char]([Convert]::ToInt32($matches[1], 16)) }
                         elseif ($category.Icon -match '&#([0-9]+);') { $iconValue = [char]([int]$matches[1]) }
                         else { $iconValue = [string]$category.Icon }
                     }
@@ -207,7 +242,8 @@ function global:Get-DefaultDialogConfiguration {
                             $conv = $bc.ConvertFromString($category.Color)
                             if ($conv) { $colorBrush = $conv }
                         }
-                    } catch {}
+                    }
+                    catch {}
                     
                     # Definir o ícone como conteúdo do botão
                     $button.Content = $iconText
@@ -220,18 +256,67 @@ function global:Get-DefaultDialogConfiguration {
         
                     # Adicionar o manipulador de evento para filtrar
                     $button.Add_Click({
-                        $clickedCategory = $_.Source.Tag
-                        foreach ($cb in $script:checkboxesCollection.Values) {
-                            $tweak = $cb.Tag
-                            if ($tweak -and $tweak.Category -contains $clickedCategory) {
-                                $cb.Visibility = "Visible"
+                            $clickedCategory = $_.Source.Tag
+                            foreach ($cb in $script:checkboxesCollection.Values) {
+                                $tweak = $cb.Tag
+                                if ($tweak -and $tweak.Category -contains $clickedCategory) {
+                                    $cb.Visibility = "Visible"
+                                }
+                                else {
+                                    $cb.Visibility = "Collapsed"
+                                }
                             }
-                            else {
-                                $cb.Visibility = "Collapsed"
-                            }
-                        }
-                    })
+                        })
                 }
+
+                # Adicionar um segundo separador visual
+                $separator2 = New-Object System.Windows.Controls.Border
+                $separator2.Width = 1
+                $separator2.Height = 20
+                $separator2.Background = [System.Windows.Media.Brushes]::Gray
+                $separator2.Margin = New-Object System.Windows.Thickness(5, 0, 5, 0)
+                $separator2.VerticalAlignment = "Center"
+                $FilterButtonsPanel.Children.Add($separator2)
+
+                # Adicionar o botão "Marcar tudo"
+                $checkAllButton = New-Object System.Windows.Controls.Button
+                $checkAllButton.Style = $filterButtonStyle
+                $iconTextCheckAll = New-Object System.Windows.Controls.TextBlock
+                $iconTextCheckAll.Text = [char]0xE9D5
+                $iconTextCheckAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
+                $iconTextCheckAll.FontSize = 16
+                $checkAllButton.Content = $iconTextCheckAll
+                $checkAllButton.ToolTip = "Marcar tudo"
+                $checkAllButton.Tag = "CheckAll"
+                $FilterButtonsPanel.Children.Add($checkAllButton)
+                
+                # Handler do botão "Marcar tudo"
+                $checkAllButton.Add_Click({
+                        $script:checkboxesCollection.Values | ForEach-Object {
+                            $_.IsChecked = $true
+                        }
+                        & $script:updateApplyButtonState
+                    })
+
+                # Adicionar o botão "Limpar tudo"
+                $clearAllButton = New-Object System.Windows.Controls.Button
+                $clearAllButton.Style = $filterButtonStyle
+                $iconTextClearAll = New-Object System.Windows.Controls.TextBlock
+                $iconTextClearAll.Text = [char]0xED62
+                $iconTextClearAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
+                $iconTextClearAll.FontSize = 16
+                $clearAllButton.Content = $iconTextClearAll
+                $clearAllButton.ToolTip = "Limpar seleção"
+                $clearAllButton.Tag = "ClearAll"
+                $FilterButtonsPanel.Children.Add($clearAllButton)
+                
+                # Handler do botão "Limpar tudo"
+                $clearAllButton.Add_Click({
+                        $script:checkboxesCollection.Values | ForEach-Object {
+                            $_.IsChecked = $false
+                        }
+                        & $script:updateApplyButtonState
+                    })
 
                 if ($availableTweaks.Count -gt 0) {
                     if ($global:ScriptContext.isWin11 -eq $false) {
@@ -244,18 +329,27 @@ function global:Get-DefaultDialogConfiguration {
                             $checkBox.ToolTip = "$($tweak.Description)"
                         }
                         $checkBox.Tag = $tweak
-                        
-                        # Pré-selecionar tweaks recomendados
-                        if ($tweak.IsRecommended -eq $true) {
-                            $checkBox.IsChecked = $true
-                        }
-                        
+                                      
                         $TweaksStackPanel.Children.Add($checkBox)
                         $script:checkboxesCollection[$tweak.Name] = $checkBox
 
                         # Atualizar estado do botão Aplicar quando o usuário marcar/desmarcar
-                        $checkBox.Add_Checked({ & $script:updateApplyButtonState })
-                        $checkBox.Add_Unchecked({ & $script:updateApplyButtonState })
+                        $checkBox.Add_Checked({ 
+                                try {
+                                    & $script:updateApplyButtonState
+                                }
+                                catch {
+                                    Write-InstallLog "Erro ao atualizar estado do botão (Checked): $($_.Exception.Message)" -Status "AVISO"
+                                }
+                            })
+                        $checkBox.Add_Unchecked({ 
+                                try {
+                                    & $script:updateApplyButtonState
+                                }
+                                catch {
+                                    Write-InstallLog "Erro ao atualizar estado do botão (Unchecked): $($_.Exception.Message)" -Status "AVISO"
+                                }
+                            })
                     }
                 }
                 else {
@@ -264,30 +358,41 @@ function global:Get-DefaultDialogConfiguration {
                 }
 
                 $RestoreDefaultsButton.Add_Click({
-                        $script:checkboxesCollection.Values | ForEach-Object {
-                            $_.IsChecked = $false
-                        }
-                        & $script:updateApplyButtonState
+                        
                     })
 
                 $RecommendedTweaksButton.Add_Click({
+
+                    $script:checkboxesCollection.Values | ForEach-Object {$_.IsChecked = $false}
+                        $recommendedCount = 0
+                        $markedCount = 0
+                        
                         $script:checkboxesCollection.Values | ForEach-Object {
-                            if ($_.Tag.IsRecommended -eq $true) {
+                            $isRecommended = ($_.Tag -and $_.Tag.IsRecommended -eq $true) -or 
+                            ($_.Tag -and $_.Tag.Category -and $_.Tag.Category -contains "Recomendados")
+                            
+                            if ($isRecommended) {
+                                $recommendedCount++
                                 $_.IsChecked = $true
+                                $markedCount++
                             }
                         }
                         & $script:updateApplyButtonState
                     })
 
-                $ApplySelectedTweaksButton.Add_Click({
-                        Show-MessageDialog -Title "Recurso em desenvolvimento" -Message "Função não implementada ainda."
-                        <# $selectedTweaks = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
-                    if ($selectedTweaks.Count -gt 0) {
-                        $selectedTweaks | ForEach-Object {
-                            Write-InstallLog "Aplicando tweak: $($_.Tag)"
-                            # Apply-Tweak -Name $_.Tag
+                $script:ApplySelectedTweaksButton.Add_Click({
+                        $selectedTweaks = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
+                        $selectedCount = $selectedTweaks.Count
+                        $selectedNames = $selectedTweaks | ForEach-Object { $_.Tag.Name } | Out-String
+                        
+                        $applyDialog = Show-MessageDialog -Title "Aplicar Tweaks" -Message "Deseja aplicar os $selectedCount tweaks selecionados?`n`n$selectedNames" -MessageType "Question" -Buttons "YesNo"
+                        if ($applyDialog -eq "Yes") {
+                            Write-InstallLog "Função não implementada ainda"
+                            $script:checkboxesCollection.Values | ForEach-Object {
+                            $_.IsChecked = $false
                         }
-                    } #>
+                        & $script:updateApplyButtonState
+                        }
                     })
 
                 # Estado inicial do botão Aplicar
@@ -767,9 +872,9 @@ function global:Get-DefaultDialogConfiguration {
                 $finalizeOkButton = $finalizeDialogWindow.FindName("FinalizeOkButton")
 
                 # Pré-popular os campos a partir do ScriptContext
-                if ($null -ne $global:ScriptContext.OsNumber)       { $OSNumberTextBox.Text     = [string]$global:ScriptContext.OsNumber }
-                if ($null -ne $global:ScriptContext.ClientName)     { $ClientNameTextBox.Text   = [string]$global:ScriptContext.ClientName }
-                if ($null -ne $global:ScriptContext.TechnicianName) { $TechnicianTextBox.Text   = [string]$global:ScriptContext.TechnicianName }
+                if ($null -ne $global:ScriptContext.OsNumber) { $OSNumberTextBox.Text = [string]$global:ScriptContext.OsNumber }
+                if ($null -ne $global:ScriptContext.ClientName) { $ClientNameTextBox.Text = [string]$global:ScriptContext.ClientName }
+                if ($null -ne $global:ScriptContext.TechnicianName) { $TechnicianTextBox.Text = [string]$global:ScriptContext.TechnicianName }
 
                 $finalizeOkButton.Add_Click({
                         param($sender, $e)
@@ -799,8 +904,8 @@ function global:Get-DefaultDialogConfiguration {
                         $placeholder = "Informações não fornecidas"
 
                         $allEmpty = ([string]::IsNullOrWhiteSpace($global:ScriptContext.OsNumber) -and 
-                                     [string]::IsNullOrWhiteSpace($global:ScriptContext.ClientName) -and 
-                                     [string]::IsNullOrWhiteSpace($global:ScriptContext.TechnicianName))
+                            [string]::IsNullOrWhiteSpace($global:ScriptContext.ClientName) -and 
+                            [string]::IsNullOrWhiteSpace($global:ScriptContext.TechnicianName))
 
                         if ($allEmpty) {
                             Write-InstallLog $placeholder

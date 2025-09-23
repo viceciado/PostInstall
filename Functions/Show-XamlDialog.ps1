@@ -1,4 +1,4 @@
-function global:Show-XamlDialog {
+﻿function global:Show-XamlDialog {
     <#
     .SYNOPSIS
     Abre um diálogo XAML de forma padronizada com funcionalidades comuns
