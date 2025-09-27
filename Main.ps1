@@ -406,7 +406,7 @@ try {
                 
                     # Se há pastas persistidas, perguntar se o usuário quer usar as mesmas ou selecionar novas
                     if ($global:ScriptContext.PersistedSelectedFolders.Count -gt 0) {
-                        $usePersistedChoice = Show-MessageDialog -Message "Você já selecionou $($global:ScriptContext.PersistedSelectedFolders.Count) pastas anteriormente:`n`nDeseja continuar com a seleção anterior?" -Title "Limpeza de permissões" -MessageType "Question" -Buttons "YesNoCancel"
+                        $usePersistedChoice = Show-MessageDialog -Message "Você já selecionou $($global:ScriptContext.PersistedSelectedFolders.Count) pastas anteriormente.`n`nDeseja continuar com a seleção anterior?" -Title "Limpeza de permissões" -MessageType "Question" -Buttons "YesNoCancel"
                     
                         if ($usePersistedChoice -eq "Yes") {
                             $selectedFolders = $global:ScriptContext.PersistedSelectedFolders
@@ -442,7 +442,7 @@ try {
                             
                                 # Mostrar status e perguntar se deseja adicionar mais pastas
                                 $message = "Pasta(s) selecionada(s):`n$($selectedFolders -join "`n")`n`nDeseja selecionar mais pastas?"
-                                $addMoreResult = Show-MessageDialog -Title "Ajustar permissões - $($selectedFolders.Count) pastas selecionadas" -Message $message -MessageType "Question" -Buttons "YesNo"
+                                $addMoreResult = Show-MessageDialog -Title "Limpeza de permissões" -Message $message -MessageType "Question" -Buttons "YesNo"
                             
                                 # Se não quiser adicionar mais, sair do loop
                                 if ($addMoreResult -ne "Yes") {

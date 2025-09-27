@@ -581,7 +581,7 @@ function global:Get-DefaultDialogConfiguration {
                                 }
                             }
                             else {
-                                Invoke-ElevatedProcess -FunctionName "Update-AllPrograms" -ForceAsync
+                                Invoke-ElevatedProcess -FilePath "winget" -ArgumentList "upgrade --all --silent --accept-source-agreements --accept-package-agreements" -ForceAsync
                             }
                         })
                 }

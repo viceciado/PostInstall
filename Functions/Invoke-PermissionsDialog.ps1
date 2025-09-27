@@ -77,8 +77,6 @@ function global:Remove-RedundantSubfolders {
         return ,$FolderList
     }
     
-    Write-InstallLog "Iniciando análise de $($FolderList.Count) pastas para remoção de redundâncias" 
-    
     # Criar uma lista de objetos com caminho original e normalizado
      $folderObjects = @()
      for ($i = 0; $i -lt $FolderList.Count; $i++) {
@@ -123,8 +121,6 @@ function global:Remove-RedundantSubfolders {
     
     # Extrair apenas os caminhos originais
     $result = @($parentFolders | ForEach-Object { $_.Original })
-    
-    Write-InstallLog "Análise concluída: $($result.Count) pastas mantidas de $($FolderList.Count) originais" 
     
     # Garantir que retornamos um array mesmo com um único elemento
     return ,$result

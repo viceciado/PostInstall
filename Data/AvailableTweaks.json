@@ -39,7 +39,7 @@
     "Tweaks": [
         {
             "Name": "Apagar histórico e arquivos temporários",
-            "Description": "Apaga o histórico de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários.",
+            "Description": "Apaga o histórico do Edge, de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários.",
             "Category": [
                 "Recomendados",
                 "Finalização"
@@ -48,7 +48,7 @@
             "IsBoolean": false,
             "IsRecommended": true,
             "InvokeScript": [
-                "Get-Process msedge | Stop-Process -Force -ErrorAction SilentlyContinue",
+                "if (Get-Process msedge) { Get-Process msedge | Stop-Process -Force -ErrorAction SilentlyContinue }",
                 "Remove-Item -Path \"$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\" -Recurse -Force",
                 "Get-ChildItem -Path \"$env:APPDATA\\Microsoft\\Windows\\Recent\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
                 "Remove-Item \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths\" -Confirm:$false -Recurse",
