@@ -1,4 +1,4 @@
-﻿function global:Get-AvailableItems {
+function global:Get-AvailableItems {
     <#
     .SYNOPSIS
     Carrega a lista de itens disponíveis do arquivo JSON (programas ou tweaks)
@@ -120,9 +120,9 @@
                     if ($null -ne $item.Category) {
                         if ($item.Category -is [System.Array]) { $cat = @($item.Category) } else { $cat = @($item.Category) }
                     }
-                    $cmd = if ($null -ne $item.Command) { @($item.Command) } else { @() }
-                    $undo = if ($null -ne $item.UndoCommand) { @($item.UndoCommand) } else { @() }
                     $reg = if ($null -ne $item.Registry) { @($item.Registry) } else { @() }
+                    $invokeScript = if ($null -ne $item.InvokeScript) { @($item.InvokeScript) } else { @() }
+                    $undoScriptArr = if ($null -ne $item.UndoScript) { @($item.UndoScript) } else { @() }
 
                     $validItems += [PSCustomObject]@{
                         Name            = [string]$item.Name
@@ -132,9 +132,9 @@
                         IsBoolean       = [bool]($item.IsBoolean)
                         RefreshRequired = [bool]($item.RefreshRequired)
                         IsRecommended   = if ($null -ne $item.IsRecommended) { [bool]$item.IsRecommended } else { $false }
-                        Command         = $cmd
-                        UndoCommand     = $undo
                         Registry        = $reg
+                        InvokeScript    = $invokeScript
+                        UndoScript      = $undoScriptArr
                     }
                 }
             }
@@ -597,70 +597,117 @@ function global:Install-Programs {
     catch {
         Write-Host "[ERRO] Winget não encontrado. Tentando instalar/atualizar..." -ForegroundColor Red
         
-        # Tentar carregar função de instalação do winget
+        # Preparar ambiente de funções sem dot-sourcing amplo: tentar importar o script compilado
         try {
-            $functionsPath = Split-Path $PSScriptRoot -Parent
-            $functionsPath = Join-Path $functionsPath "Functions"
-            if (Test-Path $functionsPath) {
-                Get-ChildItem "$functionsPath\*.ps1" | ForEach-Object { . $_.FullName }
+            # Garantir que a função de instalação esteja disponível
+            if (-not (Get-Command Install-WingetWrapper -ErrorAction SilentlyContinue)) {
+                $compiledPath = $null
+                if ($global:ScriptContext -and $global:ScriptContext.CompiledScriptPath) {
+                    $compiledPath = $global:ScriptContext.CompiledScriptPath
+                } else {
+                    $scriptRoot = Split-Path -Parent $PSScriptRoot
+                    $candidate = Join-Path $scriptRoot "PostInstall.ps1"
+                    if (Test-Path $candidate) { $compiledPath = $candidate }
+                }
+                
+                if ($compiledPath) {
+                    if (-not $global:ScriptContext) { $global:ScriptContext = @{} }
+                    $global:ScriptContext.SkipEntryPoint = $true
+                    . $compiledPath
+                } else {
+                    # Fallback mínimo: carregar apenas Set-WinGet e Write-InstallLog, se necessário
+                    $functionsPath = Join-Path (Split-Path $PSScriptRoot -Parent) "Functions"
+                    $winGetFile = Join-Path $functionsPath "Set-WinGet.ps1"
+                    if (Test-Path $winGetFile) { . $winGetFile }
+                    $logFile = Join-Path $functionsPath "Write-InstallLog.ps1"
+                    if (Test-Path $logFile) { . $logFile }
+                }
             }
-            
-            $wingetReady = Install-WingetWrapper
-            if (-not $wingetReady) {
+
+            # Executar preparação/instalação do Winget e respeitar RequiresRestart
+            $wingetResult = Install-WingetWrapper
+            if (-not $wingetResult.Success) {
                 Write-Host "[ERRO] Não foi possível preparar o Winget. Cancelando instalações." -ForegroundColor Red
                 Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
                 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                 return
             }
-            
-            # Após instalar o winget, precisamos reiniciar o processo PowerShell
-            # para que o winget fique disponível no PATH
-            Write-Host "Winget instalado com sucesso. Reiniciando processo para aplicar mudanças..." -ForegroundColor Yellow
-            Write-Host "Aguarde alguns segundos..." -ForegroundColor Gray
-            Start-Sleep -Seconds 3
-            
-            # Salvar os parâmetros em um arquivo temporário para o novo processo
-            $tempParamsFile = [System.IO.Path]::GetTempFileName() + ".json"
-            $paramsData = @{
-                ProgramIDs = $ProgramIDs
-                ScriptPath = $PSCommandPath
-                FunctionsPath = $functionsPath
-            }
-            $paramsData | ConvertTo-Json -Depth 3 | Out-File -FilePath $tempParamsFile -Encoding UTF8
-            
-            # Criar script temporário para executar a instalação
-            $tempScriptFile = [System.IO.Path]::GetTempFileName() + ".ps1"
-            $restartScript = @"
+
+            if ($wingetResult.RequiresRestart) {
+                Write-Host "Winget instalado com sucesso. Reiniciando processo para aplicar mudanças..." -ForegroundColor Yellow
+                Write-Host "Aguarde alguns segundos..." -ForegroundColor Gray
+                Start-Sleep -Seconds 3
+                
+                # Salvar os parâmetros em um arquivo temporário para o novo processo
+                $tempParamsFile = [System.IO.Path]::GetTempFileName() + ".json"
+                
+                # Definir caminho do script compilado para reimportação no novo processo
+                $compiledPath = $null
+                if ($global:ScriptContext -and $global:ScriptContext.CompiledScriptPath) {
+                    $compiledPath = $global:ScriptContext.CompiledScriptPath
+                } else {
+                    $scriptRoot = Split-Path -Parent $PSScriptRoot
+                    $candidate = Join-Path $scriptRoot "PostInstall.ps1"
+                    if (Test-Path $candidate) { $compiledPath = $candidate }
+                }
+
+                $paramsData = @{ 
+                    ProgramIDs = $ProgramIDs 
+                    CompiledScriptPath = $compiledPath 
+                }
+                $paramsData | ConvertTo-Json -Depth 3 | Out-File -FilePath $tempParamsFile -Encoding UTF8
+                
+                # Criar script temporário para executar a instalação sem dot-sourcing amplo
+                $tempScriptFile = [System.IO.Path]::GetTempFileName() + ".ps1"
+                $restartScript = @"
 # Script de reinicialização para instalação de programas
 `$paramsFile = '$tempParamsFile'
 `$paramsData = Get-Content -Path `$paramsFile -Raw | ConvertFrom-Json
 
-# Carregar todas as funções
-Get-ChildItem "`$(`$paramsData.FunctionsPath)\*.ps1" | ForEach-Object { . `$_.FullName }
+if (-not `$global:ScriptContext) { `$global:ScriptContext = @{} }
+`$global:ScriptContext.SkipEntryPoint = `$true
 
-# Executar a instalação dos programas
+if (`$paramsData.CompiledScriptPath) {
+    . "`$(`$paramsData.CompiledScriptPath)"
+} else {
+    # Fallback: localizar PostInstall.ps1 ao lado do script atual
+    `$scriptRoot = Split-Path -Parent `$PSScriptRoot
+    `$candidate = Join-Path `$scriptRoot "PostInstall.ps1"
+    if (Test-Path `$candidate) { . `$candidate }
+}
+
 Install-Programs -ProgramIDs `$paramsData.ProgramIDs
 
 # Limpar arquivos temporários
 Remove-Item -Path `$paramsFile -Force -ErrorAction SilentlyContinue
-Remove-Item -Path `$PSCommandPath -Force -ErrorAction SilentlyContinue
 "@
-            $restartScript | Out-File -FilePath $tempScriptFile -Encoding UTF8
-            
-            # Iniciar novo processo PowerShell com o script temporário
-            $processArgs = @{
-                FilePath = "powershell.exe"
-                ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$tempScriptFile`"")
-                Verb = "RunAs"
-                PassThru = $false
+                $restartScript | Out-File -FilePath $tempScriptFile -Encoding UTF8
+                
+                # Iniciar novo processo PowerShell com o script temporário
+                $processArgs = @{ 
+                    FilePath = "powershell.exe" 
+                    ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$tempScriptFile`"") 
+                    Verb = "RunAs" 
+                    PassThru = $false 
+                }
+                Start-Process @processArgs
+
+                # Encerrar o processo atual
+                Write-Host "Processo reiniciado. Esta janela será fechada." -ForegroundColor Green
+                Start-Sleep -Seconds 2
+                return
+            } else {
+                # Se não precisa reiniciar, obter caminho do winget e continuar
+                try {
+                    $wingetPath = (Get-Command winget -ErrorAction Stop).Source
+                    Write-Host "Winget disponível sem reinício. Prosseguindo..." -ForegroundColor Green
+                } catch {
+                    Write-Host "[ERRO] Winget ainda indisponível após instalação." -ForegroundColor Red
+                    Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
+                    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+                    return
+                }
             }
-            
-            Start-Process @processArgs
-            
-            # Encerrar o processo atual
-            Write-Host "Processo reiniciado. Esta janela será fechada." -ForegroundColor Green
-            Start-Sleep -Seconds 2
-            return
         }
         catch {
             Write-Host "Erro ao preparar Winget: $($_.Exception.Message)" -ForegroundColor Red

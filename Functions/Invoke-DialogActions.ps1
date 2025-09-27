@@ -118,7 +118,7 @@ function global:Get-DefaultDialogConfiguration {
                 $filterButtonStyle = $tweaksDialogWindow.Resources["FilterButtonStyle"]
                 $TweaksStackPanel = $tweaksDialogWindow.FindName("TweaksStackPanel")
                 $RecommendedTweaksButton = $tweaksDialogWindow.FindName("RecommendedTweaksButton")
-                $RestoreDefaultsButton = $tweaksDialogWindow.FindName("RestoreDefaultsButton")
+                $script:RestoreDefaultsButton = $tweaksDialogWindow.FindName("RestoreDefaultsButton")
                 $script:ApplySelectedTweaksButton = $tweaksDialogWindow.FindName("ApplySelectedTweaksButton")
                 $SystemPropPerfButton = $tweaksDialogWindow.FindName("SystemPropPerfButton")
                 $InstalledUpdatesButton = $tweaksDialogWindow.FindName("InstalledUpdatesButton")
@@ -143,19 +143,26 @@ function global:Get-DefaultDialogConfiguration {
                             
                             # Atualizar texto do botão com contador
                             if ($hasAnyChecked) {
-                                $script:ApplySelectedTweaksButton.Content = "Aplicar ($checkedCount)"
-                            }
-                            else {
-                                $script:ApplySelectedTweaksButton.Content = "Aplicar"
-                            }
-                            
-                            if ($hasAnyChecked) {
-                                # Botão habilitado - cor vermelha
+                                $script:ApplySelectedTweaksButton.Content = "Aplicar $checkedCount tweaks"
                                 $script:ApplySelectedTweaksButton.Background = "#993233"
                             }
                             else {
+                                $script:ApplySelectedTweaksButton.Content = "Aplicar"
                                 $script:ApplySelectedTweaksButton.Background = "#2D2D30"
                             }
+                        }
+
+                        # Habilitar/Desabilitar o botão "Restaurar padrões" com base nos tweaks aplicados
+                        $appliedCount = if ($null -ne $global:ScriptContext.AppliedTweaks) { $global:ScriptContext.AppliedTweaks.Count } else { 0 }
+                        if ($appliedCount -gt 0) {
+                            $script:RestoreDefaultsButton.IsEnabled = $true
+                            $script:RestoreDefaultsButton.Background = "#993233"
+                            $script:RestoreDefaultsButton.Content = "Desfazer $($appliedCount) alterações"
+                        }
+                        else {
+                            $script:RestoreDefaultsButton.IsEnabled = $false
+                            $script:RestoreDefaultsButton.Background = "#2D2D30"
+                            $script:RestoreDefaultsButton.Content = "Restaurar padrões"
                         }
                     }
                     catch {
@@ -169,22 +176,7 @@ function global:Get-DefaultDialogConfiguration {
                 # Carregar Tweaks e Categorias a partir do JSON (sem depender de $configData)
                 $allTweaks = Get-AvailableItems -ItemType "Tweaks"
                 # Filtrar tweaks para excluir aqueles que pertencem APENAS à categoria 'Finalização'
-                $availableTweaks = $allTweaks | Where-Object {($_.Category -notcontains "Finalização")}
-                Write-InstallLog "Total de tweaks disponíveis: $($availableTweaks.Count)"
-                
-                # Debug: verificar quantos tweaks recomendados existem antes do filtro
-                $recommendedBeforeFilter = $allTweaks | Where-Object { $_.IsRecommended -eq $true }
-                Write-InstallLog "Tweaks recomendados antes do filtro: $($recommendedBeforeFilter.Count)" -Status "INFO"
-                
-                # Debug: verificar quantos tweaks recomendados existem depois do filtro
-                $recommendedAfterFilter = $availableTweaks | Where-Object { $_.IsRecommended -eq $true }
-                Write-InstallLog "Tweaks recomendados depois do filtro: $($recommendedAfterFilter.Count)" -Status "INFO"
-                
-                # Debug: listar os nomes dos tweaks recomendados
-                if ($recommendedAfterFilter.Count -gt 0) {
-                    $recommendedNames = $recommendedAfterFilter | ForEach-Object { $_.Name }
-                    Write-InstallLog "Tweaks recomendados encontrados: $($recommendedNames -join ', ')" -Status "INFO"
-                }
+                $availableTweaks = $allTweaks | Where-Object { ($_.Category -notcontains "Finalização") }
 
                 # Carregar categorias via Get-AvailableItems, evitando caminho direto
                 $tweaksCategories = Get-AvailableItems -ItemType "TweaksCategories"
@@ -208,7 +200,7 @@ function global:Get-DefaultDialogConfiguration {
                         $script:checkboxesCollection.Values | ForEach-Object { $_.Visibility = "Visible" }
                     })
 
-                    # Adicionar um separador visual
+                # Adicionar um separador visual
                 $separator = New-Object System.Windows.Controls.Border
                 $separator.Width = 1
                 $separator.Height = 20
@@ -334,22 +326,8 @@ function global:Get-DefaultDialogConfiguration {
                         $script:checkboxesCollection[$tweak.Name] = $checkBox
 
                         # Atualizar estado do botão Aplicar quando o usuário marcar/desmarcar
-                        $checkBox.Add_Checked({ 
-                                try {
-                                    & $script:updateApplyButtonState
-                                }
-                                catch {
-                                    Write-InstallLog "Erro ao atualizar estado do botão (Checked): $($_.Exception.Message)" -Status "AVISO"
-                                }
-                            })
-                        $checkBox.Add_Unchecked({ 
-                                try {
-                                    & $script:updateApplyButtonState
-                                }
-                                catch {
-                                    Write-InstallLog "Erro ao atualizar estado do botão (Unchecked): $($_.Exception.Message)" -Status "AVISO"
-                                }
-                            })
+                        $checkBox.Add_Checked({ & $script:updateApplyButtonState })
+                        $checkBox.Add_Unchecked({ & $script:updateApplyButtonState })
                     }
                 }
                 else {
@@ -357,13 +335,30 @@ function global:Get-DefaultDialogConfiguration {
                     Write-InstallLog "Nenhum tweak encontrado no arquivo JSON" -Status "AVISO"
                 }
 
-                $RestoreDefaultsButton.Add_Click({
-                        
-                    })
+                $script:RestoreDefaultsButton.Add_Click({
+                        try {
+                            if ($null -eq $global:ScriptContext.AppliedTweaks -or $global:ScriptContext.AppliedTweaks.Count -eq 0) {
+                                Show-MessageDialog -Title "Restaurar padrões" -Message "Não há tweaks aplicados para desfazer." -MessageType "Info" -Buttons "OK"
+                                return
+                            }
+                            $names = $global:ScriptContext.AppliedTweaks.Keys
+                            $list = ($names -join "`n")
+                            $confirm = Show-MessageDialog -Title "Restaurar padrões" -Message "Desfazer os $($names.Count) tweaks aplicados abaixo?`n`n$list" -MessageType "Question" -Buttons "YesNo"
+                            if ($confirm -ne "Yes") { return }
 
+                            Invoke-TweaksManager -Names $names -Mode "Undo"
+
+                            # Desmarcar itens correspondentes
+                            $script:checkboxesCollection.Values | ForEach-Object { if ($names -contains $_.Tag.Name) { $_.IsChecked = $false } }
+                            & $script:updateApplyButtonState
+                        }
+                        catch {
+                            Write-InstallLog "Erro ao desfazer tweaks: $($_.Exception.Message)" -Status "ERRO"
+                        }
+                    })
                 $RecommendedTweaksButton.Add_Click({
 
-                    $script:checkboxesCollection.Values | ForEach-Object {$_.IsChecked = $false}
+                        $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
                         $recommendedCount = 0
                         $markedCount = 0
                         
@@ -387,11 +382,9 @@ function global:Get-DefaultDialogConfiguration {
                         
                         $applyDialog = Show-MessageDialog -Title "Aplicar Tweaks" -Message "Deseja aplicar os $selectedCount tweaks selecionados?`n`n$selectedNames" -MessageType "Question" -Buttons "YesNo"
                         if ($applyDialog -eq "Yes") {
-                            Write-InstallLog "Função não implementada ainda"
-                            $script:checkboxesCollection.Values | ForEach-Object {
-                            $_.IsChecked = $false
-                        }
-                        & $script:updateApplyButtonState
+                            Invoke-TweaksManager -Tweaks $selectedTweaks -Mode "Apply" -SkipPowerActions
+                            $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
+                            & $script:updateApplyButtonState
                         }
                     })
 
@@ -588,7 +581,7 @@ function global:Get-DefaultDialogConfiguration {
                                 }
                             }
                             else {
-                                Invoke-ElevatedProcess -FunctionName "Update-AllProgramsModern" -ForceAsync
+                                Invoke-ElevatedProcess -FunctionName "Update-AllPrograms" -ForceAsync
                             }
                         })
                 }
@@ -830,7 +823,6 @@ function global:Get-DefaultDialogConfiguration {
                     try {
                         $finalizeTweaks = Get-AvailableItems -ItemType "Tweaks" | Where-Object { $_.Category -contains "Finalização" }
                         if ($finalizeTweaks.Count -gt 0) {
-                            Write-InstallLog "Populando interface com $($finalizeTweaks.Count) tweaks"
                             
                             # Criar checkboxes para cada tweak
                             foreach ($tweak in $finalizeTweaks) {
@@ -878,6 +870,25 @@ function global:Get-DefaultDialogConfiguration {
 
                 $finalizeOkButton.Add_Click({
                         param($sender, $e)
+                        # Aplicar tweaks de finalização selecionados (se houver)
+                        if ($script:checkboxesCollection -and $script:checkboxesCollection.Count -gt 0) {
+                                $finalizeSelected = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
+                                if ($finalizeSelected.Count -gt 0) {
+                                    $namesPreview = ($finalizeSelected | ForEach-Object { $_.Tag.Name }) -join "`n"
+                                    $confirmFinalize = Show-MessageDialog -Title "Finalização" -Message "Executar ações selecionadas e encerrar?`n`n$namesPreview" -MessageType "Question" -Buttons "YesNo"
+                                    if ($confirmFinalize -eq "Yes") {
+                                        # Log detalhado dos tweaks selecionados
+                                        $selectedNames = ($finalizeSelected | ForEach-Object { $_.Tag.Name }) -join ", "
+                                        Write-InstallLog "Aplicando $($finalizeSelected.Count) tweaks de finalização: $selectedNames"
+                                        Show-Notification -Title "Finalizando instalação" -Message "Aplicando configurações finais. Aguarde."
+                                        Invoke-TweaksManager -Tweaks $finalizeSelected -Mode "Apply"
+                                    }
+                                    else {
+                                        return
+                                    }
+                                }
+                            }
+
                         # Reobter janela e controles para evitar problemas de captura de variáveis
                         $wnd = [System.Windows.Window]::GetWindow($sender)
                         if (-not $wnd) { $wnd = $finalizeDialogWindow }

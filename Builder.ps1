@@ -138,20 +138,40 @@ $script_content.Add("")
 # Adicionar contexto global
 Update-Progress "Configurando contexto global..." 20
 $globalContext = @"
-`$global:ScriptContext = @{
-    ScriptVersion     = "$(if ($IncludeVersion) { Get-Date -Format "dd-MM-yyyy" } else { "compiled" })"
-    XamlWindows       = @{}
-    SystemInfo        = `$null
-    OemKey            = `$null
-    IsAdministrator   = `$false
-    MainWindow        = `$null
-    AvailablePrograms = @()
-    AvailableTweaks   = @()
-    AvoidSleep        = `$false
-    isWin11           = `$null
+if (-not `$global:ScriptContext) {
+    `$global:ScriptContext = @{
+        ScriptVersion       = "$(if ($IncludeVersion) { Get-Date -Format 'dd-MM-yyyy' } else { 'compiled' })"
+        XamlWindows         = @{}
+        SystemInfo          = `$null
+        OemKey              = `$null
+        IsAdministrator     = `$false
+        MainWindow          = `$null
+        AvailablePrograms   = @()
+        AvailableTweaks     = @()
+        AvoidSleep          = `$false
+        isWin11             = `$null
+        # Novos campos para dar suporte à importação segura em processo elevado
+        SkipEntryPoint      = `$false
+        IsCompiled          = `$true
+        CompiledScriptPath  = `$null
+    }
+} else {
+    # Não sobrescrever ScriptContext existente; garantir apenas chaves essenciais
+    if (-not `$global:ScriptContext.ContainsKey('IsCompiled')) { `$global:ScriptContext.IsCompiled = `$true } else { `$global:ScriptContext.IsCompiled = `$true }
+    if (-not `$global:ScriptContext.ContainsKey('CompiledScriptPath')) { `$global:ScriptContext.CompiledScriptPath = `$null }
+    if (-not `$global:ScriptContext.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.XamlWindows) { `$global:ScriptContext.XamlWindows = @{} }
+    # Não alterar SkipEntryPoint aqui para preservar valor definido externamente
 }
 "@
 $script_content.Add($globalContext)
+$script_content.Add("")
+
+# Inicializar CompiledScriptPath no próprio compilado (em runtime)
+$script_content.Add(@"
+if (-not `$global:ScriptContext.CompiledScriptPath) {
+    try { `$global:ScriptContext.CompiledScriptPath = `$MyInvocation.MyCommand.Path } catch {}
+}
+"@)
 
 # Carregar e adicionar todas as funções
 Update-Progress "Compilando funções..." 30
@@ -236,6 +256,8 @@ if ($xamlFiles.Count -gt 0) {
             
             # Adicionar ao mapeamento global
             $windowBaseName = $file.BaseName
+            $script_content.Add("if (-not `$global:ScriptContext) { `$global:ScriptContext = @{} }")
+            $script_content.Add("if (-not `$global:ScriptContext.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.XamlWindows) { `$global:ScriptContext.XamlWindows = @{} }")
             $script_content.Add("`$global:ScriptContext.XamlWindows['$windowBaseName'] = '$variableName'")
             
             Write-Host "[COMPILADO] Interface: $($file.Name) -> `$$variableName" -ForegroundColor Green
@@ -289,9 +311,13 @@ try {
     # Limpar linhas vazias excessivas
     $processedContent = $processedContent -replace '\n\s*\n\s*\n', "`n`n"
     
-    $script_content.Add("`n# === CODIGO PRINCIPAL ===")
+    $script_content.Add("`n# === ENTRADA PRINCIPAL ENCAPSULADA ===")
+    $script_content.Add("function Start-PostInstallMain {")
     $script_content.Add($processedContent)
-    
+    $script_content.Add("}")
+    $script_content.Add("")
+    # Guard de entrada: só executa o Main se não estivermos importando como biblioteca
+    $script_content.Add("if (-not `$global:ScriptContext.SkipEntryPoint) { Start-PostInstallMain }")
     Write-Host "[COMPILADO] Código principal integrado" -ForegroundColor Green
 }
 catch {

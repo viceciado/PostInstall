@@ -112,6 +112,9 @@ function global:Invoke-PowerShellFunction {
         [bool]$ForceAsync
     )
     
+    # Escolher host (pwsh se existir, senão powershell.exe)
+    $hostExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell.exe" }
+    
     # Se já é admin e não forçar async, executar diretamente
     if ($IsAdmin -and -not $ForceAsync) {
         Write-InstallLog "Executando $FunctionName diretamente (Admin: $IsAdmin)"
@@ -141,34 +144,71 @@ function global:Invoke-PowerShellFunction {
         Write-InstallLog "Executando $FunctionName com privilégios elevados"
     }
     
+    # Preparar caminhos locais para importação na sessão elevada
+    $compiledPathLocal = $null
+    try {
+        if ($global:ScriptContext -and $global:ScriptContext.CompiledScriptPath -and (Test-Path $global:ScriptContext.CompiledScriptPath)) {
+            $compiledPathLocal = $global:ScriptContext.CompiledScriptPath
+        }
+    } catch {}
+
+    # Diretório das funções (este arquivo reside em ...\Functions)
+    $functionsPathLocal = $PSScriptRoot
+
     # Construir comando PowerShell
     $commandParts = @()
     
-    # Adicionar importação do script se especificado
+    # 1) Garantir que, na sessão elevada, não executaremos o entrypoint ao importar
+    $commandParts += '$global:ScriptContext = if ($global:ScriptContext) { $global:ScriptContext } else { @{} }'
+    $commandParts += '$global:ScriptContext.SkipEntryPoint = $true'
+    
+    # 2) Importação de funções / script
     if ($ScriptPath -and (Test-Path $ScriptPath)) {
-        $commandParts += ". '$ScriptPath'"
+        $sp = $ScriptPath -replace "'", "''"
+        $commandParts += ". '$sp'"
+    }
+
+    if ($compiledPathLocal) {
+        $cp = $compiledPathLocal -replace "'", "''"
+        $commandParts += ". '$cp'"
+    }
+    else {
+        if ($functionsPathLocal -and (Test-Path $functionsPathLocal)) {
+            $fp = $functionsPathLocal -replace "'", "''"
+            # Usar string formatada para evitar expansão de $_ no momento da construção
+            $importLine = ("Get-ChildItem '{0}\\*.ps1' | Sort-Object Name | ForEach-Object {{ . $_.FullName }}" -f $fp)
+            $commandParts += $importLine
+        }
     }
     
-    # Adicionar importação de todas as funções do diretório atual
-    $functionsPath = Split-Path $PSScriptRoot -Parent
-    $functionsPath = Join-Path $functionsPath "Functions"
-    if (Test-Path $functionsPath) {
-        $commandParts += "Get-ChildItem '$functionsPath\*.ps1' | ForEach-Object { . `$_.FullName }"
-    }
-    
-    # Construir chamada da função
+    # 3) Construir chamada da função com parâmetros robustos
     $functionCall = $FunctionName
     if ($Parameters.Count -gt 0) {
         $paramString = ($Parameters.GetEnumerator() | ForEach-Object {
-            if ($_.Value -is [bool]) {
-                "-$($_.Key) `$$($_.Value.ToString().ToLower())"
-            } elseif ($_.Value -is [string]) {
-                "-$($_.Key) '$($_.Value)'"
-            } elseif ($_.Value -is [array]) {
-                $arrayString = ($_.Value | ForEach-Object { "'$_'" }) -join ","
-                "-$($_.Key) @($arrayString)"
+            $k = $_.Key
+            $v = $_.Value
+            if ($v -is [bool]) {
+                $boolLiteral = if ($v) { '$true' } else { '$false' }
+                "-$k $boolLiteral"
+            } elseif ($v -is [array]) {
+                $arrayString = ($v | ForEach-Object {
+                    if ($_ -is [string]) {
+                        $e = $_ -replace "'", "''"
+                        "'$e'"
+                    }
+                    elseif ($_ -is [bool]) {
+                        if ($_ ) { '$true' } else { '$false' }
+                    }
+                    else {
+                        "$_"
+                    }
+                }) -join ","
+                "-$k @($arrayString)"
+            } elseif ($v -is [string]) {
+                $escaped = $v -replace "'", "''"
+                "-$k '$escaped'"
             } else {
-                "-$($_.Key) $($_.Value)"
+                "-$k $v"
             }
         }) -join " "
         $functionCall += " $paramString"
@@ -183,7 +223,7 @@ function global:Invoke-PowerShellFunction {
         $elevatedCommand = "$fullCommand | Out-File -FilePath '$tempFile' -Encoding UTF8"
         
         $processArgs = @{
-            FilePath     = "powershell.exe"
+            FilePath     = $hostExe
             ArgumentList = "-NoProfile -ExecutionPolicy Bypass -Command `"$elevatedCommand`""
             Wait         = -not $ForceAsync
             PassThru     = $false
@@ -206,7 +246,7 @@ function global:Invoke-PowerShellFunction {
         }
     } else {
         $processArgs = @{
-            FilePath     = "powershell.exe"
+            FilePath     = $hostExe
             ArgumentList = "-NoProfile -ExecutionPolicy Bypass -Command `"$fullCommand`""
             Wait         = -not $ForceAsync
             PassThru     = $ForceAsync
@@ -253,7 +293,7 @@ function global:Invoke-ExternalProcess {
     }
     
     if (-not $IsAdmin -or $ForceAsync) {
-        $processArgs.Add("Verb", "RunAs")
+        # Neste caso, poderíamos adicionar Verb RunAs, mas como é genérico e pode ser usado sem elevação, mantemos simples
     }
     
     if ($PSCmdlet.ShouldProcess("'$FilePath $ArgumentList'", "Executar com privilégios elevados (se necessário)")) {

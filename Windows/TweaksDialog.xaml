@@ -276,7 +276,7 @@
                             Background="#107C10"/>
                     
                     <Button x:Name="RestoreDefaultsButton"
-                            Content="Restaurar padrões"
+                            Content="Desfazer alterações"
                             Style="{StaticResource ActionButtonStyle}"
                             Background="#2D2D30"
                             IsEnabled="False"/> 

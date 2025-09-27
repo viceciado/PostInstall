@@ -38,8 +38,8 @@
     ],
     "Tweaks": [
         {
-            "Name": "Apagar histórico de arquivos",
-            "Description": "Apaga o histórico de arquivos e pastas abertas pelo usuário atual",
+            "Name": "Apagar histórico e arquivos temporários",
+            "Description": "Apaga o histórico de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários.",
             "Category": [
                 "Recomendados",
                 "Finalização"
@@ -48,8 +48,17 @@
             "IsBoolean": false,
             "IsRecommended": true,
             "InvokeScript": [
+                "Get-Process msedge | Stop-Process -Force -ErrorAction SilentlyContinue",
+                "Remove-Item -Path \"$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\" -Recurse -Force",
                 "Get-ChildItem -Path \"$env:APPDATA\\Microsoft\\Windows\\Recent\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
-                "Remove-Item \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths\" -Confirm:$false -Recurse"
+                "Remove-Item \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths\" -Confirm:$false -Recurse",
+                "Remove-Item \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs\" -Confirm:$false -Recurse",
+                "Remove-Item \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU\" -Confirm:$false -Recurse",
+                "If (Test-Path \"$env:SystemDrive\\Windows.old\") { Remove-Item \"$env:SystemDrive\\Windows.old\" -Confirm:$false -Recurse }",
+                "Get-ChildItem -Path \"$env:windir\\Temp\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
+                "Get-ChildItem -Path \"$env:windir\\Prefetch\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
+                "Get-ChildItem -Path \"$env:TMP\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
+                "Start-Process -FilePath cleanmgr -ArgumentList '/sagerun'"
             ]
         },
         {
@@ -67,20 +76,6 @@
             ],
             "UndoScript": [
                 "Remove-Item -Path \"HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\" -Recurse -Confirm:$false -Force"
-            ]
-        },
-        {
-            "Name": "Apagar arquivos temporários",
-            "Description": "Apaga os arquivos temporários",
-            "Category": [
-                "Finalização"
-            ],
-            "Win11Only": false,
-            "IsBoolean": false,
-            "IsRecommended": true,
-            "InvokeScript": [
-                "Get-ChildItem -Path \"$env:windir\\Temp\" *.* | Remove-Item -Confirm:$false -Force -Recurse",
-                "Get-ChildItem -Path \"$env:TMP\" *.* | Remove-Item -Confirm:$false -Force -Recurse"
             ]
         },
         {
@@ -111,7 +106,7 @@
                 "Otimização",
                 "Recomendados"
             ],
-            "Win11Only": false,
+            "Win11Only": true,
             "IsBoolean": true,
             "RefreshRequired": true,
             "Registry": [
@@ -200,6 +195,229 @@
             ]
         },
         {
+            "Name": "Debloat do Edge",
+            "Description": "Remove componentes desnecessários do Microsoft Edge",
+            "Category": [
+                "Customização",
+                "Recomendados"
+            ],
+            "Win11Only": false,
+            "IsBoolean": true,
+            "RefreshRequired": false,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+                    "Name": "CreateDesktopShortcutDefault",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "ShowRecommendationsEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "HideFirstRunExperience",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "ConfigureDoNotTrack",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "EdgeCollectionsEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "EdgeFollowEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "MicrosoftEdgeInsiderPromotionEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "ShowMicrosoftRewards",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "DiagnosticData",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "SearchInSidebarEnabled",
+                    "Type": "DWord",
+                    "Value": "2",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "HubsSidebarEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "AllowGamesMenu",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "DefaultBrowserSettingsCampaignEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "Edge3PSerpTelemetryEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "PromotionalTabsEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "SearchbarAllowed",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "SearchbarIsEnabledOnStartup",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "ShowAcrobatSubscriptionButton",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "BingAdsSuppression",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "UserFeedbackAllowed",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "CopilotPageContextEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "CopilotPageContext",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "SpotlightExperiencesAndRecommendationsEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "StartupBoostEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "BackgroundModeEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "DefaultBrowserSettingEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "Microsoft365CopilotChatIconEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "NewTabPageQuickLinksEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                    "Name": "NewTabPageAllowedBackgroundTypes",
+                    "Type": "DWord",
+                    "Value": "3",
+                    "OriginalValue": "<RemoveEntry>"
+                },
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge\\ExtensionInstallForcelist",
+                    "Name": "1",
+                    "Type": "REG_SZ",
+                    "Value": "odfafepnkmbhccpbejgmiehpchacaeak",
+                    "OriginalValue": "<RemoveEntry>"
+                }
+            ]
+        },
+        {
             "Name": "Desativar o Fast Startup",
             "Description": "Desativa o modo de inicialização rápida/hibernação ao desligar o computador",
             "Category": [
@@ -282,7 +500,7 @@
         {
             "Name": "Restaurar menu de opções de recuperação com F8",
             "Description": "Reativa o menu de opções de boot ao iniciar o sistema pressionando F8.",
-            "Category": [ 
+            "Category": [
                 "Técnico"
             ],
             "Win11Only": false,
@@ -373,7 +591,7 @@
             "IsBoolean": false,
             "IsRecommended": true,
             "InvokeScript": [
-                "Stop-Computer -Force"
+                "shutdown /s /t 60"
             ]
         },
         {
@@ -386,7 +604,7 @@
             "RefreshRequired": false,
             "IsBoolean": false,
             "InvokeScript": [
-                "Restart-Computer -Force"
+                "shutdown /r /t 60"
             ]
         }
     ]
