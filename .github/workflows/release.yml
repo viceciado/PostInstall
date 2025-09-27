@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # necessário para manipular tags
+
+      - name: Build (compile PostInstall.ps1)
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+          ./Builder.ps1
+
+      - name: Verificar artefato
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -Path "./PostInstall.ps1")) {
+            throw "Arquivo compilado 'PostInstall.ps1' não encontrado após a compilação."
+          }
+
+      - name: Extrair versão do PostInstall.ps1
+        id: version
+        shell: pwsh
+        run: |
+          $content = Get-Content -Raw ./PostInstall.ps1
+          if ($content -match 'ScriptVersion\s*=\s*"([^"]+)"') {
+            $version = $matches[1]
+            "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "Versão detectada: $version"
+          } else {
+            throw "Não foi possível encontrar 'ScriptVersion = ""...""' em PostInstall.ps1"
+          }
+
+      - name: Criar tag se não existir
+        shell: pwsh
+        run: |
+          $tag = "v${{ steps.version.outputs.version }}"
+          git fetch --tags
+          $exists = (git tag --list $tag)
+          if (-not $exists) {
+            git config user.email "actions@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git tag $tag
+            git push origin $tag
+            Write-Host "Tag criada: $tag"
+          } else {
+            Write-Host "Tag já existe: $tag"
+          }
+
+      - name: Gerar ZIP (opcional)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ./PostInstall.ps1 -DestinationPath "./PostInstall_${{ steps.version.outputs.version }}.zip" -Force
+
+      - name: Publicar Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            PostInstall.ps1
+            PostInstall_${{ steps.version.outputs.version }}.zip
