@@ -36,113 +36,110 @@ function global:Get-AvailableItems {
     )
     
     try {
-        # Definir caminho padrão se não especificado
+        # Se estiver compilado e nenhum caminho explícito foi informado, use os dados embutidos
+        if (-not $JsonPath -and $global:ScriptContext -and $global:ScriptContext.IsCompiled) {
+            switch ($ItemType) {
+                "Programs" {
+                    if ($script:compiledPrograms) {
+                        if ($script:compiledPrograms.PSObject.Properties.Name -contains 'programs') {
+                            return $script:compiledPrograms.programs
+                        }
+                        else {
+                            return $script:compiledPrograms
+                        }
+                    }
+                }
+                "Tweaks" {
+                    if ($script:compiledTweaks) {
+                        if ($script:compiledTweaks.PSObject.Properties.Name -contains 'Tweaks') {
+                            return $script:compiledTweaks.Tweaks
+                        }
+                        else {
+                            return $script:compiledTweaks
+                        }
+                    }
+                }
+                "TweaksCategories" {
+                    if ($script:compiledTweaks) {
+                        if ($script:compiledTweaks.PSObject.Properties.Name -contains 'TweaksCategories') {
+                            return $script:compiledTweaks.TweaksCategories
+                        }
+                        elseif ($script:compiledTweaks.PSObject.Properties.Name -contains 'Tweaks') {
+                            $names = $script:compiledTweaks.Tweaks |
+                                ForEach-Object { $_.Category } |
+                                Where-Object { $_ } |
+                                ForEach-Object { $_ } |
+                                Select-Object -Unique |
+                                Sort-Object
+                            return ($names | ForEach-Object { [PSCustomObject]@{ Name = $_; Description = $null; Icon = $null; Color = $null; IsRecommended = $false } })
+                        }
+                    }
+                }
+            }
+            # Se caiu aqui, segue fluxo para tentar arquivo (fallback)
+        }
+
+        # Modo não compilado ou com JsonPath explícito: resolver caminho do JSON
         if (-not $JsonPath) {
-            $scriptRoot = Split-Path -Parent $PSScriptRoot
+            # $PSScriptRoot aponta para a pasta onde este arquivo está.
+            # Se estivermos em Functions, subir um nível para chegar na raiz do projeto.
+            $scriptRoot = $PSScriptRoot
+            if ((Split-Path -Leaf $scriptRoot) -eq "Functions") {
+                $scriptRoot = Split-Path -Parent $scriptRoot
+            }
+
             if ($ItemType -eq "Programs") {
                 $JsonPath = Join-Path $scriptRoot "Data\AvailablePrograms.json"
             } else {
                 $JsonPath = Join-Path $scriptRoot "Data\AvailableTweaks.json"
             }
         }
-        
-        # Verificar se o arquivo existe
-        if (-not (Test-Path $JsonPath)) {
-            Write-InstallLog "Arquivo de $ItemType não encontrado: $JsonPath" -Status "ERRO"
-            return @()
-        }
-        
-        # Carregar e converter o JSON
-        $jsonContent = Get-Content -Path $JsonPath -Raw -Encoding UTF8
-        $jsonData = $jsonContent | ConvertFrom-Json
-        
-        # Validar estrutura do JSON baseada no tipo
-        $itemsArray = $null
-        if ($ItemType -eq "Programs") {
-            if (-not $jsonData.programs) {
-                Write-InstallLog "Estrutura inválida no arquivo JSON: propriedade 'programs' não encontrada" -Status "ERRO"
-                return @()
-            }
-            $itemsArray = $jsonData.programs
-        }
-        elseif ($ItemType -eq "TweaksCategories") {
-            if (-not $jsonData.TweaksCategories) {
-                Write-InstallLog "Estrutura inválida no arquivo JSON: propriedade 'TweaksCategories' não encontrada" -Status "ERRO"
-                return @()
-            }
-            $itemsArray = $jsonData.TweaksCategories
-        }
-        else {
-            if (-not $jsonData.Tweaks) {
-                Write-InstallLog "Estrutura inválida no arquivo JSON: propriedade 'Tweaks' não encontrada" -Status "ERRO"
-                return @()
-            }
-            $itemsArray = $jsonData.Tweaks
-        }
-        
-        # Processar cada item baseado no tipo
-        $validItems = @()
-        foreach ($item in $itemsArray) {
-            if ($ItemType -eq "Programs") {
-                # Validar programa
-                if ($item.name -and $item.programId) {
-                    $validItems += [PSCustomObject]@{
-                        Name = $item.name
-                        ProgramId = $item.programId
-                        Category = if ($item.category) { $item.category } else { "Geral" }
-                        Description = if ($item.description) { $item.description } else { "" }
-                        Recommended = if ($null -ne $item.recommended) { $item.recommended } else { $false }
-                    }
-                }
-                else {
-                    Write-InstallLog "Programa inválido ignorado: faltam propriedades obrigatórias (name, programId)" -Status "AVISO"
-                }
-            }
-            elseif ($ItemType -eq "TweaksCategories") {
-                if ($item.Name) {
-                    $validItems += [PSCustomObject]@{
-                        Name          = [string]$item.Name
-                        Description   = if ($item.Description) { [string]$item.Description } else { "" }
-                        Icon          = if ($item.Icon) { [string]$item.Icon } else { "" }
-                        Color         = if ($item.Color) { [string]$item.Color } else { "White" }
-                        IsRecommended = if ($null -ne $item.IsRecommended) { [bool]$item.IsRecommended } else { $false }
-                    }
-                }
-                else {
-                    Write-InstallLog "Categoria de tweak inválida ignorada: falta propriedade obrigatória (Name)" -Status "AVISO"
-                }
-            }
-            else {
-                # Validar tweak
-                if ($item.Name) {
-                    # Garantir tipos corretos e valores padrão limpos
-                    $cat = @("Geral")
-                    if ($null -ne $item.Category) {
-                        if ($item.Category -is [System.Array]) { $cat = @($item.Category) } else { $cat = @($item.Category) }
-                    }
-                    $reg = if ($null -ne $item.Registry) { @($item.Registry) } else { @() }
-                    $invokeScript = if ($null -ne $item.InvokeScript) { @($item.InvokeScript) } else { @() }
-                    $undoScriptArr = if ($null -ne $item.UndoScript) { @($item.UndoScript) } else { @() }
 
-                    $validItems += [PSCustomObject]@{
-                        Name            = [string]$item.Name
-                        Description     = if ($item.Description) { [string]$item.Description } else { "" }
-                        Category        = $cat
-                        Win11Only       = [bool]($item.Win11Only)
-                        IsBoolean       = [bool]($item.IsBoolean)
-                        RefreshRequired = [bool]($item.RefreshRequired)
-                        IsRecommended   = if ($null -ne $item.IsRecommended) { [bool]$item.IsRecommended } else { $false }
-                        Registry        = $reg
-                        InvokeScript    = $invokeScript
-                        UndoScript      = $undoScriptArr
-                    }
+        # Leitura via arquivo (fallback ou quando explicitamente pedido)
+        if (-not (Test-Path -LiteralPath $JsonPath)) {
+            throw "Arquivo JSON não encontrado: $JsonPath"
+        }
+
+        $json = Get-Content -LiteralPath $JsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+
+        switch ($ItemType) {
+            "Programs" {
+                if ($json.PSObject.Properties.Name -contains 'programs') {
+                    return $json.programs
+                }
+                else {
+                    return $json
+                }
+            }
+            "Tweaks" {
+                if ($json.PSObject.Properties.Name -contains 'Tweaks') {
+                    return $json.Tweaks
+                }
+                else {
+                    return $json
+                }
+            }
+            "TweaksCategories" {
+                if ($json.PSObject.Properties.Name -contains 'TweaksCategories') {
+                    return $json.TweaksCategories
+                }
+                elseif ($json.PSObject.Properties.Name -contains 'Tweaks') {
+                    $names = $json.Tweaks |
+                        ForEach-Object { $_.Category } |
+                        Where-Object { $_ } |
+                        ForEach-Object { $_ } |
+                        Select-Object -Unique |
+                        Sort-Object
+                    return ($names | ForEach-Object { [PSCustomObject]@{ Name = $_; Description = $null; Icon = $null; Color = $null; IsRecommended = $false } })
+                }
+                else {
+                    return @()
                 }
             }
         }
-        return $validItems
-        
-    } catch {
-        Write-InstallLog "Erro ao carregar $ItemType do JSON: $($_.Exception.Message)" -Status "ERRO"
+    }
+    catch {
+        Write-InstallLog "Erro ao carregar itens ($ItemType): $($_.Exception.Message)" -Status "ERRO"
         return @()
     }
 }

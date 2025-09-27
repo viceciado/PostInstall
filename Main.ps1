@@ -137,11 +137,8 @@ function Get-LoadedFunctions {
     }
 }
 
-Test-WindowsVersion
+# === INICIALIZAÇÃO DO SCRIPT ===
 
-# === SISTEMA DE CARREGAMENTO DINÂMICO DE XAML ===
-
-# Carregar arquivos XAML usando descoberta dinâmica
 try {
     # Obter caminho base do script
     $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -194,6 +191,8 @@ catch {
 try {
     # === INICIALIZAÇÃO DAS JANELAS PRINCIPAIS ===
     try {
+        Test-WindowsVersion
+        
         [xml]$splashScreenXamlParsed = $splashScreenXaml
         [xml]$mainWindowXamlParsed = $mainWindowXaml
     
