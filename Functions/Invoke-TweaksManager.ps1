@@ -232,7 +232,15 @@ function global:Set-Tweak {
             }
         }
 
-        if ($regAppliedAll -and $scriptAppliedAll) { return $true } else { return $false }
+        $success = $regAppliedAll -and $scriptAppliedAll
+        
+        # Só armazenar no AppliedTweaks se o tweak for reversível (IsBoolean: true)
+        if ($success -and $tweak.IsBoolean -eq $true) {
+            if ($null -eq $global:ScriptContext.AppliedTweaks) { $global:ScriptContext.AppliedTweaks = @{} }
+            $global:ScriptContext.AppliedTweaks[$Name] = (Get-Date)
+        }
+        
+        return $success
     }
     catch {
         Write-InstallLog "Falha ao aplicar tweak '$Name': $($_.Exception.Message)" -Status "ERRO"
@@ -319,7 +327,6 @@ function global:Invoke-TweaksManager {
             $result = Invoke-ElevatedProcess -FunctionName 'Set-Tweak' -Parameters @{ Name = $name; SkipPowerActions = [bool]$SkipPowerActions } -PassThru
             if ($result -match 'True') {
                 $successCount++
-                $global:ScriptContext.AppliedTweaks[$name] = (Get-Date)
             }
         } else {
             $result = Invoke-ElevatedProcess -FunctionName 'Undo-Tweak' -Parameters @{ Name = $name } -PassThru

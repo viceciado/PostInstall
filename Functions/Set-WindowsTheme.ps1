@@ -63,7 +63,7 @@ public class Win32 {
     }
 
     # Parte 2: Atualiza o wallpaper
-    $wallpapersPath = "$env:SystemRoot\Web\Wallpaper\Windows"
+    $wallpapersPath = "$env:windir\Web\Wallpaper\Windows"
 
     if ((Get-ChildItem -Path $wallpapersPath).Count -gt 0) {
         $wallpaperIndex = if (($global:ScriptContext.isWin11 -eq $true) -and ($Theme -eq "Escuro")) { 1 } else { 0 }
