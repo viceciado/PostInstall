@@ -175,8 +175,8 @@ function global:Invoke-PowerShellFunction {
     else {
         if ($functionsPathLocal -and (Test-Path $functionsPathLocal)) {
             $fp = $functionsPathLocal -replace "'", "''"
-            # Usar string formatada para evitar expansão de $_ no momento da construção
-            $importLine = ("Get-ChildItem '{0}\\*.ps1' | Sort-Object Name | ForEach-Object {{ . $_.FullName }}" -f $fp)
+            # Corrigir o erro de dot-sourcing usando $_.FullName corretamente
+            $importLine = "Get-ChildItem '$fp\\*.ps1' | Sort-Object Name | ForEach-Object { . `$_.FullName }"
             $commandParts += $importLine
         }
     }
