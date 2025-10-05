@@ -5,15 +5,23 @@
     
     .DESCRIPTION
     Coleta informações sobre hardware, sistema operacional, BIOS, processador,
-    memória, discos e placas de vídeo do sistema atual
+    memória, discos e placas de vídeo do sistema atual. Sempre popula a variável
+    global $systemInfo, mas só escreve no log se for solicitado.
+    
+    .PARAMETER WriteToLog
+    Se especificado, escreve as informações do sistema no log
     
     .EXAMPLE
     $systemInfo = Get-SystemInfo
     Write-Host $systemInfo
     
     .EXAMPLE
-    $systemInfo = Get-SystemInfo
+    $systemInfo = Get-SystemInfo -WriteToLog
     #>
+    
+    param(
+        [switch]$WriteToLog
+    )
     
     try { 
         
@@ -42,12 +50,13 @@
             $bootType = "Legacy"
         }
         catch {
-            Write-InstallLog "Erro ao verificar status do Secure Boot: $($_.Exception.Message)" -Status "AVISO"
             $bootType = "UEFI (status do Secure Boot indeterminado)"
         }
         
         # Construir string de informações do sistema
         $global:systemInfo = New-Object System.Text.StringBuilder
+        [void]$global:systemInfo.AppendLine("INFORMAÇÕES DO SISTEMA")
+        [void]$global:systemInfo.AppendLine("="*50)
         [void]$global:systemInfo.AppendLine("Máquina: $($computerSystem.ChassisSKUNumber) $($computerSystem.Manufacturer) $($computerSystem.Model)")
         [void]$global:systemInfo.AppendLine("Número de série / Service Tag: $($bios.SerialNumber)")
         [void]$global:systemInfo.AppendLine("Processador: $($processor.Name)")
@@ -56,7 +65,8 @@
         [void]$global:systemInfo.AppendLine("Build: $($win.DisplayVersion)")
         [void]$global:systemInfo.AppendLine("Tipo de Boot: $bootType")
         [void]$global:systemInfo.AppendLine("")
-        [void]$global:systemInfo.AppendLine("Discos:")
+        [void]$global:systemInfo.AppendLine("DISCOS:")
+        [void]$global:systemInfo.AppendLine("-"*20)
         
         # Adicionar informações dos discos
         $disks | ForEach-Object {
@@ -65,7 +75,8 @@
         }
         
         [void]$global:systemInfo.AppendLine("")
-        [void]$global:systemInfo.AppendLine("GPUs:")
+        [void]$global:systemInfo.AppendLine("GPUS:")
+        [void]$global:systemInfo.AppendLine("-"*20)
         
         # Adicionar informações das GPUs
         $gpus | ForEach-Object {
@@ -75,13 +86,17 @@
         }
         
         $result = $global:systemInfo.ToString()
-        Write-InstallLog "Informações do sistema coletadas com sucesso" -Status "SUCESSO"
+        
+        # Escrever no log apenas se solicitado
+        if ($WriteToLog) {
+            Write-SystemInfoToLog -SystemInfo $result
+        }
         
         return $result
     }
     catch {
         $errorMessage = "Erro ao coletar informações do sistema: $($_.Exception.Message)"
-        Write-InstallLog  $errorMessage -Status "ERRO"
+        Write-InstallLog $errorMessage -Status "ERRO"
         return "Erro na coleta de informações do sistema"
     }
 }

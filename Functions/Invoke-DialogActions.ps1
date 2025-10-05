@@ -93,18 +93,8 @@ function global:Get-DefaultDialogConfiguration {
 
                 if ($systemInfoTextBlock) {
                     # Usar a variável global correta onde as informações do sistema são armazenadas
-                    if ($global:ScriptContext.SystemInfo) {
-                        $systemInfoTextBlock.Text = $global:ScriptContext.SystemInfo
-                    }
-                    else {
-                        # Fallback: tentar coletar informações do sistema se não estiverem disponíveis
-                        try {
-                            $systemInfo = Get-SystemInfo
-                            $systemInfoTextBlock.Text = $systemInfo
-                        }
-                        catch {
-                            $systemInfoTextBlock.Text = "Erro ao carregar informações do sistema: $($_.Exception.Message)"
-                        }
+                    if ($global:SystemInfo) {
+                        $systemInfoTextBlock.Text = $global:SystemInfo
                     }
                 }
             }
@@ -356,6 +346,7 @@ function global:Get-DefaultDialogConfiguration {
                             Write-InstallLog "Erro ao desfazer tweaks: $($_.Exception.Message)" -Status "ERRO"
                         }
                     })
+                    
                 $RecommendedTweaksButton.Add_Click({
 
                         $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
@@ -963,6 +954,8 @@ function global:Get-DefaultDialogConfiguration {
                         catch {
                             Show-MessageDialog -Title "Informações do serviço" -Message "Erro ao salvar as informações do serviço no registro" -MessageType "Error"
                         }
+
+                        Set-PersistExec -Stop
 
                         $wnd.Close()
                         $xamlWindow.Close()

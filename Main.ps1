@@ -7,7 +7,6 @@ Add-Type -AssemblyName System.Management
 $global:ScriptContext = @{
     ScriptVersion     = "pre-build"
     XamlWindows       = @{}
-    SystemInfo        = $null
     OemKey            = $null
     IsAdministrator   = $false
     MainWindow        = $null
@@ -74,84 +73,57 @@ try {
     $functionsPath = Join-Path -Path $PSScriptRoot -ChildPath "Functions"
     
     if (Test-Path -Path $functionsPath) {
-         $functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File
-         
-         Write-Host "[INFO] Descobrindo funções na pasta: $functionsPath" -ForegroundColor Cyan
-         Write-Host "[INFO] Encontrados $($functionFiles.Count) arquivo(s) de função" -ForegroundColor Cyan
-         
-         $loadedFunctions = @()
-         $failedFunctions = @()
-         
-         foreach ($file in $functionFiles) {
-             $success = Import-FunctionFile -FunctionFileName $file.Name -FunctionsPath $PSScriptRoot
-             
-             if ($success) {
-                 $loadedFunctions += $file.BaseName
-             }
-             else {
-                 $failedFunctions += $file.BaseName
-             }
-         }
-         
-         Write-Host "[SUCESSO] Sistema de carregamento dinâmico de funções inicializado" -ForegroundColor Green
-         Write-Host "[INFO] Funções carregadas: $($loadedFunctions -join ', ')" -ForegroundColor Cyan
-         
-         if ($failedFunctions.Count -gt 0) {
-             Write-Host "[AVISO] Funções com falha: $($failedFunctions -join ', ')" -ForegroundColor Yellow
-         }
-
-         Write-InstallLog "Sistema de funções carregado com sucesso" -Status "SUCESSO"
-     }
-     else {
-         Write-Host "[AVISO] Pasta Functions não encontrada: $functionsPath" -ForegroundColor Yellow
-     }
- }
- catch {
-     Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
-     exit 1
- }
-
-# Função para listar funções carregadas
-function Get-LoadedFunctions {
-    <#
-    .SYNOPSIS
-    Lista todas as funções disponíveis no sistema
-    
-    .DESCRIPTION
-    Retorna uma lista de todas as funções que foram descobertas e carregadas automaticamente
-    da pasta Functions
-    
-    .EXAMPLE
-    Get-LoadedFunctions
-    #>
-    
-    $functionsPath = Join-Path -Path $PSScriptRoot -ChildPath "Functions"
-    
-    if (Test-Path -Path $functionsPath) {
         $functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File
-        return $functionFiles | ForEach-Object { $_.BaseName } | Sort-Object
+         
+        Write-Host "[INFO] Descobrindo funções na pasta: $functionsPath" -ForegroundColor Cyan
+        Write-Host "[INFO] Encontrados $($functionFiles.Count) arquivo(s) de função" -ForegroundColor Cyan
+         
+        $loadedFunctions = @()
+        $failedFunctions = @()
+         
+        foreach ($file in $functionFiles) {
+            $success = Import-FunctionFile -FunctionFileName $file.Name -FunctionsPath $PSScriptRoot
+             
+            if ($success) {
+                $loadedFunctions += $file.BaseName
+            }
+            else {
+                $failedFunctions += $file.BaseName
+            }
+        }
+         
+        Write-Host "[SUCESSO] Sistema de carregamento dinâmico de funções inicializado" -ForegroundColor Green
+        Write-Host "[INFO] Funções carregadas: $($loadedFunctions -join ', ')" -ForegroundColor Cyan
+         
+        if ($failedFunctions.Count -gt 0) {
+            Write-Host "[AVISO] Funções com falha: $($failedFunctions -join ', ')" -ForegroundColor Yellow
+        }
+
+        Write-Host "Sistema de funções carregado com sucesso"
     }
     else {
-        Write-Warning "Pasta Functions não encontrada"
-        return @()
+        Write-Host "[AVISO] Pasta Functions não encontrada: $functionsPath" -ForegroundColor Yellow
     }
 }
+catch {
+    Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
 
-# === INICIALIZAÇÃO DO SCRIPT ===
+# === INICIALIZAÇÃO DO SCRIPT DOT-SOURCING ===
 
 try {
     # Obter caminho base do script
     $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
     $windowsPath = Join-Path $scriptPath "Windows"
-    
-    # Descobrir automaticamente todos os arquivos XAML na pasta Windows
+
     $xamlFiles = Get-ChildItem -Path $windowsPath -Filter "*.xaml" -File
     
     if ($xamlFiles.Count -eq 0) {
         throw "Nenhum arquivo XAML encontrado na pasta Windows"
     }
     
-    Write-InstallLog "Descobertos $($xamlFiles.Count) arquivos XAML na pasta Windows" 
+    Write-Host "Descobertos $($xamlFiles.Count) arquivos XAML na pasta Windows" 
     
     # Carregar cada arquivo XAML dinamicamente
     foreach ($file in $xamlFiles) {
@@ -161,18 +133,18 @@ try {
         try {
             $content = Get-XamlContent -XamlFileName $fileName -WindowsPath $windowsPath
             Set-Variable -Name $variableName -Value $content -Scope Script
-            Write-InstallLog "Variável '$variableName' definida para '$fileName'" -Status "SUCESSO"
+            Write-Host "Variável '$variableName' definida para '$fileName'" -Status "SUCESSO"
         }
         catch {
-            Write-InstallLog "Falha ao carregar '$fileName': $($_.Exception.Message)" -Status "ERRO"
+            Write-Host "Falha ao carregar '$fileName': $($_.Exception.Message)" -Status "ERRO"
             # Continuar com outros arquivos mesmo se um falhar
         }
     }
     
     # Listar todas as variáveis XAML carregadas
     $loadedVariables = $xamlFiles | ForEach-Object { Get-VariableNameFromFile -FileName $_.Name }
-    Write-InstallLog "Variáveis XAML disponíveis: $($loadedVariables -join ', ')" 
-    Write-InstallLog "Sistema de carregamento dinâmico de XAML inicializado com sucesso" -Status "SUCESSO"
+    Write-Host "Variáveis XAML disponíveis: $($loadedVariables -join ', ')" 
+    Write-Host "Sistema de carregamento dinâmico de XAML inicializado com sucesso" -Status "SUCESSO"
     
     # Criar hashtable global para facilitar acesso às janelas
     foreach ($file in $xamlFiles) {
@@ -180,10 +152,10 @@ try {
         $global:ScriptContext.XamlWindows[$file.BaseName] = $variableName
     }
     
-    Write-InstallLog "Mapeamento de janelas criado: $($global:ScriptContext.XamlWindows.Keys -join ', ')" 
+    Write-Host "Mapeamento de janelas criado: $($global:ScriptContext.XamlWindows.Keys -join ', ')" 
 }
 catch {
-    Write-InstallLog "Falha crítica no carregamento de XAML: $($_.Exception.Message)" -Status "ERRO"
+    Write-Host "Falha crítica no carregamento de XAML: $($_.Exception.Message)" -Status "ERRO"
     Show-MessageDialog -Message "Erro ao carregar arquivos de interface. Verifique se os arquivos XAML estão presentes na pasta Windows.`n`nDetalhes: $($_.Exception.Message)" -Title "Erro Crítico" -MessageType "Error" 
     exit 1
 }
@@ -191,6 +163,22 @@ catch {
 try {
     # === INICIALIZAÇÃO DAS JANELAS PRINCIPAIS ===
     try {
+        # Configurar persistência e determinar se é primeira execução
+        $FirstRun = Set-PersistExec
+        
+        # Inicializar sistema de logging - LIMPA o log na primeira execução
+        Initialize-LogFile -IsFirstRun $FirstRun
+        
+        # Coletar informações do sistema IMEDIATAMENTE após inicializar o log
+        if ($FirstRun -eq $true) {
+            # Primeira execução: coletar e escrever no log
+            $global:systemInfo = Get-SystemInfo -WriteToLog
+        } else {
+            # Execuções subsequentes: apenas atualizar variável
+            $global:systemInfo = Get-SystemInfo
+            Write-InstallLog "Iniciando nova sessão"
+        }
+        
         Test-WindowsVersion
         
         [xml]$splashScreenXamlParsed = $splashScreenXaml
@@ -348,7 +336,8 @@ try {
                     Show-MessageDialog -Message "Execute o arquivo de instalação a partir da próxima tela.`n`nQuando a instalação terminar, clique para desmontar a imagem." -Title "Instalação do Office"
                     if (Test-Path -Path "$($mountImgLetter):\setup.exe") {
                         Start-Process -FilePath "explorer.exe" -ArgumentList ("/select,$($mountImgLetter):\setup.exe")
-                    } else {
+                    }
+                    else {
                         Start-Process "${mountImgLetter}:\"
                     }
                 })
@@ -479,8 +468,8 @@ try {
                                 
                                     try {
                                         $button.IsEnabled = $false
-                                        $icacArgs = """$folderPath"" /q /c /t /reset"
-                                        Invoke-ElevatedProcess -FilePath "icacls.exe" -ArgumentList $icacArgs -PassThru
+                                        $icacArgs = "$folderPath /q /c /t /reset"
+                                        Invoke-ElevatedProcess -FilePath "icacls.exe" -ArgumentList $icacArgs
                                     
                                         $button.Content = "Executado"
                                         $button.Background = "#28A745" # Verde para sucesso
@@ -699,8 +688,8 @@ try {
         }
     
         # Coletar informações do sistema (modular com auto-elevação)
-        if (-not $global:ScriptContext.SystemInfo) {
-            $global:ScriptContext.SystemInfo = Get-SystemInfo -AutoElevate $true
+        if (-not $global:systemInfo) {
+            $global:systemInfo = Get-SystemInfo
         }
     
         $SplashScreen.Close()

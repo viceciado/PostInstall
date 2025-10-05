@@ -1,7 +1,7 @@
 ﻿
 function Initialize-LogPath {
     # Definir caminhos
-    $global:PrimaryLogPath = "$env:SystemRoot\Setup\Scripts\Install.log"
+    $global:PrimaryLogPath = "$env:windir\Setup\Scripts\Install.log"
     $global:FallbackLogPath = "$env:APPDATA\Install.log"
     
     # Função para testar permissão de escrita sem criar arquivo
@@ -43,6 +43,59 @@ function Initialize-LogPath {
     }
 }
 
+function global:Initialize-LogFile {
+    <#
+    .SYNOPSIS
+    Inicializa o arquivo de log e retorna se é a primeira execução
+    
+    .DESCRIPTION
+    Verifica se o arquivo de log já existe. Se não existir, cria um novo arquivo
+    e retorna $true indicando que é a primeira execução. Se já existir, retorna $false.
+    
+    .PARAMETER IsFirstRun
+    Parâmetro que indica se é a primeira execução do script
+    
+    .OUTPUTS
+    Boolean - $true se é a primeira execução, $false caso contrário
+    #>
+    
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$IsFirstRun
+    )
+    
+    if (-not $global:LogPath) {
+        $global:LogPath = Initialize-LogPath
+    }
+    
+    if ($IsFirstRun) {
+        # Na primeira execução, recriar o arquivo de log completamente
+        $header = @"
+================================================================================
+                        LOG DE INSTALAÇÃO - POST INSTALL
+================================================================================
+Início da sessão: $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")
+================================================================================
+
+"@
+        $header | Out-File -FilePath $global:LogPath
+        Write-Host "Novo arquivo de log criado: $global:LogPath" -ForegroundColor Green
+    }
+    else {
+        # Adicionar separador para nova sessão
+        $separator = @"
+
+================================================================================
+Nova sessão iniciada: $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")
+================================================================================
+"@
+        $separator | Out-File -FilePath $global:LogPath -Append
+        Write-Host "Continuando log existente: $global:LogPath" -ForegroundColor Cyan
+    }
+    
+    return $IsFirstRun
+}
+
 # Inicializar caminho do log
 $global:LogPath = Initialize-LogPath
 
@@ -53,11 +106,17 @@ function global:Write-InstallLog {
 
         [Parameter(Mandatory = $false)]
         [string]$Status = "INFO",
-        [string]$Component = "Configuração Interativa"
+        [string]$Component = "Post Install"
     )
 
-    $timestamp = Get-Date -Format "dd-MM-yyyy HH:mm:ss"
-    $logMessage = "$timestamp [$Component] [$Status] $Message"
+    # Garantir que o log está inicializado
+    if (-not $global:LogPath) {
+        $global:LogPath = Initialize-LogPath
+    }
+
+    $timestamp = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
+    $logMessage = "$timestamp   [$Component] [$Status] $Message"
+    
     if ($global:LogPath) {
         $logMessage | Out-File -FilePath $global:LogPath -Append
     }
@@ -99,5 +158,30 @@ function global:Write-InstallLog {
             # Evitar recursão infinita ao tentar logar erro do próprio Write-InstallLog
             Write-Host "Não foi possível atualizar o status no footer: $($_.Exception.Message)" -ForegroundColor Red
         }
+    }
+}
+
+function global:Write-SystemInfoToLog {
+    <#
+    .SYNOPSIS
+    Escreve as informações do sistema diretamente no log
+    
+    .DESCRIPTION
+    Função auxiliar para escrever as informações do sistema no log
+    sem usar Write-InstallLog (para evitar formatação desnecessária)
+    
+    .PARAMETER SystemInfo
+    String contendo as informações do sistema
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SystemInfo
+    )
+    
+    if ($global:LogPath -and $SystemInfo) {
+        $SystemInfo | Out-File -FilePath $global:LogPath -Append
+        
+        # Adicionar separador após as informações do sistema
+        "`n" + "="*80 + "`n" | Out-File -FilePath $global:LogPath -Append
     }
 }
