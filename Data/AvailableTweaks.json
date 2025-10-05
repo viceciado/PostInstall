@@ -39,7 +39,7 @@
     "Tweaks": [
         {
             "Name": "Apagar histórico e arquivos temporários",
-            "Description": "Apaga o histórico do Edge, de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários.",
+            "Description": "Apaga o histórico do Edge, de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários",
             "Category": [
                 "Recomendados",
                 "Finalização"
@@ -62,6 +62,48 @@
             ]
         },
         {
+            "Name": "Apagar arquivos da instalação",
+            "Description": "Apaga os scripts e arquivos de instalação auxiliares criados pelo arquivo de resposta (unattend.xml)",
+            "Category": [
+                "Finalização"
+            ],
+            "Win11Only": false,
+            "IsBoolean": false,
+            "IsRecommended": true,
+            "InvokeScript": [
+                "Get-ChildItem -Path \"$env:windir\\Setup\\Scripts\" | Where-Object { $_.Name -notlike \"Install*\" } | Remove-Item -Confirm:$false -Force -Recurse"
+            ]
+        },
+        {
+            "Name": "Limpar pasta Downloads",
+            "Description": "Apaga o conteúdo da pasta Downloads do usuário atual",
+            "Category": [
+                "Recomendados",
+                "Finalização"
+            ],
+            "Win11Only": false,
+            "IsBoolean": false,
+            "IsRecommended": true,
+            "InvokeScript": [
+                "Get-ChildItem -Path \"$env:USERPROFILE\\Downloads\" *.* | Remove-Item -Confirm:$false -Force -Recurse"
+            ]
+        },
+        {
+            "Name": "Apagar atalhos na área de trabalho",
+            "Description": "Apaga os atalhos na área de trabalho do usuário atual",
+            "Category": [
+                "Recomendados",
+                "Finalização"
+            ],
+            "Win11Only": false,
+            "IsBoolean": false,
+            "IsRecommended": false,
+            "InvokeScript": [
+                "Get-ChildItem -Path \"$env:PUBLIC\\Desktop\" *.lnk | Remove-Item -Confirm:$false -Force -Recurse",
+                "Get-ChildItem -Path ([Environment]::GetFolderPath(\"Desktop\")) *.lnk | Remove-Item -Confirm:$false -Force -Recurse"
+            ]
+        },
+        {
             "Name": "Restaurar o menu de contexto clássico",
             "Description": "Restaurar o menu de contexto clássico do Windows, ideal para PCs fracos",
             "Category": [
@@ -76,6 +118,23 @@
             ],
             "UndoScript": [
                 "Remove-Item -Path \"HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\" -Recurse -Confirm:$false -Force"
+            ]
+        },
+        {
+            "Name": "Desativar timestamp de arquivos",
+            "Description": "Desativa o salvamento da informação de 'Último acesso' dos arquivos, evitando overhead do disco. Recomendado para HDDs",
+            "Category": [
+                "Otimização",
+                "Técnico"
+            ],
+            "Win11Only": false,
+            "IsBoolean": true,
+            "RefreshRequired": false,
+            "InvokeScript": [
+                "fsutil.exe behavior set disableLastAccess 1"
+            ],
+            "UndoScript": [
+                "fsutil.exe behavior set disableLastAccess 0"
             ]
         },
         {
@@ -99,11 +158,10 @@
             ]
         },
         {
-            "Name": "Esconder botão Notícias e Interesses",
-            "Description": "Esconde o menu Notícias e Interesses",
+            "Name": "Esconder botão Notícias (Widgets)",
+            "Description": "Esconde o menu Notícias da barra de tarefas",
             "Category": [
                 "Customização",
-                "Otimização",
                 "Recomendados"
             ],
             "Win11Only": true,
@@ -111,8 +169,15 @@
             "RefreshRequired": true,
             "Registry": [
                 {
-                    "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-                    "Name": "TaskbarSn",
+                    "Path": "HKLM:\\Software\\Microsoft\\PolicyManager\\default\\NewsAndInterests\\AllowNewsAndInterests",
+                    "Name": "value",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "1"
+                },
+                {
+                    "Path": "HKLM:\\Software\\Policies\\Microsoft\\Dsh",
+                    "Name": "AllowNewsAndInterests",
                     "Type": "DWord",
                     "Value": "0",
                     "OriginalValue": "1"
@@ -172,6 +237,52 @@
                     "Type": "DWord",
                     "Value": "1",
                     "OriginalValue": "2"
+                }
+            ]
+        },
+        {
+            "Name": "Alinhar a barra de tarefas à esquerda",
+            "Description": "Alinha a barra de tarefas do Windows à esquerda",
+            "Category": [
+                "Customização"
+            ],
+            "Win11Only": true,
+            "IsBoolean": true,
+            "RefreshRequired": false,
+            "Registry": [
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+                    "Name": "TaskbarAl",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "1"
+                }
+            ]
+        },
+        {
+            "Name": "Desativar botão do Copilot",
+            "Description": "Desativa o botão do Copilot na barra de tarefas",
+            "Category": [
+                "Customização",
+                "Recomendados"
+            ],
+            "Win11Only": true,
+            "IsBoolean": true,
+            "RefreshRequired": true,
+            "Registry": [
+                {
+                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+                    "Name": "TurnOffWindowsCopilot",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "0"
+                },
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+                    "Name": "TurnOffWindowsCopilot",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "0"
                 }
             ]
         },
