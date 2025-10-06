@@ -172,10 +172,10 @@ try {
         # Coletar informações do sistema IMEDIATAMENTE após inicializar o log
         if ($FirstRun -eq $true) {
             # Primeira execução: coletar e escrever no log
-            $global:systemInfo = Get-SystemInfo -WriteToLog
+            Get-SystemInfo -WriteToLog | Out-Null
         } else {
             # Execuções subsequentes: apenas atualizar variável
-            $global:systemInfo = Get-SystemInfo
+            Get-SystemInfo | Out-Null
             Write-InstallLog "Iniciando nova sessão"
         }
         
@@ -192,7 +192,6 @@ try {
     
         # Hooks básicos da MainWindow
         $dialogBorder = $xamlWindow.FindName("DialogBorder")
-        $scriptVersionTextBlock = $xamlWindow.FindName("ScriptVersionText")
         $closeButton = $xamlWindow.FindName("CloseButton")
     
         if ($dialogBorder) {
@@ -201,8 +200,6 @@ try {
                     if ($e.LeftButton -eq 'Pressed') { $xamlWindow.DragMove() }
                 })
         }
-    
-        if ($global:ScriptContext.ScriptVersion) { $scriptVersionTextBlock.Text = $($global:ScriptContext.ScriptVersion) }
     
         # Ações da MainWindow
         $avoidSleepButton = $xamlWindow.FindName("AvoidSleepButton")
@@ -641,6 +638,14 @@ try {
                 })
         }
 
+        $scriptVersionButton = $xamlWindow.FindName("ScriptVersionButton")
+        if ($scriptVersionButton) {
+            if ($global:ScriptContext.ScriptVersion) { $scriptVersionButton.Content = $($global:ScriptContext.ScriptVersion) }
+            $scriptVersionButton.Add_Click({
+                    Start-Process "https://github.com/viceciado/PostInstall/"
+                })
+        }
+
         $aboutButton = $xamlWindow.FindName("AboutButton")
         if ($aboutButton) {
             $aboutButton.Add_Click({ Invoke-XamlDialog -WindowName 'AboutDialog' })
@@ -688,8 +693,8 @@ try {
         }
     
         # Coletar informações do sistema (modular com auto-elevação)
-        if (-not $global:systemInfo) {
-            $global:systemInfo = Get-SystemInfo
+        if (-not $global:SystemInfoData) {
+            Get-SystemInfo -WriteToLog | Out-Null
         }
     
         $SplashScreen.Close()

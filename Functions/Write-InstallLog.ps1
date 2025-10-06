@@ -1,4 +1,4 @@
-﻿
+
 function Initialize-LogPath {
     # Definir caminhos
     $global:PrimaryLogPath = "$env:windir\Setup\Scripts\Install.log"
@@ -167,21 +167,69 @@ function global:Write-SystemInfoToLog {
     Escreve as informações do sistema diretamente no log
     
     .DESCRIPTION
-    Função auxiliar para escrever as informações do sistema no log
-    sem usar Write-InstallLog (para evitar formatação desnecessária)
+    Agora aceita um objeto de informações de sistema e o formata em texto para o log,
+    mantendo compatibilidade com string caso recebida.
     
+    .PARAMETER SystemInfoData
+    Objeto contendo as informações do sistema
+
     .PARAMETER SystemInfo
-    String contendo as informações do sistema
+    String contendo as informações do sistema (compatibilidade)
     #>
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
+        [object]$SystemInfoData,
+        [Parameter(Mandatory = $false)]
         [string]$SystemInfo
     )
     
-    if ($global:LogPath -and $SystemInfo) {
-        $SystemInfo | Out-File -FilePath $global:LogPath -Append
-        
-        # Adicionar separador após as informações do sistema
+    $textToWrite = $null
+
+    if ($SystemInfoData) {
+        # Renderizar objeto em texto amigável
+        $sb = New-Object System.Text.StringBuilder
+        [void]$sb.AppendLine("INFORMAÇÕES DO SISTEMA")
+        [void]$sb.AppendLine("="*50)
+        if ($SystemInfoData.Machine) {
+            [void]$sb.AppendLine("Máquina: $($SystemInfoData.Machine.ChassisSKUNumber) $($SystemInfoData.Machine.Manufacturer) $($SystemInfoData.Machine.Model)")
+        }
+        [void]$sb.AppendLine("Número de série / Service Tag: $($SystemInfoData.SerialNumber)")
+        if ($SystemInfoData.Processor) {
+            [void]$sb.AppendLine("Processador: $($SystemInfoData.Processor.Name)")
+        }
+        [void]$sb.AppendLine("Memória RAM: $($SystemInfoData.TotalMemoryGB) GB")
+        if ($SystemInfoData.OS) {
+            [void]$sb.AppendLine("$($SystemInfoData.OS.Caption) de $($SystemInfoData.OS.Architecture)")
+            [void]$sb.AppendLine("Build: $($SystemInfoData.OS.DisplayVersion)")
+        }
+        if ($SystemInfoData.Boot) {
+            [void]$sb.AppendLine("Tipo de Boot: $($SystemInfoData.Boot.Description)")
+        }
+        [void]$sb.AppendLine("")
+        [void]$sb.AppendLine("DISCOS:")
+        [void]$sb.AppendLine("-"*20)
+        if ($SystemInfoData.Disks) {
+            $SystemInfoData.Disks | ForEach-Object {
+                [void]$sb.AppendLine("Disco $($_.Index): $($_.Model) ($($_.SizeGB) GB)")
+            }
+        }
+        [void]$sb.AppendLine("")
+        [void]$sb.AppendLine("GPUS:")
+        [void]$sb.AppendLine("-"*20)
+        if ($SystemInfoData.GPUs) {
+            $SystemInfoData.GPUs | ForEach-Object {
+                $mem = if ($_.MemoryMB) { "$($_.MemoryMB) MB" } else { "Desconhecida" }
+                [void]$sb.AppendLine("GPU: $($_.Name) - Memória: $mem")
+            }
+        }
+        $textToWrite = $sb.ToString()
+    }
+    elseif ($SystemInfo) {
+        $textToWrite = $SystemInfo
+    }
+
+    if ($global:LogPath -and $textToWrite) {
+        $textToWrite | Out-File -FilePath $global:LogPath -Append
         "`n" + "="*80 + "`n" | Out-File -FilePath $global:LogPath -Append
     }
 }

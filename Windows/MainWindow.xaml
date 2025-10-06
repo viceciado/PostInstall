@@ -265,8 +265,8 @@
                         </Button.Template>
                     </Button>
 
-                    <TextBlock x:Name="ScriptVersionText" Style="{StaticResource FooterTextStyle}"
-                                HorizontalAlignment="Right" Grid.Column="1" Margin="10,0"/>
+                    <Button x:Name="ScriptVersionButton" Content="" Grid.Column="1"
+                                HorizontalAlignment="Right" Margin="10,4" Style="{StaticResource FooterButtonStyle}"/>
 
                     <Button x:Name="AboutButton" Content="Sobre o sistema" Grid.Column="2"
                                 HorizontalAlignment="Right" Margin="0,4,15,4" Style="{StaticResource FooterButtonStyle}"/>

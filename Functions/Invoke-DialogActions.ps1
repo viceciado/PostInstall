@@ -1,4 +1,4 @@
-﻿function global:Invoke-XamlDialog {
+function global:Invoke-XamlDialog {
     <#
     .SYNOPSIS
     Configura e exibe qualquer diálogo XAML com configuração específica
@@ -84,18 +84,66 @@ function global:Get-DefaultDialogConfiguration {
                 param($aboutDialogWindow)
                 
                 # Configurar informações do sistema
-                $systemInfoTextBlock = $aboutDialogWindow.FindName("InfoTextBlock")
-                $titleText = $aboutDialogWindow.FindName("TitleText")
 
-                if ($titleText) {
-                    $titleText.Text = "Informações sobre o sistema"
-                }
+                $systemInfoPanel = $aboutDialogWindow.FindName("SystemInfoPanel")
+                $fallbackText = $aboutDialogWindow.FindName("FallbackText")
+                $machineSKUText = $aboutDialogWindow.FindName("MachineSKUText")
+                $manufacturerText = $aboutDialogWindow.FindName("ManufacturerText")
+                $modelText = $aboutDialogWindow.FindName("ModelText")
+                $serialText = $aboutDialogWindow.FindName("SerialText")
+                $copySerialButton = $aboutDialogWindow.FindName("CopySerialButton")
+                $processorText = $aboutDialogWindow.FindName("ProcessorText")
+                $osCaptionText = $aboutDialogWindow.FindName("OSCaptionText")
+                $osArchText = $aboutDialogWindow.FindName("OSArchText")
+                $osBuildText = $aboutDialogWindow.FindName("OSBuildText")
+                $memoryText = $aboutDialogWindow.FindName("MemoryText")
+                $bootTypeText = $aboutDialogWindow.FindName("BootTypeText")
+                $disksText = $aboutDialogWindow.FindName("DisksText")
+                $gpusText = $aboutDialogWindow.FindName("GpusText")
 
-                if ($systemInfoTextBlock) {
-                    # Usar a variável global correta onde as informações do sistema são armazenadas
-                    if ($global:SystemInfo) {
-                        $systemInfoTextBlock.Text = $global:SystemInfo
+                if ($global:SystemInfoData) {
+                    if ($fallbackText) { $fallbackText.Visibility = "Collapsed" }
+
+                    if ($machineSKUText) { $machineSKUText.Text = if ($global:SystemInfoData.Machine -and $global:SystemInfoData.Machine.ChassisSKUNumber) { $global:SystemInfoData.Machine.ChassisSKUNumber } else { "-" } }
+                    if ($manufacturerText) { $manufacturerText.Text = if ($global:SystemInfoData.Machine -and $global:SystemInfoData.Machine.Manufacturer) { $global:SystemInfoData.Machine.Manufacturer } else { "-" } }
+                    if ($modelText) { $modelText.Text = if ($global:SystemInfoData.Machine -and $global:SystemInfoData.Machine.Model) { $global:SystemInfoData.Machine.Model } else { "-" } }
+
+                    if ($serialText) { $serialText.Text = if ($global:SystemInfoData.SerialNumber) { $global:SystemInfoData.SerialNumber } else { "-" } }
+                    if ($copySerialButton) {
+                        if ($global:SystemInfoData.SerialNumber) {
+                            $copySerialButton.Visibility = "Visible"
+                            # Evento de clique para copiar o número de série
+                            $copySerialButton.Add_Click({
+                                [System.Windows.Clipboard]::SetText($global:SystemInfoData.SerialNumber)
+                                Show-Notification -Title "Número de série copiado" -Message "Você pode usar essa informação para localizar os drivers da máquina."
+                            })
+                        }
+                        else {
+                            $copySerialButton.Visibility = "Collapsed"
+                        }
                     }
+                    if ($processorText) { $processorText.Text = if ($global:SystemInfoData.Processor -and $global:SystemInfoData.Processor.Name) { $global:SystemInfoData.Processor.Name } else { "-" } }
+
+                    if ($osCaptionText) { $osCaptionText.Text = if ($global:SystemInfoData.OS -and $global:SystemInfoData.OS.Caption) { $global:SystemInfoData.OS.Caption } else { "-" } }
+                    if ($osArchText) { $osArchText.Text = if ($global:SystemInfoData.OS -and $global:SystemInfoData.OS.Architecture) { $global:SystemInfoData.OS.Architecture } else { "-" } }
+                    if ($osBuildText) { $osBuildText.Text = if ($global:SystemInfoData.OS -and $global:SystemInfoData.OS.DisplayVersion) { $global:SystemInfoData.OS.DisplayVersion } else { "-" } }
+
+                    if ($memoryText) { $memoryText.Text = if ($global:SystemInfoData.TotalMemoryGB) { "{0} GB" -f $global:SystemInfoData.TotalMemoryGB } else { "-" } }
+                    if ($bootTypeText) { $bootTypeText.Text = if ($global:SystemInfoData.Boot -and $global:SystemInfoData.Boot.Description) { $global:SystemInfoData.Boot.Description } else { "-" } }
+
+                    if ($disksText) {
+                        if ($global:SystemInfoData.Disks -and $global:SystemInfoData.Disks.Count -gt 0) {
+                            $disksText.Text = ($global:SystemInfoData.Disks | ForEach-Object { "Disco {0}: {1} ({2} GB)" -f $_.Index, $_.Model, $_.SizeGB }) -join "`n"
+                        } else { $disksText.Text = "-" }
+                    }
+                    if ($gpusText) {
+                        if ($global:SystemInfoData.GPUs -and $global:SystemInfoData.GPUs.Count -gt 0) {
+                            $gpusText.Text = ($global:SystemInfoData.GPUs | ForEach-Object { "GPU: {0} - Memória: {1} MB" -f $_.Name, $_.MemoryMB }) -join "`n"
+                        } else { $gpusText.Text = "-" }
+                    }
+                }
+                else {
+                    if ($fallbackText) { $fallbackText.Visibility = "Visible" }
                 }
             }
         }

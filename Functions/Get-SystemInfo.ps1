@@ -6,17 +6,17 @@
     .DESCRIPTION
     Coleta informações sobre hardware, sistema operacional, BIOS, processador,
     memória, discos e placas de vídeo do sistema atual. Sempre popula a variável
-    global $systemInfo, mas só escreve no log se for solicitado.
+    global $global:SystemInfoData como PSCustomObject e pode escrever no log se for solicitado.
     
     .PARAMETER WriteToLog
     Se especificado, escreve as informações do sistema no log
     
     .EXAMPLE
-    $systemInfo = Get-SystemInfo
-    Write-Host $systemInfo
+    $info = Get-SystemInfo
+    $info | Format-List
     
     .EXAMPLE
-    $systemInfo = Get-SystemInfo -WriteToLog
+    $info = Get-SystemInfo -WriteToLog
     #>
     
     param(
@@ -53,43 +53,56 @@
             $bootType = "UEFI (status do Secure Boot indeterminado)"
         }
         
-        # Construir string de informações do sistema
-        $global:systemInfo = New-Object System.Text.StringBuilder
-        [void]$global:systemInfo.AppendLine("INFORMAÇÕES DO SISTEMA")
-        [void]$global:systemInfo.AppendLine("="*50)
-        [void]$global:systemInfo.AppendLine("Máquina: $($computerSystem.ChassisSKUNumber) $($computerSystem.Manufacturer) $($computerSystem.Model)")
-        [void]$global:systemInfo.AppendLine("Número de série / Service Tag: $($bios.SerialNumber)")
-        [void]$global:systemInfo.AppendLine("Processador: $($processor.Name)")
-        [void]$global:systemInfo.AppendLine("Memória RAM: $([math]::Round($computerSystem.TotalPhysicalMemory/1GB, 2)) GB")
-        [void]$global:systemInfo.AppendLine("$($os.Caption) de $($os.OSArchitecture)")
-        [void]$global:systemInfo.AppendLine("Build: $($win.DisplayVersion)")
-        [void]$global:systemInfo.AppendLine("Tipo de Boot: $bootType")
-        [void]$global:systemInfo.AppendLine("")
-        [void]$global:systemInfo.AppendLine("DISCOS:")
-        [void]$global:systemInfo.AppendLine("-"*20)
-        
-        # Adicionar informações dos discos
-        $disks | ForEach-Object {
-            $diskSize = [math]::Round($_.Size / 1GB, 2)
-            [void]$global:systemInfo.AppendLine("Disco $($_.Index): $($_.Model) ($diskSize GB)")
+        # Construir objeto estruturado de informações do sistema
+        $systemInfoObj = [pscustomobject]@{
+            Machine = [pscustomobject]@{
+                Manufacturer = $computerSystem.Manufacturer
+                Model = $computerSystem.Model
+                ChassisSKUNumber = $computerSystem.ChassisSKUNumber
+            }
+            SerialNumber = $bios.SerialNumber
+            Processor = [pscustomobject]@{
+                Name = $processor.Name
+                NumberOfCores = $processor.NumberOfCores
+                LogicalProcessors = $processor.NumberOfLogicalProcessors
+            }
+            TotalMemoryGB = [math]::Round($computerSystem.TotalPhysicalMemory/1GB, 2)
+            OS = [pscustomobject]@{
+                Caption = $os.Caption
+                Architecture = $os.OSArchitecture
+                DisplayVersion = $win.DisplayVersion
+                Version = $os.Version
+            }
+            Boot = [pscustomobject]@{
+                Type = if ($bootType -like 'Legacy*') { 'Legacy' } else { 'UEFI' }
+                SecureBootEnabled = if ($null -ne $secureBootStatus) { [bool]$secureBootStatus } else { $null }
+                Description = $bootType
+            }
+            Disks = @(
+                $disks | ForEach-Object {
+                    [pscustomobject]@{
+                        Index = $_.Index
+                        Model = $_.Model
+                        SizeGB = [math]::Round($_.Size / 1GB, 2)
+                    }
+                }
+            )
+            GPUs = @(
+                $gpus | ForEach-Object {
+                    [pscustomobject]@{
+                        Name = $_.Name
+                        MemoryMB = if ($_.AdapterRAM -gt 0) { [math]::Round($_.AdapterRAM / 1MB, 0) } else { $null }
+                    }
+                }
+            )
         }
         
-        [void]$global:systemInfo.AppendLine("")
-        [void]$global:systemInfo.AppendLine("GPUS:")
-        [void]$global:systemInfo.AppendLine("-"*20)
-        
-        # Adicionar informações das GPUs
-        $gpus | ForEach-Object {
-            $gpuMemory = if ($_.AdapterRAM -gt 0) { [math]::Round($_.AdapterRAM / 1MB, 0) } else { "Desconhecida" }
-            $gpuMemoryUnit = if ($_.AdapterRAM -gt 0) { "MB" } else { "" }
-            [void]$global:systemInfo.AppendLine("GPU: $($_.Name) - Memória: $gpuMemory $gpuMemoryUnit")
-        }
-        
-        $result = $global:systemInfo.ToString()
+        $global:SystemInfoData = $systemInfoObj
+        $result = $systemInfoObj
         
         # Escrever no log apenas se solicitado
         if ($WriteToLog) {
-            Write-SystemInfoToLog -SystemInfo $result
+            Write-SystemInfoToLog -SystemInfoData $result
         }
         
         return $result

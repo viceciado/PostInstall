@@ -1,6 +1,6 @@
 ﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sobre" Width="500" Height="Auto" SizeToContent="Height"
+        Title="" Width="500" Height="Auto" SizeToContent="Height"
         WindowStyle="None" WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False" ResizeMode="NoResize" Topmost="False"
         AllowsTransparency="True" Background="Transparent" Foreground="White" FontFamily="Futura">
@@ -109,16 +109,111 @@
             </Border>
             
             <!-- Conteúdo principal -->
-            <Grid Grid.Row="1" Margin="20">
+            <Grid Grid.Row="1" Margin="15">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                              HorizontalScrollBarVisibility="Disabled" 
-                              MaxHeight="400">
-                    <TextBlock x:Name="InfoTextBlock" 
-                               TextWrapping="Wrap" 
-                               LineHeight="20" 
-                               FontSize="12" 
-                               Foreground="LightGray" 
-                               VerticalAlignment="Stretch"/>
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalAlignment="Stretch">
+                    <StackPanel x:Name="SystemInfoPanel" Orientation="Vertical">
+                        <TextBlock x:Name="FallbackText" Text="Informações do sistema indisponíveis" Foreground="LightGray" FontSize="12" Visibility="Collapsed" Margin="0,0,0,10"/>
+
+                        <Border Width="30" Height="30" Background="#383838" CornerRadius="15" Margin="0,0,0,10" HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <TextBlock Text="Informações do sistema" 
+                                FontSize="14" 
+                                FontWeight="SemiBold"
+                                HorizontalAlignment="Center"/>
+
+                        <!-- Seção: Máquina -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                            <TextBlock Text="Máquina" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Chassis SKU" Grid.Row="0" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="MachineSKUText" Grid.Row="0" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Fabricante" Grid.Row="1" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="ManufacturerText" Grid.Row="1" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Modelo" Grid.Row="2" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="ModelText" Grid.Row="2" Grid.Column="1" Foreground="LightGray"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Seção: Identificação -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                            <TextBlock Text="Identificação" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Número de série" Grid.Row="0" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="SerialText" Grid.Row="0" Grid.Column="1" Foreground="LightGray"/>
+                                <Button x:Name="CopySerialButton" Grid.Row="0" Grid.Column="2" Width="25" Height="25" Background="#383838" BorderBrush="#444444" BorderThickness="1" ToolTip="Copiar número de série" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Visibility="Collapsed">
+                                    <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                                <TextBlock Text="Processador" Grid.Row="1" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="ProcessorText" Grid.Row="1" Grid.Column="1" Foreground="LightGray"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Seção: Sistema Operacional -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                            <TextBlock Text="Sistema operacional" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Edição" Grid.Row="0" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="OSCaptionText" Grid.Row="0" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Arquitetura" Grid.Row="1" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="OSArchText" Grid.Row="1" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Build" Grid.Row="2" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="OSBuildText" Grid.Row="2" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Memória RAM" Grid.Row="3" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="MemoryText" Grid.Row="3" Grid.Column="1" Foreground="LightGray"/>
+                                <TextBlock Text="Tipo de Boot" Grid.Row="4" Grid.Column="0" Foreground="LightGray"/>
+                                <TextBlock x:Name="BootTypeText" Grid.Row="4" Grid.Column="1" Foreground="LightGray"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Seção: Discos -->
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,10">
+                            <TextBlock Text="Discos" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                            <Border Background="#2E2E2E" BorderThickness="1" BorderBrush="#444444" Padding="8">
+                                 <TextBlock x:Name="DisksText" Foreground="#D4D4D4" TextWrapping="Wrap"/>
+                             </Border>
+                        </StackPanel>
+
+                        <!-- Seção: GPUs -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                            <TextBlock Text="GPUs" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                            <Border Background="#2E2E2E" BorderThickness="1" BorderBrush="#444444" Padding="8">
+                                 <TextBlock x:Name="GpusText" Foreground="#D4D4D4" TextWrapping="Wrap"/>
+                             </Border>
+                        </StackPanel>
+                    </StackPanel>
                 </ScrollViewer>
             </Grid>
         </Grid>
