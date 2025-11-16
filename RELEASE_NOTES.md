@@ -4,6 +4,8 @@
 
 ## v16-11-2025
 
+## v16-11-2025
+
 Melhoria da usabilidade da interface do usuário.
 - Adicionado um realce ao redor dos componentes visuais selecionados com o teclado.
 - Isso facilita a navegação e a seleção de opções.
