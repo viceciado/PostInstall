@@ -12,7 +12,7 @@ Script utilitário para auxiliar no processo de pós-instalação e configuraç�
 ## Visão geral
 
 - Pensado primariamente para ser usado em conjunto com um arquivo de reposta *unattend.xml*.
-- Pode ser executado de forma autônoma através do arquivo [**PostInstall.ps1**](https://github.com/viceciado/PostInstall/releases/latest) ou executando [**PI-Downloader.ps1**](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.ps1).
+- Pode ser executado de forma autônoma através do arquivo [**PostInstall.ps1**](https://github.com/viceciado/PostInstall/releases/latest) ou executando [**PI-Downloader.cmd**](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.cmd).
 
 <div align="center">
 
@@ -21,8 +21,8 @@ Script utilitário para auxiliar no processo de pós-instalação e configuraç�
 
 |Instalação automatizada (unattend.xml)|Execução manual|
 |-|-|
-|<p>Copie para dentro do seu arquivo de resposta o conteúdo do arquivo [PI-Downloader.ps1](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.ps1) e configure a execução para acontecer após o primeiro login de um usuário no sistema. <p>Dessa forma, o PI-Downloader baixará a última versão disponível do repositório e executará o script com privilégios de administrador. |Você pode baixar e executar o [PI-Downloader.ps1](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.ps1) ou baixar o arquivo [PostInstall.ps1](https://github.com/viceciado/PostInstall/releases/latest) disponível na aba de Releases e executá-lo diretamente.|
-|<p>Nesse cenário, nenhuma modificação extra é necessária, pois o arquivo de resposta já instrui o sistema a executar o script diretamente, sem a necessidade de alterar a política de execução de scripts, e com privilégios de administrador. <p>A execução é orquestrada pelo sistema. O script será inicializado automaticamente após o login. <p>Como o script foi executado pelo próprio sistema, a política de execução de scripts se mantém inalterada, evitando brechas de segurança.| Muito provavelmente será necessário alterar temporariamente a política de execução de scripts PowerShell para que o sistema permita a execução. <p> <br>Para isso, abra uma janela do PowerShell como administrador e execute `Set-ExecutionPolicy Bypass -Scope Process`, em seguida, execute o script baixado usando `./PostInstall.ps1`.
+|<p>Copie para dentro do seu arquivo de resposta o conteúdo do arquivo [PI-Downloader.ps1](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.ps1) e configure a execução para acontecer após o primeiro login de um usuário no sistema. <p>Dessa forma, o PI-Downloader baixará a última versão disponível do repositório e executará o script com privilégios de administrador. |Você pode baixar e executar o [PI-Downloader.cmd](https://github.com/viceciado/PostInstall/blob/main/PI-Downloader.cmd) ou baixar o arquivo [PostInstall.ps1](https://github.com/viceciado/PostInstall/releases/latest) disponível na aba de Releases e executá-lo diretamente.|
+|<p>Nesse cenário, nenhuma modificação extra é necessária, pois o arquivo de resposta já instrui o sistema a executar o script diretamente, sem a necessidade de alterar a política de execução de scripts, e com privilégios de administrador. <p>A execução é orquestrada pelo sistema. O script será inicializado automaticamente após o login. <p>Como o script foi executado pelo próprio sistema, a política de execução de scripts se mantém inalterada, evitando brechas de segurança.| Se você desejar usar o arquivo PI-Downloader.cmd, certifique-se de executá-lo como administrador. <p> Caso prefira baixar e executar diretamente o Post-Install.ps1, muito provavelmente será necessário alterar temporariamente a política de execução de scripts PowerShell para que o sistema permita a execução. <p> <br>Para isso, abra uma janela do PowerShell como administrador e execute `Set-ExecutionPolicy Bypass -Scope Process`, em seguida, execute o script baixado usando `./PostInstall.ps1`.
 
 > [!NOTE]
 > 
@@ -37,9 +37,9 @@ Script utilitário para auxiliar no processo de pós-instalação e configuraç�
 
 A resposta mais simples é: **tanto faz.**
 
-|PostInstall.ps1|PI-Downloader.ps1|
+|PostInstall.ps1|PI-Downloader.cmd|
 |-|-|
-|É o arquivo principal do projeto. Ele contém tudo o que o script precisa para funcionar, desde as janelas XAML até as funções auxiliares e as instruções contidas nos arquivos JSON. É esse arquivo que faz toda a mágica acontecer.|<p>Script auxiliar que facilita o download e a execução do **PostInstall** na máquina. <p>Se executado com permissões de administrador, baixa o arquivo `PostInstall.ps1` na pasta C:\Windows\Setup\Scripts e o executa com os parâmetros `-ExecutionPolicy Bypass -Scope Process` <p>Ao ser executado como usuário limitado, salva o arquivo `PostInstall.ps1` na pasta temporária.|
+|É o arquivo principal do projeto. Ele contém tudo o que o script precisa para funcionar, desde as janelas XAML até as funções auxiliares e as instruções contidas nos arquivos JSON. É esse arquivo que faz toda a mágica acontecer.|<p>Script auxiliar que facilita o download e a execução do **PostInstall** na máquina.|
 
 
 
@@ -297,10 +297,10 @@ Se o script conseguir localizar um número serial registrado no firmware, ele é
 .\PostInstall.ps1
 ```
 
-4. Caso queira baixar a última release disponível no repositório do GitHub, execute o arquivo **`PI-Downloader.ps1`**
+4. Caso queira baixar a última release disponível no repositório do GitHub, execute o arquivo **`PI-Downloader.cmd`**
 
 ```
-.\PI-Downloader.ps1
+.\PI-Downloader.cmd
 ```
 
 ## Agradecimentos
