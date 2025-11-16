@@ -670,7 +670,12 @@ try {
         }
     
         if ($closeButton) {
-            $closeButton.Add_Click({ $xamlWindow.Close() })
+            $closeButton.Add_Click({
+                $exitQuestion = Show-MessageDialog -Message "Deseja realmente fechar o script agora?`n`nIsso só fecha a janela, mas não encerra a configuração.`nSe você reiniciar o computador, essa janela aparecerá novamente.`n`nA forma correta de finalizar o script é por meio do botão Finalizar instalação na tela principal." -Title "Encerrar o Post-Install" -MessageType "Warning" -Buttons "YesNo"
+                if ($exitQuestion -eq "Yes") {
+                    $xamlWindow.Close()
+                }
+            })
         }
     }
     catch {
