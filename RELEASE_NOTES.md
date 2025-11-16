@@ -2,6 +2,32 @@
 
 ## vNEXT
 
+### Added
+- 
+
+### Changed
+- 
+
+### Fixed
+- 
+
+### Removed
+- 
+
+## v16-11-2025
+### Added
+- 
+
+### Changed
+- 
+
+### Fixed
+- 
+
+### Removed
+- 
+
+## v16-11-2025
 Nova janela de Release Notes. (essa daqui mesmo)
 - Uma nova janela é exibida com as notas de release do Post-Install. Ideal para saber quando uma nova atualização foi lançada e quais novidades trouxe.
 - A janela só é exibida uma única vez.
