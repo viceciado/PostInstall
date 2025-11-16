@@ -1,7 +1,12 @@
 name: Release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: "Notas da release (override de vNEXT)"
+        required: false
+        type: string
   push:
     branches:
       - main
@@ -66,13 +71,88 @@ jobs:
         run: |
           Compress-Archive -Path ./PostInstall.ps1 -DestinationPath "./PostInstall_${{ steps.version.outputs.version }}.zip" -Force
 
+      - name: Preparar Release Notes
+        shell: pwsh
+        run: |
+          $notesInput = "${{ github.event.inputs.notes }}"
+          if ($notesInput -and ($notesInput.Trim().Length -gt 0)) {
+            Set-Content -Path 'release_notes_extracted.md' -Value $notesInput
+          }
+          else {
+            $file = Join-Path $PWD 'RELEASE_NOTES.md'
+            if (-not (Test-Path $file)) { Set-Content -Path 'release_notes_extracted.md' -Value 'Sem notas disponíveis'; exit 0 }
+            $version = "v${{ steps.version.outputs.version }}"
+            $lines = Get-Content -Path $file
+            $start = ($lines | Select-String -Pattern '^##\s+vNEXT' -SimpleMatch).LineNumber
+            if (-not $start) { $start = ($lines | Select-String -Pattern "^##\s+$version" -SimpleMatch).LineNumber }
+            if (-not $start) { Set-Content -Path 'release_notes_extracted.md' -Value 'Sem notas disponíveis'; exit 0 }
+            $rest = $lines[$start..($lines.Length-1)]
+            $endIdx = ($rest | Select-String -Pattern '^##\s+' -SimpleMatch | Select-Object -Skip 1 | Select-Object -First 1).LineNumber
+            if ($endIdx) { $section = $rest[0..($endIdx-2)] } else { $section = $rest }
+            $content = ($section -join "`n").Trim()
+            if ([string]::IsNullOrWhiteSpace($content)) { $content = 'Sem notas disponíveis' }
+            Set-Content -Path 'release_notes_extracted.md' -Value $content
+          }
+
       - name: Publicar Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
+          body_path: release_notes_extracted.md
           draft: false
           prerelease: false
           files: |
             PostInstall.ps1
             PostInstall_${{ steps.version.outputs.version }}.zip
+
+      - name: Finalizar Release Notes (mover vNEXT para v${{ steps.version.outputs.version }})
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null) }}
+        shell: pwsh
+        run: |
+          $file = Join-Path $PWD 'RELEASE_NOTES.md'
+          if (-not (Test-Path $file)) { exit 0 }
+          $versionHeader = "## v${{ steps.version.outputs.version }}"
+          $lines = Get-Content -Path $file
+          $start = ($lines | Select-String -Pattern '^##\s+vNEXT' -SimpleMatch).LineNumber
+          if (-not $start) { exit 0 }
+          $rest = $lines[$start..($lines.Length-1)]
+          $nextHeaderRel = ($rest | Select-String -Pattern '^##\s+' -SimpleMatch | Select-Object -Skip 1 | Select-Object -First 1)
+          if ($nextHeaderRel) { $end = $start + $nextHeaderRel.LineNumber - 2 } else { $end = $lines.Length - 1 }
+          $before = if ($start -gt 2) { $lines[0..($start-2)] } else { @() }
+          $section = $lines[$start..$end]
+          $after = if ($end + 1 -le ($lines.Length - 1)) { $lines[($end+1)..($lines.Length-1)] } else { @() }
+          $section[0] = $versionHeader
+          $blank = @(
+            '## vNEXT',
+            '',
+            '### Added',
+            '- ',
+            '',
+            '### Changed',
+            '- ',
+            '',
+            '### Fixed',
+            '- ',
+            '',
+            '### Removed',
+            '- ',
+            ''
+          )
+          $newContent = $before + $blank + $section + $after
+          Set-Content -Path $file -Value $newContent
+
+      - name: Commit Release Notes atualizado
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null) }}
+        shell: pwsh
+        run: |
+          git config user.email "actions@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add RELEASE_NOTES.md
+          $changed = git status --porcelain | Select-String 'RELEASE_NOTES.md'
+          if ($changed) {
+            git commit -m "chore(release): finalize notes for v${{ steps.version.outputs.version }} [skip ci]"
+            git push
+          } else {
+            Write-Host "Nenhuma alteração em RELEASE_NOTES.md para commit"
+          }
