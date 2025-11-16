@@ -374,7 +374,6 @@ try {
         $TweaksButton = $xamlWindow.FindName("TweaksButton")
         if ($TweaksButton) {
             $TweaksButton.Add_Click({
-                    # Show-MessageDialog -Title "Recurso em desenvolvimento" -Message "Essa tela possui recursos ainda em desenvolvimento. Agradecemos a compreensão."
                     Invoke-XamlDialog -WindowName 'TweaksDialog'
                 })
         }
@@ -715,10 +714,10 @@ try {
                     $release = Invoke-RestMethod -Uri "https://api.github.com/repos/viceciado/PostInstall/releases/latest" -Headers $headers -Method Get -ErrorAction Stop
                     $notes = $release.body
                     if ([string]::IsNullOrWhiteSpace($notes)) { $notes = "Sem notas disponíveis" }
-                    Show-MessageDialog -Owner $xamlWindow -Title "Post-Install $($release.tag_name)" -Message $notes -MessageType "Info"
+                    Show-MessageDialog -Title "Post-Install $($release.tag_name)" -Message $notes -MessageType "Info"
                 }
                 catch {
-                    Show-MessageDialog -Owner $xamlWindow -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
+                    Show-MessageDialog -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
                 }
             })  
         }

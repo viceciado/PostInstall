@@ -97,6 +97,7 @@
         
         # Configurar título e mensagem
         if ($titleText) { $titleText.Text = $Title }
+        if (-not [string]::IsNullOrWhiteSpace($Title)) { $dialog.Title = $Title }
         if ($messageText) { $messageText.Text = $Message }
         
         # Configurar ícone baseado no tipo de mensagem
