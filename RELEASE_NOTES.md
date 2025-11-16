@@ -1,6 +1,9 @@
 # Release Notes
 
-## vNEXT
+Melhoria da usabilidade da interface do usuário.
+- Adicionado um realce ao redor dos componentes visuais selecionados com o teclado.
+- Isso facilita a navegação e a seleção de opções.
+
 Nova janela de Release Notes. (essa daqui mesmo)
 - Uma nova janela é exibida com as notas de release do Post-Install. Ideal para saber quando uma nova atualização foi lançada e quais novidades trouxe.
 - A janela só é exibida uma única vez.

@@ -224,6 +224,9 @@ function global:Get-DefaultDialogConfiguration {
                 # Adicionar o botão "Todos"
                 $allButton = New-Object System.Windows.Controls.Button
                 $allButton.Style = $filterButtonStyle
+                $allButton.FocusVisualStyle = $null
+                $allButton.BorderThickness = 0
+                $allButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
                 $iconTextAll = New-Object System.Windows.Controls.TextBlock
                 $iconTextAll.Text = [char]0xF0E2 # Ícone genérico para "Todos" (da fonte Segoe MDL2 Assets)
                 $iconTextAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
@@ -251,6 +254,9 @@ function global:Get-DefaultDialogConfiguration {
                 foreach ($category in $filteredCategories) {
                     $button = New-Object System.Windows.Controls.Button
                     $button.Style = $filterButtonStyle
+                    $button.FocusVisualStyle = $null
+                    $button.BorderThickness = 0
+                    $button.BorderBrush = [System.Windows.Media.Brushes]::Transparent
         
                     # Criar o TextBlock para o ícone (conversão inline da entidade)
                     $iconText = New-Object System.Windows.Controls.TextBlock
@@ -311,6 +317,9 @@ function global:Get-DefaultDialogConfiguration {
                 # Adicionar o botão "Marcar tudo"
                 $checkAllButton = New-Object System.Windows.Controls.Button
                 $checkAllButton.Style = $filterButtonStyle
+                $checkAllButton.FocusVisualStyle = $null
+                $checkAllButton.BorderThickness = 0
+                $checkAllButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
                 $iconTextCheckAll = New-Object System.Windows.Controls.TextBlock
                 $iconTextCheckAll.Text = [char]0xE9D5
                 $iconTextCheckAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
@@ -331,6 +340,9 @@ function global:Get-DefaultDialogConfiguration {
                 # Adicionar o botão "Limpar tudo"
                 $clearAllButton = New-Object System.Windows.Controls.Button
                 $clearAllButton.Style = $filterButtonStyle
+                $clearAllButton.FocusVisualStyle = $null
+                $clearAllButton.BorderThickness = 0
+                $clearAllButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
                 $iconTextClearAll = New-Object System.Windows.Controls.TextBlock
                 $iconTextClearAll.Text = [char]0xED62
                 $iconTextClearAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
