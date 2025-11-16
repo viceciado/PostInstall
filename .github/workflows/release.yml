@@ -95,6 +95,9 @@ jobs:
               $endIdxGlobal = $lines.Length - 1
             }
             $section = $lines[$startIdx..$endIdxGlobal]
+            if ($section.Length -gt 0 -and ($section[0] -match '^##\s+')) {
+              if ($section.Length -gt 1) { $section = $section[1..($section.Length-1)] } else { $section = @() }
+            }
             $content = ($section -join "`n").Trim()
             if ([string]::IsNullOrWhiteSpace($content)) { $content = 'Sem notas disponíveis' }
             Set-Content -Path 'release_notes_extracted.md' -Value $content
@@ -136,18 +139,6 @@ jobs:
           $section[0] = $versionHeader
           $blank = @(
             '## vNEXT',
-            '',
-            '### Added',
-            '- ',
-            '',
-            '### Changed',
-            '- ',
-            '',
-            '### Fixed',
-            '- ',
-            '',
-            '### Removed',
-            '- ',
             ''
           )
           $newContent = $before + $blank + $section + $after
