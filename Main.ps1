@@ -707,6 +707,21 @@ try {
         # Desativar a suspensão do computador
         Set-AvoidSleep -AvoidSleep $true -Silent $true
     
+        # Exibir mensagem de novidades após a janela principal ser renderizada
+        if ($FirstRun -eq $true) {
+            $xamlWindow.Add_ContentRendered({
+                try {
+                    $headers = @{ 'User-Agent' = 'viceciado-PostInstall'; 'Accept' = 'application/vnd.github+json' }
+                    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/viceciado/PostInstall/releases/latest" -Headers $headers -Method Get -ErrorAction Stop
+                    $notes = $release.body
+                    if ([string]::IsNullOrWhiteSpace($notes)) { $notes = "Sem notas disponíveis" }
+                    Show-MessageDialog -Owner $xamlWindow -Title "Post-Install $($release.tag_name)" -Message $notes -MessageType "Info"
+                }
+                catch {
+                    Show-MessageDialog -Owner $xamlWindow -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
+                }
+            })  
+        }
         # Exibir a MainWindow (bloqueante)
         $xamlWindow.ShowDialog() | Out-Null
     }
