@@ -83,11 +83,11 @@ jobs:
             if (-not (Test-Path $file)) { Set-Content -Path 'release_notes_extracted.md' -Value 'Sem notas disponíveis'; exit 0 }
             $version = "v${{ steps.version.outputs.version }}"
             $lines = Get-Content -Path $file
-            $start = ($lines | Select-String -Pattern '^##\s+vNEXT' -SimpleMatch).LineNumber
-            if (-not $start) { $start = ($lines | Select-String -Pattern "^##\s+$version" -SimpleMatch).LineNumber }
+            $start = ($lines | Select-String -Pattern '^##\s+vNEXT').LineNumber
+            if (-not $start) { $start = ($lines | Select-String -Pattern ("^##\s+" + [regex]::Escape($version))).LineNumber }
             if (-not $start) { Set-Content -Path 'release_notes_extracted.md' -Value 'Sem notas disponíveis'; exit 0 }
             $rest = $lines[$start..($lines.Length-1)]
-            $endIdx = ($rest | Select-String -Pattern '^##\s+' -SimpleMatch | Select-Object -Skip 1 | Select-Object -First 1).LineNumber
+            $endIdx = ($rest | Select-String -Pattern '^##\s+' | Select-Object -Skip 1 | Select-Object -First 1).LineNumber
             if ($endIdx) { $section = $rest[0..($endIdx-2)] } else { $section = $rest }
             $content = ($section -join "`n").Trim()
             if ([string]::IsNullOrWhiteSpace($content)) { $content = 'Sem notas disponíveis' }
@@ -114,10 +114,10 @@ jobs:
           if (-not (Test-Path $file)) { exit 0 }
           $versionHeader = "## v${{ steps.version.outputs.version }}"
           $lines = Get-Content -Path $file
-          $start = ($lines | Select-String -Pattern '^##\s+vNEXT' -SimpleMatch).LineNumber
+          $start = ($lines | Select-String -Pattern '^##\s+vNEXT').LineNumber
           if (-not $start) { exit 0 }
           $rest = $lines[$start..($lines.Length-1)]
-          $nextHeaderRel = ($rest | Select-String -Pattern '^##\s+' -SimpleMatch | Select-Object -Skip 1 | Select-Object -First 1)
+          $nextHeaderRel = ($rest | Select-String -Pattern '^##\s+' | Select-Object -Skip 1 | Select-Object -First 1)
           if ($nextHeaderRel) { $end = $start + $nextHeaderRel.LineNumber - 2 } else { $end = $lines.Length - 1 }
           $before = if ($start -gt 2) { $lines[0..($start-2)] } else { @() }
           $section = $lines[$start..$end]
