@@ -11,6 +11,8 @@ on:
     branches:
       - main
       - master
+    paths-ignore:
+      - RELEASE_NOTES.md
 
 permissions:
   contents: write
@@ -116,7 +118,7 @@ jobs:
             PostInstall_${{ steps.version.outputs.version }}.zip
 
       - name: Finalizar Release Notes (mover vNEXT para v${{ steps.version.outputs.version }})
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null) }}
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null)) }}
         shell: pwsh
         run: |
           $file = Join-Path $PWD 'RELEASE_NOTES.md'
@@ -145,7 +147,7 @@ jobs:
           Set-Content -Path $file -Value $newContent
 
       - name: Commit Release Notes atualizado
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null) }}
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.notes == '' || github.event.inputs.notes == null)) }}
         shell: pwsh
         run: |
           git config user.email "actions@users.noreply.github.com"
