@@ -108,6 +108,5 @@ start "" powershell -NoProfile -ExecutionPolicy Bypass -Command "powershell -Win
     echo                                     Essa janela pode ser fechada.
     echo                -----------------------------------------------------------------------
     echo.
-
-pause
+timeout /t 5 /nobreak >nul
 goto :eof
