@@ -1,36 +1,36 @@
 ﻿{
     "TweaksCategories": [
         {
-            "Name": "Recomendados",
+            "Name": "Recommended",
             "Description": "Tweaks essenciais e recomendados em uma instalação padrão.",
             "Icon": "&#xF78C;",
             "Color": "Green",
             "IsRecommended": true
         },
         {
-            "Name": "Finalização",
+            "Name": "Finalize",
             "Description": "Tweaks aplicáveis após todo o processo de instalação.",
             "Icon": "&#xE719;",
             "Color": "#993233",
             "IsRecommended": false
         },
         {
-            "Name": "Customização",
+            "Name": "Customization",
             "Description": "Tweaks de personalização do Windows.",
             "Icon": "&#xE2B1;",
             "Color": "#993233",
             "IsRecommended": true
         },
         {
-            "Name": "Otimização",
+            "Name": "Optimization",
             "Description": "Tweaks para computadores mais limitados.",
             "Icon": "&#xE945;",
             "Color": "#993233",
             "IsRecommended": true
         },
         {
-            "Name": "Técnico",
-            "Description": "Tweaks técnicos, recomendados apenas em cenários específicos.",
+            "Name": "Technician",
+            "Description": "Tweaks técnicos, apenas para cenários específicos.",
             "Icon": "&#xE83D;",
             "Color": "#993233",
             "IsRecommended": true
@@ -41,8 +41,8 @@
             "Name": "Apagar histórico e arquivos temporários",
             "Description": "Apaga o histórico do Edge, de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários",
             "Category": [
-                "Recomendados",
-                "Finalização"
+                "Recommended",
+                "Finalize"
             ],
             "Win11Only": false,
             "IsBoolean": false,
@@ -65,7 +65,7 @@
             "Name": "Apagar arquivos da instalação",
             "Description": "Apaga os scripts e arquivos de instalação auxiliares criados pelo arquivo de resposta (unattend.xml)",
             "Category": [
-                "Finalização"
+                "Finalize"
             ],
             "Win11Only": false,
             "IsBoolean": false,
@@ -78,8 +78,8 @@
             "Name": "Limpar pasta Downloads",
             "Description": "Apaga o conteúdo da pasta Downloads do usuário atual",
             "Category": [
-                "Recomendados",
-                "Finalização"
+                "Recommended",
+                "Finalize"
             ],
             "Win11Only": false,
             "IsBoolean": false,
@@ -92,8 +92,8 @@
             "Name": "Apagar atalhos na área de trabalho",
             "Description": "Apaga os atalhos na área de trabalho do usuário atual",
             "Category": [
-                "Recomendados",
-                "Finalização"
+                "Recommended",
+                "Finalize"
             ],
             "Win11Only": false,
             "IsBoolean": false,
@@ -107,8 +107,8 @@
             "Name": "Restaurar o menu de contexto clássico",
             "Description": "Restaurar o menu de contexto clássico do Windows, ideal para PCs fracos",
             "Category": [
-                "Customização",
-                "Otimização"
+                "Customization",
+                "Optimization"
             ],
             "Win11Only": true,
             "RefreshRequired": true,
@@ -124,8 +124,8 @@
             "Name": "Desativar timestamp de arquivos",
             "Description": "Desativa o salvamento da informação de 'Último acesso' dos arquivos, evitando overhead do disco. Recomendado para HDDs",
             "Category": [
-                "Otimização",
-                "Técnico"
+                "Optimization",
+                "Technician"
             ],
             "Win11Only": false,
             "IsBoolean": true,
@@ -141,8 +141,8 @@
             "Name": "Esconder botão Visão de Tarefas",
             "Description": "Esconde o botão Visão de Tarefas da barra de tarefas",
             "Category": [
-                "Customização",
-                "Recomendados"
+                "Customization",
+                "Recommended"
             ],
             "Win11Only": false,
             "IsBoolean": true,
@@ -161,8 +161,8 @@
             "Name": "Esconder botão Notícias (Widgets)",
             "Description": "Esconde o menu Notícias da barra de tarefas",
             "Category": [
-                "Customização",
-                "Recomendados"
+                "Customization",
+                "Recommended"
             ],
             "Win11Only": true,
             "IsBoolean": true,
@@ -188,8 +188,8 @@
             "Name": "Desativar Bing no Menu Iniciar",
             "Description": "Desativa sugestões de pesquisa do Bing no Menu Iniciar",
             "Category": [
-                "Otimização",
-                "Recomendados"
+                "Optimization",
+                "Recommended"
             ],
             "Win11Only": false,
             "IsBoolean": true,
@@ -207,7 +207,7 @@
             "Name": "Exibir mensagens de boot detalhadas",
             "Description": "Exibe mensagens detalhadas durante o boot ou desligamento do sistema",
             "Category": [
-                "Técnico"
+                "Technician"
             ],
             "Win11Only": false,
             "IsBoolean": true,
@@ -225,7 +225,7 @@
             "Name": "Mostrar arquivos ocultos",
             "Description": "Mostra arquivos ocultos no Explorador de Arquivos",
             "Category": [
-                "Técnico"
+                "Technician"
             ],
             "Win11Only": false,
             "RefreshRequired": true,
@@ -244,7 +244,7 @@
             "Name": "Alinhar a barra de tarefas à esquerda",
             "Description": "Alinha a barra de tarefas do Windows à esquerda",
             "Category": [
-                "Customização"
+                "Customization"
             ],
             "Win11Only": true,
             "IsBoolean": true,
@@ -263,8 +263,8 @@
             "Name": "Desativar botão do Copilot",
             "Description": "Desativa o botão do Copilot na barra de tarefas",
             "Category": [
-                "Customização",
-                "Recomendados"
+                "Customization",
+                "Recommended"
             ],
             "Win11Only": true,
             "IsBoolean": true,
@@ -290,7 +290,7 @@
             "Name": "Mostrar extensões de arquivos",
             "Description": "Mostra as extensões de arquivos no Explorador de Arquivos",
             "Category": [
-                "Customização"
+                "Customization"
             ],
             "Win11Only": false,
             "RefreshRequired": true,
@@ -309,8 +309,8 @@
             "Name": "Debloat do Edge",
             "Description": "Remove componentes desnecessários do Microsoft Edge",
             "Category": [
-                "Customização",
-                "Recomendados"
+                "Customization",
+                "Recommended"
             ],
             "Win11Only": false,
             "IsBoolean": true,
@@ -532,8 +532,8 @@
             "Name": "Desativar o Fast Startup",
             "Description": "Desativa o modo de inicialização rápida/hibernação ao desligar o computador",
             "Category": [
-                "Customização",
-                "Técnico"
+                "Customization",
+                "Technician"
             ],
             "Win11Only": false,
             "RefreshRequired": false,
@@ -552,8 +552,8 @@
             "Name": "Desativar efeitos de transparência",
             "Description": "Desativa os efeitos de transparência no Windows",
             "Category": [
-                "Customização",
-                "Otimização"
+                "Customization",
+                "Optimization"
             ],
             "Win11Only": false,
             "RefreshRequired": true,
@@ -572,8 +572,8 @@
             "Name": "Desativar animações na barra de tarefas",
             "Description": "Desativa as animações da barra de tarefa do Windows 11",
             "Category": [
-                "Otimização",
-                "Customização"
+                "Optimization",
+                "Customization"
             ],
             "Win11Only": true,
             "RefreshRequired": true,
@@ -592,8 +592,8 @@
             "Name": "Esconder botão Reunir agora",
             "Description": "Esconde o botão Reunir agora da barra de tarefas",
             "Category": [
-                "Customização",
-                "Recomendados"
+                "Customization",
+                "Recommended"
             ],
             "Win11Only": false,
             "RefreshRequired": false,
@@ -612,7 +612,7 @@
             "Name": "Restaurar menu de opções de recuperação com F8",
             "Description": "Reativa o menu de opções de boot ao iniciar o sistema pressionando F8.",
             "Category": [
-                "Técnico"
+                "Technician"
             ],
             "Win11Only": false,
             "RefreshRequired": false,
@@ -627,7 +627,7 @@
             "Name": "Garantir a atualização do Windows 11",
             "Description": "Aplica pacthes no registro que garantem que o Windows receba atualizações. Aplique somente se necessário.",
             "Category": [
-                "Técnico"
+                "Technician"
             ],
             "Win11Only": true,
             "RefreshRequired": false,
@@ -679,7 +679,7 @@
             "Name": "Criar ponto de restauração",
             "Description": "Cria um ponto de restauração do sistema",
             "Category": [
-                "Finalização"
+                "Finalize"
             ],
             "Win11Only": false,
             "RefreshRequired": false,
@@ -695,7 +695,7 @@
             "Name": "Desligar o computador",
             "Description": "Desliga o computador",
             "Category": [
-                "Finalização"
+                "Finalize"
             ],
             "Win11Only": false,
             "RefreshRequired": false,
@@ -709,7 +709,7 @@
             "Name": "Reiniciar o computador",
             "Description": "Reinicia o computador",
             "Category": [
-                "Finalização"
+                "Finalize"
             ],
             "Win11Only": false,
             "RefreshRequired": false,

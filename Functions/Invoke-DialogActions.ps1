@@ -872,7 +872,7 @@ function global:Get-DefaultDialogConfiguration {
                 
                 if ($FinalizeTweaksStackPanel) {
                     try {
-                        $finalizeTweaks = Get-AvailableItems -ItemType "Tweaks" | Where-Object { $_.Category -contains "Finalização" }
+                        $finalizeTweaks = Get-AvailableItems -ItemType "Tweaks" | Where-Object { $_.Category -contains "Finalize" }
                         if ($finalizeTweaks.Count -gt 0) {
                             
                             # Criar checkboxes para cada tweak
