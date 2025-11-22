@@ -214,12 +214,12 @@ function global:Get-DefaultDialogConfiguration {
                 # Carregar Tweaks e Categorias a partir do JSON (sem depender de $configData)
                 $allTweaks = Get-AvailableItems -ItemType "Tweaks"
                 # Filtrar tweaks para excluir aqueles que pertencem APENAS à categoria 'Finalização'
-                $availableTweaks = $allTweaks | Where-Object { ($_.Category -notcontains "Finalização") }
+                $availableTweaks = $allTweaks | Where-Object { ($_.Category -notcontains "Finalize") }
 
                 # Carregar categorias via Get-AvailableItems, evitando caminho direto
                 $tweaksCategories = Get-AvailableItems -ItemType "TweaksCategories"
                 if (-not $tweaksCategories) { $tweaksCategories = @() }
-                $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalização" }
+                $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalize" }
                 
                 # Adicionar o botão "Todos"
                 $allButton = New-Object System.Windows.Controls.Button
