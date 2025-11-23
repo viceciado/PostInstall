@@ -39,7 +39,7 @@
     "Tweaks": [
         {
             "Name": "Apagar histórico e arquivos temporários",
-            "Description": "Apaga o histórico do Edge, de arquivos e pastas abertas pelo usuário atual, além de arquivos temporários",
+            "Description": "Apaga o histórico do Edge, de arquivos e pastas abertos pelo usuário atual, além de arquivos temporários",
             "Category": [
                 "Recommended",
                 "Finalize"
@@ -542,6 +542,39 @@
                 {
                     "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power",
                     "Name": "HiberbootEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "1"
+                }
+            ]
+        },
+        {
+            "Name": "Desativar tela de novidades pós atualização",
+            "Description": "Desativa a tela de novidades que é exibida após alguma atualização do Windows",
+            "Category": [
+                "Recommended"
+            ],
+            "Win11Only": true,
+            "RefreshRequired": false,
+            "IsBoolean": true,
+            "Registry": [
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+                    "Name": "ScoobeSystemSettingEnabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "1"
+                },
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+                    "Name": "SubscribedContent-310093Enabled",
+                    "Type": "DWord",
+                    "Value": "0",
+                    "OriginalValue": "1"
+                },
+                {
+                    "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+                    "Name": "SubscribedContent-338389Enabled",
                     "Type": "DWord",
                     "Value": "0",
                     "OriginalValue": "1"
