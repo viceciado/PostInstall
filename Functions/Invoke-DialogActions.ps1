@@ -1,4 +1,4 @@
-function global:Invoke-XamlDialog {
+﻿function global:Invoke-XamlDialog {
     <#
     .SYNOPSIS
     Configura e exibe qualquer diálogo XAML com configuração específica
@@ -415,7 +415,7 @@ function global:Get-DefaultDialogConfiguration {
                         
                         $script:checkboxesCollection.Values | ForEach-Object {
                             $isRecommended = ($_.Tag -and $_.Tag.IsRecommended -eq $true) -or 
-                            ($_.Tag -and $_.Tag.Category -and $_.Tag.Category -contains "Recomendados")
+                            ($_.Tag -and $_.Tag.Category -and $_.Tag.Category -contains "Recommended")
                             
                             if ($isRecommended) {
                                 $recommendedCount++
