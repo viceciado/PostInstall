@@ -1,4 +1,4 @@
-
+﻿
 function Initialize-LogPath {
     # Definir caminhos
     $global:PrimaryLogPath = "$env:windir\Setup\Scripts\Install.log"
@@ -190,6 +190,7 @@ function global:Write-SystemInfoToLog {
         $sb = New-Object System.Text.StringBuilder
         [void]$sb.AppendLine("INFORMAÇÕES DO SISTEMA")
         [void]$sb.AppendLine("="*50)
+        [void]$sb.AppendLine("Informações da OS: Informações não fornecidas.")
         if ($SystemInfoData.Machine) {
             [void]$sb.AppendLine("Máquina: $($SystemInfoData.Machine.ChassisSKUNumber) $($SystemInfoData.Machine.Manufacturer) $($SystemInfoData.Machine.Model)")
         }
