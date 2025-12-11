@@ -2,6 +2,8 @@
 
 ## vNEXT
 
+## v11-12-2025
+
 ## v26-11-2025
 
 Melhoria da usabilidade da interface do usuário.
