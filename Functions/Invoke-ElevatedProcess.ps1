@@ -1,4 +1,4 @@
-﻿function global:Invoke-ElevatedProcess {
+function global:Invoke-ElevatedProcess {
     <#
     .SYNOPSIS
     Executa processos externos ou funções PowerShell com privilégios elevados quando necessário
@@ -72,6 +72,10 @@
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceAsync,
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Normal', 'Hidden', 'Minimized', 'Maximized')]
+        [string]$WindowStyle = 'Normal',
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Process')]
         [string]$WorkingDirectory
@@ -85,11 +89,11 @@
         switch ($PSCmdlet.ParameterSetName) {
             'Function' {
                 # Executar função PowerShell
-                return Invoke-PowerShellFunction -FunctionName $FunctionName -Parameters $Parameters -ScriptPath $ScriptPath -RequireElevation:$RequireElevation -PassThru:$PassThru -IsAdmin $isAdmin -ForceAsync:$ForceAsync
+                return Invoke-PowerShellFunction -FunctionName $FunctionName -Parameters $Parameters -ScriptPath $ScriptPath -RequireElevation:$RequireElevation -PassThru:$PassThru -IsAdmin $isAdmin -ForceAsync:$ForceAsync -WindowStyle $WindowStyle
             }
             'Process' {
                 # Executar processo externo
-                return Invoke-ExternalProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Wait:$Wait -PassThru:$PassThru -IsAdmin $isAdmin -ForceAsync:$ForceAsync
+                return Invoke-ExternalProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Wait:$Wait -PassThru:$PassThru -IsAdmin $isAdmin -ForceAsync:$ForceAsync -WindowStyle $WindowStyle
             }
         }
     }
@@ -109,7 +113,8 @@ function global:Invoke-PowerShellFunction {
         [bool]$RequireElevation,
         [bool]$PassThru,
         [bool]$IsAdmin,
-        [bool]$ForceAsync
+        [bool]$ForceAsync,
+        [string]$WindowStyle = 'Normal'
     )
     
     # Escolher host (pwsh se existir, senão powershell.exe)
@@ -224,9 +229,9 @@ function global:Invoke-PowerShellFunction {
         
         $processArgs = @{
             FilePath     = $hostExe
-            ArgumentList = "-NoProfile -ExecutionPolicy Bypass -Command `"$elevatedCommand`""
+            ArgumentList = "-WindowStyle $WindowStyle -NoProfile -ExecutionPolicy Bypass -Command `"$elevatedCommand`""
             Wait         = -not $ForceAsync
-            PassThru     = $false
+            PassThru     = $ForceAsync
             ErrorAction  = 'Stop'
             Verb         = "RunAs"
         }
@@ -234,10 +239,15 @@ function global:Invoke-PowerShellFunction {
         $process = Start-Process @processArgs
         
         # Se não for async, ler resultado
-        if (-not $ForceAsync -and (Test-Path $tempFile)) {
-            $result = Get-Content $tempFile -Raw -Encoding UTF8
-            Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
-            return $result.Trim()
+        if (-not $ForceAsync) {
+             # Aguardar manualmente se o Start-Process não esperou (caso raro, mas possível)
+             if (-not $process.HasExited) { $process.WaitForExit() }
+             
+             if (Test-Path $tempFile) {
+                $result = Get-Content $tempFile -Raw -Encoding UTF8
+                Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+                return $result.Trim()
+             }
         }
         
         # Se for async, retornar o processo
@@ -247,7 +257,7 @@ function global:Invoke-PowerShellFunction {
     } else {
         $processArgs = @{
             FilePath     = $hostExe
-            ArgumentList = "-NoProfile -ExecutionPolicy Bypass -Command `"$fullCommand`""
+            ArgumentList = "-WindowStyle $WindowStyle -NoProfile -ExecutionPolicy Bypass -Command `"$fullCommand`""
             Wait         = -not $ForceAsync
             PassThru     = $ForceAsync
             ErrorAction  = 'Stop'
@@ -274,7 +284,8 @@ function global:Invoke-ExternalProcess {
         [bool]$Wait,
         [bool]$PassThru,
         [bool]$IsAdmin,
-        [bool]$ForceAsync
+        [bool]$ForceAsync,
+        [string]$WindowStyle = 'Normal'
     )
     
     # Modificar Wait se ForceAsync for true
@@ -286,6 +297,7 @@ function global:Invoke-ExternalProcess {
         Wait          = $actualWait
         PassThru      = $PassThru
         ErrorAction   = 'Stop'
+        WindowStyle   = $WindowStyle
     }
     
     if ($WorkingDirectory) {

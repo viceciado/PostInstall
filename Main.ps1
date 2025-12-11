@@ -1,4 +1,4 @@
-﻿Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
@@ -720,6 +720,10 @@ try {
                     Show-MessageDialog -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
                 }
             })  
+        }
+        # Definir ShutdownMode para OnExplicitShutdown para evitar fechamento prematuro
+        if ([System.Windows.Application]::Current) {
+            [System.Windows.Application]::Current.ShutdownMode = [System.Windows.ShutdownMode]::OnExplicitShutdown
         }
         # Exibir a MainWindow (bloqueante)
         $xamlWindow.ShowDialog() | Out-Null

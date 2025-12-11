@@ -723,33 +723,6 @@
                 "vssadmin resize shadowstorage /for=$env:SystemDrive /on=$env:SystemDrive /maxsize=10%",
                 "Checkpoint-Computer -Description \"Instalação do Windows\" -RestorePointType MODIFY_SETTINGS"
             ]
-        },
-        {
-            "Name": "Desligar o computador",
-            "Description": "Desliga o computador",
-            "Category": [
-                "Finalize"
-            ],
-            "Win11Only": false,
-            "RefreshRequired": false,
-            "IsBoolean": false,
-            "IsRecommended": true,
-            "InvokeScript": [
-                "shutdown /s /t 60"
-            ]
-        },
-        {
-            "Name": "Reiniciar o computador",
-            "Description": "Reinicia o computador",
-            "Category": [
-                "Finalize"
-            ],
-            "Win11Only": false,
-            "RefreshRequired": false,
-            "IsBoolean": false,
-            "InvokeScript": [
-                "shutdown /r /t 60"
-            ]
         }
     ]
 }

@@ -1,4 +1,4 @@
-﻿function global:Invoke-XamlDialog {
+function global:Invoke-XamlDialog {
     <#
     .SYNOPSIS
     Configura e exibe qualquer diálogo XAML com configuração específica
@@ -921,105 +921,142 @@ function global:Get-DefaultDialogConfiguration {
 
                 $finalizeOkButton.Add_Click({
                         param($sender, $e)
-                        # Aplicar tweaks de finalização selecionados (se houver)
-                        if ($script:checkboxesCollection -and $script:checkboxesCollection.Count -gt 0) {
-                                $finalizeSelected = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
-                                if ($finalizeSelected.Count -gt 0) {
-                                    $namesPreview = ($finalizeSelected | ForEach-Object { $_.Tag.Name }) -join "`n"
-                                    $confirmFinalize = Show-MessageDialog -Title "Finalização" -Message "Executar ações selecionadas e encerrar?`n`n$namesPreview" -MessageType "Question" -Buttons "YesNo"
-                                    if ($confirmFinalize -eq "Yes") {
-                                        # Log detalhado dos tweaks selecionados
-                                        $selectedNames = ($finalizeSelected | ForEach-Object { $_.Tag.Name }) -join ", "
-                                        Write-InstallLog "Aplicando $($finalizeSelected.Count) tweaks de finalização: $selectedNames"
-                                        Show-Notification -Title "Finalizando instalação" -Message "Aplicando configurações finais. Aguarde."
-                                        Invoke-TweaksManager -Tweaks $finalizeSelected -Mode "Apply"
-                                    }
-                                    else {
-                                        return
-                                    }
-                                }
-                            }
-
-                        # Reobter janela e controles para evitar problemas de captura de variáveis
                         $wnd = [System.Windows.Window]::GetWindow($sender)
                         if (-not $wnd) { $wnd = $finalizeDialogWindow }
-
-                        $osBox = if ($wnd) { $wnd.FindName("OsNumberTextBox") } else { $null }
-                        if (-not $osBox) { $osBox = $OSNumberTextBox }
-                        $clientBox = if ($wnd) { $wnd.FindName("ClientNameTextBox") } else { $null }
-                        if (-not $clientBox) { $clientBox = $ClientNameTextBox }
-                        $techBox = if ($wnd) { $wnd.FindName("TechnicianTextBox") } else { $null }
-                        if (-not $techBox) { $techBox = $TechnicianTextBox }
-
-                        # Capturar valores dos campos com segurança
-                        $osValue = if ($osBox) { $osBox.Text } else { $null }
-                        $clientValue = if ($clientBox) { $clientBox.Text } else { $null }
-                        $technicianValue = if ($techBox) { $techBox.Text } else { $null }
-
+                        
+                        $statusText = $wnd.FindName("FinalizeStatusText")
+                        $exitRadio = $wnd.FindName("FinalizeOptionExitRadio")
+                        $shutdownRadio = $wnd.FindName("FinalizeOptionShutdownRadio")
+                        $restartRadio = $wnd.FindName("FinalizeOptionRestartRadio")
+                        $osBox = $wnd.FindName("OsNumberTextBox")
+                        $clientBox = $wnd.FindName("ClientNameTextBox")
+                        $techBox = $wnd.FindName("TechnicianTextBox")
+                        
+                        $osValue = if ($osBox) { $osBox.Text } else { "" }
+                        $clientValue = if ($clientBox) { $clientBox.Text } else { "" }
+                        $techValue = if ($techBox) { $techBox.Text } else { "" }
+                        
                         $global:ScriptContext.OsNumber = $osValue
                         $global:ScriptContext.ClientName = $clientValue
-                        $global:ScriptContext.TechnicianName = $technicianValue
+                        $global:ScriptContext.TechnicianName = $techValue
+                        $logEntry = "OS: $osValue, Cliente: $clientValue, Técnico: $techValue"
+                        Write-InstallLog "Iniciando finalização. $logEntry"
 
-                        $registeredOrganization = "MasterNet Informática | (88) 99284-1517"
-
-                        $logEntry = "$($global:ScriptContext.OsNumber), Cliente: $($global:ScriptContext.ClientName), Técnico responsável: $($global:ScriptContext.TechnicianName)"
-                        $placeholder = "Informações não fornecidas"
-
-                        $allEmpty = ([string]::IsNullOrWhiteSpace($global:ScriptContext.OsNumber) -and 
-                            [string]::IsNullOrWhiteSpace($global:ScriptContext.ClientName) -and 
-                            [string]::IsNullOrWhiteSpace($global:ScriptContext.TechnicianName))
-
-                        if ($allEmpty) {
-                            Write-InstallLog $placeholder
+                        $ownerString = if (-not [string]::IsNullOrWhiteSpace($osValue)) { "OS ($osValue) - $clientValue" } else { $clientValue }
+                        $orgString = "MasterNet Informática | (88) 99284-1517"
+                        
+                        $selectedTweaksNames = @()
+                        if ($script:checkboxesCollection) {
+                            $selectedTweaksNames = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag.Name }
                         }
-                        else {
-                            $logContent = Get-Content -Path $global:LogPath -Raw -ErrorAction SilentlyContinue
-                            if ($logContent -match [regex]::Escape($placeholder)) {
-                                $newLogContent = $logContent -replace [regex]::Escape($placeholder), $logEntry
-                                $newLogContent | Tee-Object -FilePath $global:LogPath
-                                Write-InstallLog "Informações adicionadas ao log"
-                                Write-InstallLog  $logEntry
+                        
+                        $sender.IsEnabled = $false
+                        if ($statusText) {
+                            $statusText.Visibility = "Visible"
+                            $statusText.Text = "Finalizando... Aguarde."
+                        }
+                        
+                        $splash = $global:ScriptContext.SplashScreenWindow
+                        
+                        if (-not $splash -or -not $splash.IsLoaded) {
+                            $xamlContent = Get-XamlByWindowName -WindowName 'SplashScreen'
+                            if ($xamlContent) {
+                                $splash = New-XamlDialog -XamlContent $xamlContent
+                                $global:ScriptContext.SplashScreenWindow = $splash
+                                $splash.Show()
                             }
-                            else {
-                                Write-InstallLog "O log não possuía o placeholder específico para as informações da OS. Registrando abaixo"
-                                Write-InstallLog $logEntry
-                            }
-
-                            try {
-                                $ownerString = "OS ($($global:ScriptContext.OsNumber)) - $($global:ScriptContext.ClientName)"
-
-                                $params = @{
-                                    Path        = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-                                    Name        = "RegisteredOwner"
-                                    Value       = $ownerString
-                                    ErrorAction = "Stop"
-                                }
-                                $null = Invoke-ElevatedProcess -FunctionName "Set-ItemProperty" -Parameters $params -PassThru
-                            }
-                            catch {
-                                Show-MessageDialog -Title "Informações do serviço" -Message "Erro ao salvar as informações do serviço no registro" -MessageType "Error"
-                            }
+                        } else {
+                            $splash.Visibility = 'Visible'
+                            $splash.Activate()
+                        }
+                        
+                        if ($splash) {
+                             $splashStatus = $splash.FindName("SplashStatusText")
+                             if ($splashStatus) { $splashStatus.Text = "Aplicando configurações finais. Aguarde..." }
                         }
 
-                        # Sempre aplicar RegisteredOrganization, independentemente de campos vazios
+                        $wnd.Visibility = 'Hidden'
+                        if ($global:ScriptContext.MainWindow) { $global:ScriptContext.MainWindow.Visibility = 'Hidden' }
+
+                        $params = @{
+                            Owner = $ownerString
+                            Organization = $orgString
+                            TweakNames = $selectedTweaksNames
+                        }
+                        
                         try {
-                            $OrgParams = @{
-                                Path        = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-                                Name        = "RegisteredOrganization"
-                                Value       = $registeredOrganization
-                                ErrorAction = "Stop"
+                            $proc = Invoke-ElevatedProcess -FunctionName "Invoke-FinalizeTasks" -Parameters $params -ForceAsync -WindowStyle "Hidden"
+                            
+                            # Criar frame para bloquear retorno do handler, mantendo UI ativa
+                            $waitFrame = New-Object System.Windows.Threading.DispatcherFrame
+                            
+                            # 8. Configurar Timer para monitorar conclusão
+                            $timer = New-Object System.Windows.Threading.DispatcherTimer
+                            $timer.Interval = [TimeSpan]::FromMilliseconds(500)
+                            
+                            $timerAction = {
+                                # Verificar se o processo existe e atualizar status
+                                $processRunning = $false
+                                try {
+                                    if ($proc -and -not $proc.HasExited) {
+                                        $processRunning = $true
+                                        # Opcional: tentar dar refresh no objeto de processo
+                                        $proc.Refresh()
+                                    }
+                                } catch {
+                                    # Se der erro ao acessar HasExited, assume que terminou ou objeto inválido
+                                    $processRunning = $false
+                                }
+
+                                if (-not $processRunning) {
+                                    $timer.Stop()
+                                    
+                                    # Pequeno delay para garantir que logs do processo filho foram escritos (opcional)
+                                    Start-Sleep -Milliseconds 500
+                                    
+                                    # Liberar o frame ANTES de chamar Shutdown
+                                    if ($waitFrame) { $waitFrame.Continue = $false }
+                                    
+                                    # Executar ação final
+                                    if ($shutdownRadio.IsChecked) {
+                                        Write-InstallLog "Desligando o computador..."
+                                        Start-Process "shutdown.exe" -ArgumentList "/s /t 60" -NoNewWindow
+                                        # Fechar splash para evitar bloqueio visual
+                                        if ($splash) { $splash.Close() }
+                                    } elseif ($restartRadio.IsChecked) {
+                                        Write-InstallLog "Reiniciando o computador..."
+                                        Start-Process "shutdown.exe" -ArgumentList "/r /t 60" -NoNewWindow
+                                        if ($splash) { $splash.Close() }
+                                    } else {
+                                        # Exit
+                                        Write-InstallLog "Encerrando script..."
+                                        Set-PersistExec -Stop
+                                        
+                                        # Fechar janelas explícitas
+                                        $wnd.Close() # FinalizeDialog
+                                        if ($splash) { $splash.Close() }
+                                        if ($global:ScriptContext.MainWindow) { $global:ScriptContext.MainWindow.Close() }
+                                        if ([System.Windows.Application]::Current) {
+                                            [System.Windows.Application]::Current.Shutdown()
+                                        }
+                                    }
+                                }
                             }
-                            $null = Invoke-ElevatedProcess -FunctionName "Set-ItemProperty" -Parameters $OrgParams -PassThru
+                            
+                            $timer.Add_Tick($timerAction)
+                            $timer.Start()
+                            try {
+                                if ($waitFrame) {
+                                    [System.Windows.Threading.Dispatcher]::PushFrame($waitFrame)
+                                }
+                            } catch {}
                         }
                         catch {
-                            Show-MessageDialog -Title "Informações do serviço" -Message "Erro ao salvar as informações do serviço no registro" -MessageType "Error"
+                            Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalização: $($_.Exception.Message)" -MessageType "Error"
+                            $sender.IsEnabled = $true
+                            if ($statusText) { $statusText.Text = "Erro na finalização." }
                         }
-
-                        Set-PersistExec -Stop
-
-                        $wnd.Close()
-                        $xamlWindow.Close()
-                    })  
+                })  
             }
         }
     }
