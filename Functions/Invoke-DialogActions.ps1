@@ -609,9 +609,65 @@ function global:Get-DefaultDialogConfiguration {
                             }
                             
                             if ($selectedProgramIDs.Count -gt 0) {
-                                $params = @{ ProgramIDs = $selectedProgramIDs }
-                                Show-Notification -Title "Instalação de programas" -Message "$($selectedProgramIDs.Count) programas escolhidos para instalação. Você pode continuar usando o script enquanto isso."
-                                Invoke-ElevatedProcess -FunctionName "Install-Programs" -Parameters $params -ForceAsync
+                                # Exibe notificação inicial para não parecer que travou
+                                Show-Notification -Title "Instalação de programas" -Message "Verificando componentes do Winget..."
+
+                                # Define um ScriptBlock para rodar a verificação/instalação em background, evitando travar a UI
+                                $bgScript = {
+                                    param($context)
+                                    # Recria funções mínimas necessárias ou carrega scripts
+                                    # Como estamos em outro runspace, precisamos carregar Set-WinGet.ps1 e Write-InstallLog.ps1
+                                    
+                                    $functionsPath = $context.FunctionsPath
+                                    $logPath = Join-Path $functionsPath "Write-InstallLog.ps1"
+                                    $wingetFnPath = Join-Path $functionsPath "Set-WinGet.ps1"
+                                    
+                                    if (Test-Path $logPath) { . $logPath }
+                                    if (Test-Path $wingetFnPath) { . $wingetFnPath }
+                                    
+                                    try {
+                                        $path = Install-WinGet
+                                        return @{ Success = $true; Path = $path }
+                                    } catch {
+                                        return @{ Success = $false; Error = $_.Exception.Message }
+                                    }
+                                }
+                                
+                                # Prepara estado para passar ao runspace
+                                $bgParams = @{
+                                    FunctionsPath = Join-Path (Split-Path $PSScriptRoot -Parent) "Functions"
+                                }
+                                
+                                # Executa em background job do PowerShell (simples e eficaz)
+                                $job = Start-Job -ScriptBlock $bgScript -ArgumentList $bgParams
+                                
+                                # Configura um Timer na UI thread para monitorar o Job sem travar a UI
+                                $timer = New-Object System.Windows.Threading.DispatcherTimer
+                                $timer.Interval = [TimeSpan]::FromMilliseconds(500)
+                                $timer.Tag = $job
+                                
+                                $timerAction = {
+                                    param($sender, $e)
+                                    $j = $sender.Tag
+                                    if ($j.State -ne 'Running') {
+                                        $sender.Stop()
+                                        $results = Receive-Job -Job $j
+                                        Remove-Job -Job $j
+                                        
+                                        # Processa o resultado na UI Thread
+                                        if ($results -and $results.Success -and $results.Path) {
+                                             $params = @{ ProgramIDs = $selectedProgramIDs; WingetPath = $results.Path }
+                                             Show-Notification -Title "Instalação de programas" -Message "Iniciando instalação em nova janela..."
+                                             Invoke-ElevatedProcess -FunctionName "Install-Programs" -Parameters $params -ForceAsync
+                                        } else {
+                                             $errMsg = if ($results -and $results.Error) { $results.Error } else { "Erro desconhecido no Job" }
+                                             Show-MessageDialog -Title "Erro Winget" -Message "Falha ao preparar Winget: $errMsg"
+                                        }
+                                    }
+                                }
+                                
+                                $timer.Add_Tick($timerAction)
+                                $timer.Start()
                             }
                             else {
                                 Show-MessageDialog -Title "Nenhum programa selecionado" -Message "Por favor, selecione pelo menos um programa para instalar."
@@ -623,17 +679,56 @@ function global:Get-DefaultDialogConfiguration {
                 $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
                 if ($UpdateAllProgramsButton) {
                     $UpdateAllProgramsButton.Add_Click({
-                            $isWingetAvailable = Test-WinGet -winget
-                            if ($isWingetAvailable -eq "not-installed") {
-                                $noWingetInstalled = Show-MessageDialog -Title "Winget não encontrado" -Message "O Winget não foi encontrado no sistema. Deseja instalá-lo agora? Após a instalação, será necessário tentar a atualização novamente." -MessageType "Question" -Buttons "YesNo"
-                                if ($noWingetInstalled -eq "Yes") {
-                                    Invoke-ElevatedProcess -FunctionName "Install-WingetWrapper" -ForceAsync
-                                    Show-Notification -Title "Winget" -Message "Instalação do Winget iniciada. Tente atualizar os programas novamente após alguns minutos."
+                            Show-Notification -Title "Atualização Geral" -Message "Verificando componentes do Winget..."
+                            
+                            $bgScript = {
+                                param($context)
+                                $functionsPath = $context.FunctionsPath
+                                $logPath = Join-Path $functionsPath "Write-InstallLog.ps1"
+                                $wingetFnPath = Join-Path $functionsPath "Set-WinGet.ps1"
+                                
+                                if (Test-Path $logPath) { . $logPath }
+                                if (Test-Path $wingetFnPath) { . $wingetFnPath }
+                                
+                                try {
+                                    $path = Install-WinGet
+                                    return @{ Success = $true; Path = $path }
+                                } catch {
+                                    return @{ Success = $false; Error = $_.Exception.Message }
                                 }
                             }
-                            else {
-                                Invoke-ElevatedProcess -FilePath "winget" -ArgumentList "upgrade --all --silent --accept-source-agreements --accept-package-agreements" -ForceAsync
+                            
+                            $bgParams = @{
+                                FunctionsPath = Join-Path (Split-Path $PSScriptRoot -Parent) "Functions"
                             }
+                            
+                            $job = Start-Job -ScriptBlock $bgScript -ArgumentList $bgParams
+                            
+                            $timer = New-Object System.Windows.Threading.DispatcherTimer
+                            $timer.Interval = [TimeSpan]::FromMilliseconds(500)
+                            $timer.Tag = $job
+                            
+                            $timerAction = {
+                                param($sender, $e)
+                                $j = $sender.Tag
+                                if ($j.State -ne 'Running') {
+                                    $sender.Stop()
+                                    $results = Receive-Job -Job $j
+                                    Remove-Job -Job $j
+                                    
+                                    if ($results -and $results.Success -and $results.Path) {
+                                         $params = @{ WingetPath = $results.Path }
+                                         Show-Notification -Title "Atualização Geral" -Message "Iniciando atualização em nova janela..."
+                                         Invoke-ElevatedProcess -FunctionName "Upgrade-AllPrograms" -Parameters $params -ForceAsync
+                                    } else {
+                                         $errMsg = if ($results -and $results.Error) { $results.Error } else { "Erro desconhecido no Job" }
+                                         Show-MessageDialog -Title "Erro" -Message "Falha ao preparar Winget: $errMsg"
+                                    }
+                                }
+                            }
+                            
+                            $timer.Add_Tick($timerAction)
+                            $timer.Start()
                         })
                 }
             }
