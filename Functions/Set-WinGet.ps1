@@ -314,3 +314,76 @@ function global:Upgrade-AllPrograms {
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
+
+function global:Initialize-And-Install-Programs {
+    <#
+    .SYNOPSIS
+        Wrapper para inicializar Winget e instalar programas em sequência.
+        Projetado para ser chamado via Invoke-ElevatedProcess em nova janela.
+    #>
+    [CmdletBinding()]
+    param(
+        [string[]]$ProgramIDs
+    )
+
+    # Configurar visual
+    $Host.UI.RawUI.WindowTitle = "PostInstall - Preparando Ambiente"
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    Clear-Host
+
+    Write-Host "=== PREPARAÇÃO DO WINGET ===" -ForegroundColor Cyan
+    Write-Host "Verificando componentes necessários..."
+    Write-Host ""
+
+    try {
+        # 1. Instalar/Atualizar Winget (visível no console)
+        $wingetPath = Install-WinGet
+        
+        if (-not $wingetPath) {
+            throw "Falha crítica: Executável do Winget não retornado."
+        }
+
+        # 2. Iniciar instalação dos programas
+        Install-Programs -ProgramIDs $ProgramIDs -WingetPath $wingetPath
+
+    } catch {
+        Write-Host "`nERRO FATAL: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+}
+
+function global:Initialize-And-Upgrade-All {
+    <#
+    .SYNOPSIS
+        Wrapper para inicializar Winget e atualizar todos os programas.
+    #>
+    [CmdletBinding()]
+    param()
+
+    # Configurar visual
+    $Host.UI.RawUI.WindowTitle = "PostInstall - Preparando Atualização"
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    Clear-Host
+
+    Write-Host "=== PREPARAÇÃO DO WINGET ===" -ForegroundColor Cyan
+    Write-Host "Verificando componentes necessários..."
+    Write-Host ""
+
+    try {
+        # 1. Instalar/Atualizar Winget
+        $wingetPath = Install-WinGet
+        
+        if (-not $wingetPath) {
+            throw "Falha crítica: Executável do Winget não retornado."
+        }
+
+        # 2. Iniciar atualização geral
+        Upgrade-AllPrograms -WingetPath $wingetPath
+
+    } catch {
+        Write-Host "`nERRO FATAL: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+}
