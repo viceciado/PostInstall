@@ -3,6 +3,8 @@
 ## vNEXT
 
 ## v09-01-2026
+
+## v09-01-2026
 - Corrigido o problema de instalação de programas usando o Winget.
 
 - Adicionado Tweak para esconder o ícone do Spotlight da Área de Trabalho (aparece quando se usa o papel de parede 'Destaques do Windows').
