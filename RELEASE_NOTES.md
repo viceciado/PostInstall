@@ -4,6 +4,8 @@
 - Corrigido o problema de instalação de programas usando o Winget.
 - Adicionado Tweak para esconder o ícone do Spotlight da Área de Trabalho (aparece quando se usa o papel de parede 'Destaques do Windows').
 
+## v11-12-2025
+
 ## v26-11-2025
 
 Melhoria da usabilidade da interface do usuário.
