@@ -736,7 +736,7 @@ Remove-Item -Path `$paramsFile -Force -ErrorAction SilentlyContinue
         try {
             # Tentar instalação no escopo machine
             Write-Host "  -> Tentando instalação no escopo 'machine'..." -ForegroundColor Gray
-            $arguments = "install --id `"$programId`" --scope machine --silent --accept-source-agreements --accept-package-agreements"
+            $arguments = "install --id `"$programId`"--source winget  --scope machine --silent --accept-source-agreements --accept-package-agreements"
             
             # Executar winget usando Start-Process para melhor controle
             $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -781,7 +781,7 @@ Remove-Item -Path `$paramsFile -Force -ErrorAction SilentlyContinue
                 
                 # Tentar no escopo user
                 Write-Host "  -> Tentando instalação no escopo 'user'..." -ForegroundColor Gray
-                $arguments = "install --id `"$programId`" --scope user --silent --accept-source-agreements --accept-package-agreements"
+                $arguments = "install --id `"$programId`"--soruce winget --scope user --silent --accept-source-agreements --accept-package-agreements"
                 
                 $psi.Arguments = $arguments
             $null = [System.Diagnostics.Process]::Start($psi)
@@ -806,34 +806,6 @@ Remove-Item -Path `$paramsFile -Force -ErrorAction SilentlyContinue
                 }
                 
                 $installSuccess = ($exitCode -eq 0) -or ($exitCode -eq -1978335189)
-                
-                if (-not $installSuccess -and $exitCode -in @(-1978335173, -1978335164, -1978335217, -1978335221)) {
-                    Write-Host "  -> Erro de fonte detectado, tentando com fonte 'winget'..." -ForegroundColor Yellow
-                    $arguments = "install --id `"$programId`" --scope machine --source winget --silent --accept-source-agreements --accept-package-agreements"
-                    
-                    $psi.Arguments = $arguments
-                    $process = New-Object System.Diagnostics.Process
-                    $process.StartInfo = $psi
-                    [void]$process.Start()
-                    $output = $process.StandardOutput.ReadToEnd()
-                    $error = $process.StandardError.ReadToEnd()
-                    $process.WaitForExit(300000)
-                    $exitCode = $process.ExitCode
-                    $process.Dispose()
-                    
-                    # Mostrar saída relevante do winget
-                    $allOutput = "$output`n$error"
-                    if ($allOutput.Trim()) {
-                        $allOutput -split "`n" | Where-Object { 
-                            $line = $_.Trim()
-                            $line -and $line -ne "True" -and $line -ne "False" -and $line -notmatch "^\s*$"
-                        } | ForEach-Object {
-                            Write-Host "    $($_.Trim())" -ForegroundColor DarkGray
-                        }
-                    }
-                    
-                    $installSuccess = ($exitCode -eq 0) -or ($exitCode -eq -1978335189)
-                }
             }
         }
         catch {

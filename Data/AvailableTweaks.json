@@ -138,6 +138,26 @@
             ]
         },
         {
+            "Name": "Esconder o ícone do Spotlight",
+            "Description": "Esconde o ícone 'Saiba mais sobre essa imagem' que aparece na área de trabalho quando se usa o papel de parede 'Destaques do Windows'",
+            "Category": [
+                "Customization",
+                "Recommended"
+            ],
+            "Win11Only": true,
+            "IsBoolean": true,
+            "RefreshRequired": true,
+            "Registry": [
+                {
+                    "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel",
+                    "Name": "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}",
+                    "Type": "DWord",
+                    "Value": "1",
+                    "OriginalValue": "<RemoveEntry>"
+                }
+            ]
+        },
+        {
             "Name": "Esconder botão Visão de Tarefas",
             "Description": "Esconde o botão Visão de Tarefas da barra de tarefas",
             "Category": [
@@ -517,13 +537,6 @@
                     "Name": "NewTabPageAllowedBackgroundTypes",
                     "Type": "DWord",
                     "Value": "3",
-                    "OriginalValue": "<RemoveEntry>"
-                },
-                {
-                    "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge\\ExtensionInstallForcelist",
-                    "Name": "1",
-                    "Type": "REG_SZ",
-                    "Value": "odfafepnkmbhccpbejgmiehpchacaeak",
                     "OriginalValue": "<RemoveEntry>"
                 }
             ]
