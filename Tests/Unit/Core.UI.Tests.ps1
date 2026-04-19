@@ -64,7 +64,7 @@ Describe 'Get-VariableNameFromFile' -Tag 'Unit' {
 Describe 'Get-AvailableItems' -Tag 'Unit' {
 
     BeforeAll {
-        $global:ScriptContext = @{ IsCompiled = $false }
+        $global:ScriptContext = @{ IsCompiled = $false; UI = @{ XamlWindows = @{} }; System = @{}; Config = @{} }
         Mock Write-InstallLog {}
     }
 

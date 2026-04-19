@@ -22,6 +22,7 @@ BeforeAll {
     . (Join-Path $script:ProjectRoot 'Core\Registry\Restore-RegistryEntry.ps1')
     . (Join-Path $script:ProjectRoot 'Core\UI\Get-AvailableWindows.ps1')   # Get-AvailableItems
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Get-TweakByName.ps1')
+    . (Join-Path $script:ProjectRoot 'Features\Tweaks\Invoke-TweaksManager.ps1')
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Set-Tweak.ps1')
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Restore-Tweak.ps1')
 
@@ -76,7 +77,7 @@ Describe 'Set-Tweak' -Tag 'Unit' {
             Mock Remove-Item        {}
         }
         BeforeEach {
-            $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{} }
+            $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{}; UI = @{}; System = @{}; Config = @{} }
         }
         AfterAll {
             Remove-Variable -Name 'ScriptContext' -Scope Global -ErrorAction SilentlyContinue
@@ -108,7 +109,7 @@ Describe 'Set-Tweak' -Tag 'Unit' {
             Mock Remove-Item        {}
         }
         BeforeEach {
-            $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{} }
+            $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{}; UI = @{}; System = @{}; Config = @{} }
         }
         AfterAll {
             Remove-Variable -Name 'ScriptContext' -Scope Global -ErrorAction SilentlyContinue
@@ -258,5 +259,30 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
             $result = Restore-Tweak -Name 'TestTweak-Registry'
             $result | Should -BeFalse
         }
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+Describe 'Invoke-TweaksManager' -Tag 'Unit' {
+
+    BeforeEach {
+        $global:ScriptContext = @{ AppliedTweaks = @{} }
+        Mock Write-InstallLog {}
+        Mock Invoke-ElevatedProcess { return 'True' }
+        Mock Get-TweakByName { return @{ RefreshRequired = $false } }
+        Mock Restart-Explorer {}
+    }
+
+    AfterEach {
+        Remove-Variable -Name 'ScriptContext' -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    It 'Lança erro quando não recebe Tweaks nem Names' {
+        { Invoke-TweaksManager -Mode Apply } | Should -Throw
+    }
+
+    It 'Aplica tweaks quando recebe Names válidos' {
+        Invoke-TweaksManager -Mode Apply -Names @('TestTweak-Registry')
+        Should -Invoke Invoke-ElevatedProcess -Exactly 1 -ParameterFilter { $FunctionName -eq 'Set-Tweak' }
     }
 }

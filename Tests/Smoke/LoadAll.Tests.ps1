@@ -22,8 +22,10 @@ BeforeAll {
     #    ScriptContext mínimo esperado por Get-AvailableItems e Set-Tweak
     $global:ScriptContext = @{
         IsCompiled    = $false
-        XamlWindows   = @{}
         AppliedTweaks = @{}
+        UI     = @{ XamlWindows = @{} }
+        System = @{}
+        Config = @{}
     }
 
     # ── Dot-source na ordem do Main.ps1 ─────────────────────────────────────
@@ -75,8 +77,8 @@ Describe 'Carregamento dos arquivos fonte' -Tag 'Smoke' {
         It 'ConvertTo-RegistryType está definida' { Get-Command ConvertTo-RegistryType -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Set-RegistryEntry está definida'      { Get-Command Set-RegistryEntry      -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Restore-RegistryEntry está definida'  { Get-Command Restore-RegistryEntry  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Apply-RegistryEntry alias existe'     { Get-Command Apply-RegistryEntry    -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Undo-RegistryEntry alias existe'      { Get-Command Undo-RegistryEntry     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Apply-RegistryEntry legado existe'     { Get-Command Apply-RegistryEntry    -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Undo-RegistryEntry legado existe'      { Get-Command Undo-RegistryEntry     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Core — Process' {
@@ -106,7 +108,7 @@ Describe 'Carregamento dos arquivos fonte' -Tag 'Smoke' {
         It 'Get-TweakByName está definida'   { Get-Command Get-TweakByName  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Set-Tweak está definida'         { Get-Command Set-Tweak        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Restore-Tweak está definida'     { Get-Command Restore-Tweak    -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Undo-Tweak alias existe'         { Get-Command Undo-Tweak       -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Undo-Tweak legado existe'         { Get-Command Undo-Tweak       -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Invoke-TweaksManager está definida' { Get-Command Invoke-TweaksManager -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
@@ -115,6 +117,7 @@ Describe 'Carregamento dos arquivos fonte' -Tag 'Smoke' {
         It 'Install-WinGet está definida'    { Get-Command Install-WinGet     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Install-Programs está definida'  { Get-Command Install-Programs   -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Update-AllPrograms está definida'{ Get-Command Update-AllPrograms -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Upgrade-AllPrograms legado existe'{ Get-Command Upgrade-AllPrograms -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Features — Other' {
