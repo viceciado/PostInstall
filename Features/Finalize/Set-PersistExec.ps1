@@ -1,11 +1,11 @@
 ﻿function Set-PersistExec {
     <#
     .SYNOPSIS
-    Retoma a execuÃ§Ã£o do script apÃ³s reinicios inesperados
+    Retoma a execução do script após reinicios inesperados
     
     .DESCRIPTION
     Ao ser chamada pela primeira vez, cria uma tarefa agendada para executar o script
-    sempre que o sistema for iniciado. Ao Finalizar a instalaÃ§Ã£o, remove a tarefa.
+    sempre que o sistema for iniciado. Ao Finalizar a instalação, remove a tarefa.
     
     .EXAMPLE
     Set-PersistExec -ScriptPath "C:\Scripts\MyScript.ps1"
@@ -59,7 +59,7 @@
             return $true
         }
         catch {
-            Write-InstallLog "Erro em Set-PersistExec (criaÃ§Ã£o): $($_.Exception.Message)" -Status "ERRO"
+            Write-InstallLog "Erro em Set-PersistExec (criação): $($_.Exception.Message)" -Status "ERRO"
             return $false
         }
     } else {

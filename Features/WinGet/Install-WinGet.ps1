@@ -10,7 +10,7 @@
         [switch]$Force
     )
 
-    Write-InstallLog "Verificando instalaÃ§Ã£o do Winget..."
+    Write-InstallLog "Verificando instalação do Winget..."
     $info = Test-WinGet
 
     if ($info.Status -eq "Installed" -and -not $Force) {
@@ -22,7 +22,7 @@
         Write-InstallLog "Winget desatualizado ($($info.Version)). Tentando atualizar..."
     }
     else {
-        Write-InstallLog "Winget nÃ£o encontrado. Iniciando instalaÃ§Ã£o..."
+        Write-InstallLog "Winget não encontrado. Iniciando instalação..."
     }
 
     # Tentativa 1: self-update via winget (apenas quando jÃ¡ instalado)
@@ -44,10 +44,10 @@
 
     # Tentativa 2: download manual do GitHub
     try {
-        Write-InstallLog "Baixando Ãºltima versÃ£o do GitHub..."
+        Write-InstallLog "Baixando Ãºltima versão do GitHub..."
         $release    = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -ErrorAction Stop
         $msixBundle = $release.assets | Where-Object { $_.name -like "Microsoft.DesktopAppInstaller_*.msixbundle" } | Select-Object -First 1
-        if (-not $msixBundle) { throw "Asset msixbundle nÃ£o encontrado." }
+        if (-not $msixBundle) { throw "Asset msixbundle não encontrado." }
 
         $tempBundle = Join-Path $env:TEMP $msixBundle.name
         Invoke-WebRequest -Uri $msixBundle.browser_download_url -OutFile $tempBundle -ErrorAction Stop
@@ -82,10 +82,10 @@
             Write-InstallLog "Winget pronto: $($finalInfo.Path)"
             return $finalInfo.Path
         }
-        throw "Winget instalado mas nÃ£o detectado."
+        throw "Winget instalado mas não detectado."
     }
     catch {
-        Write-InstallLog "Erro crÃ­tico na instalaÃ§Ã£o do Winget: $($_.Exception.Message)" -Status "ERRO"
+        Write-InstallLog "Erro crÃ­tico na instalação do Winget: $($_.Exception.Message)" -Status "ERRO"
         return $null
     }
 }

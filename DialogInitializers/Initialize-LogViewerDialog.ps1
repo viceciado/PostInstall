@@ -1,7 +1,7 @@
 ﻿function Get-LogViewerConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo LogViewer.
+        Retorna o ScriptBlock de configuração do diÃ¡logo LogViewer.
     #>
     return {
         param($logViewerWindow)
@@ -28,11 +28,11 @@
             }
 
             if ((Test-Path $currentLogPath) -and ($currentLogPath -ne $primaryLogPath)) {
-                $logContent.Add("InÃ­cio do log da sessÃ£o [$currentLogPath]")
+                $logContent.Add("InÃ­cio do log da sessão [$currentLogPath]")
                 $currentLogLines = Get-Content -Path $currentLogPath -ErrorAction SilentlyContinue
                 if ($currentLogLines) { $logContent.AddRange([string[]]$currentLogLines) }
                 else                  { $logContent.Add("O arquivo de log estÃ¡ vazio!") }
-                $logContent.Add("Fim do log da sessÃ£o")
+                $logContent.Add("Fim do log da sessão")
             }
 
             $unifiedLogTextBox.Text = $logContent -join "`n"

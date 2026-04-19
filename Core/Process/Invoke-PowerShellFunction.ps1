@@ -1,11 +1,11 @@
 ﻿function Invoke-PowerShellFunction {
     <#
     .SYNOPSIS
-        Executa uma funÃ§Ã£o PowerShell diretamente ou em um novo processo filho.
+        Executa uma função PowerShell diretamente ou em um novo processo filho.
     .NOTES
-        Quando ForceAsync=$true, um processo filho pwsh/powershell.exe Ã© criado.
-        Em modo dev (sem CompiledScriptPath), importa todos os arquivos de funÃ§Ã£o
-        dos sub-diretÃ³rios Core/, Features/ e DialogInitializers/ relativos Ã  raiz do projeto.
+        Quando ForceAsync=$true, um processo filho pwsh/powershell.exe é criado.
+        Em modo dev (sem CompiledScriptPath), importa todos os arquivos de função
+        dos sub-diretórios Core/, Features/ e DialogInitializers/ relativos Ã  raiz do projeto.
     #>
     [CmdletBinding()]
     param(
@@ -20,10 +20,10 @@
         [string]  $WindowStyle   = 'Normal'
     )
 
-    if ([string]::IsNullOrWhiteSpace($FunctionName)) { throw "ParÃ¢metro FunctionName nÃ£o pode ser vazio." }
+    if ([string]::IsNullOrWhiteSpace($FunctionName)) { throw "Parâmetro FunctionName não pode ser vazio." }
 
     try {
-        # ExecuÃ§Ã£o direta no processo atual
+        # Execução direta no processo atual
         if (-not $ForceAsync) {
             Write-InstallLog "Executando $FunctionName diretamente."
             if ($ScriptPath -and (Test-Path $ScriptPath)) { . $ScriptPath }
@@ -35,7 +35,7 @@
             }
         }
 
-        #  ExecuÃ§Ã£o em novo processo filho 
+        #  Execução em novo processo filho 
         Write-InstallLog "Iniciando $FunctionName em novo processo..."
 
         $hostExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell.exe" }
@@ -64,7 +64,7 @@
             $commandParts += ". '$sp'"
         }
 
-        # 3. Importar definiÃ§Ãµes de funÃ§Ã£o
+        # 3. Importar definições de função
         if ($compiledPath) {
             $cp = $compiledPath -replace "'", "''"
             $commandParts += ". '$cp'"
@@ -79,7 +79,7 @@
             $commandParts += "Get-ChildItem '$rp\DialogInitializers' -Filter '*.ps1' | Sort-Object Name | ForEach-Object { . `$_.FullName }"
         }
 
-        # 4. Montar chamada da funÃ§Ã£o com parÃ¢metros
+        # 4. Montar chamada da função com parâmetros
         $functionCall = $FunctionName
         if ($Parameters.Count -gt 0) {
             $paramString = ($Parameters.GetEnumerator() | ForEach-Object {

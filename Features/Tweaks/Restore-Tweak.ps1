@@ -8,14 +8,14 @@
         [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Name
     )
     if ([string]::IsNullOrWhiteSpace($Name)) {
-        Write-InstallLog "Erro em Restore-Tweak: parÃ¢metro Name vazio." -Status "ERRO"
+        Write-InstallLog "Erro em Restore-Tweak: parâmetro Name vazio." -Status "ERRO"
         return $false
     }
 
     try {
         $tweak = Get-TweakByName -Name $Name
         if ($null -eq $tweak) {
-            Write-InstallLog "Tweak nÃ£o encontrado (desfazer): $Name" -Status "ERRO"
+            Write-InstallLog "Tweak não encontrado (desfazer): $Name" -Status "ERRO"
             return $false
         }
 
@@ -58,7 +58,7 @@
     }
 }
 
-# Wrapper de compatibilidade com cÃ³digo anterior
+# Wrapper de compatibilidade com código anterior
 function Undo-Tweak {
     [CmdletBinding()]
     param(

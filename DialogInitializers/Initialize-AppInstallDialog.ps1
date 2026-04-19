@@ -1,7 +1,7 @@
 ﻿function Get-AppInstallDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo AppInstallDialog.
+        Retorna o ScriptBlock de configuração do diÃ¡logo AppInstallDialog.
     #>
     return {
         param($appInstallDialogWindow)
@@ -40,7 +40,7 @@
             $errorIcon.Margin = "0,0,0,10"
 
             $errorLabel = New-Object System.Windows.Controls.TextBlock
-            $errorLabel.Text = "Falha ao ler a lista de programas padrÃ£o`nRealize a instalaÃ§Ã£o manualmente."
+            $errorLabel.Text = "Falha ao ler a lista de programas padrão`nRealize a instalação manualmente."
             $errorLabel.Foreground = "Orange"
             $errorLabel.FontSize = 14
             $errorLabel.TextAlignment = "Center"
@@ -67,21 +67,21 @@
                 if ($customProgramIDs) { $selectedProgramIDs += $customProgramIDs }
 
                 $selectedProgramIDs = $selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique
-                Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalaÃ§Ã£o: $($selectedProgramIDs -join ', ')"
+                Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalação: $($selectedProgramIDs -join ', ')"
 
                 # Detectar navegadores â†’ oferecer MSEdgeRedirect no Win11
                 $knownBrowserIDs = $global:PSConst.KnownBrowserIDs
                 $hasBrowser = $selectedProgramIDs | Where-Object { $knownBrowserIDs -contains $_ }
                 if ($hasBrowser -and ($global:ScriptContext.System.isWin11 -eq $true)) {
-                    $msEdge = Show-MessageDialog -Title "InstalaÃ§Ã£o de outros navegadores" -Message "VocÃª marcou a instalaÃ§Ã£o de um ou mais navegadores.`nDeseja tambÃ©m instalar o MSEdgeRedirect para substituir o navegador padrÃ£o do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
+                    $msEdge = Show-MessageDialog -Title "Instalação de outros navegadores" -Message "VocÃª marcou a instalação de um ou mais navegadores.`nDeseja também instalar o MSEdgeRedirect para substituir o navegador padrão do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
                     if ($msEdge -eq "Yes") {
-                        Show-Notification -Title "InstalaÃ§Ã£o de programas" -Message "Configure o MSEdgeRedirect apÃ³s a instalaÃ§Ã£o."
+                        Show-Notification -Title "Instalação de programas" -Message "Configure o MSEdgeRedirect após a instalação."
                         $selectedProgramIDs += "rcmaehl.MSEdgeRedirect"
                     }
                 }
 
                 if ($selectedProgramIDs.Count -gt 0) {
-                    Show-Notification -Title "InstalaÃ§Ã£o de programas" -Message "O processo continuarÃ¡ em uma nova janela..."
+                    Show-Notification -Title "Instalação de programas" -Message "O processo continuarÃ¡ em uma nova janela..."
                     Invoke-ElevatedProcess -FunctionName "Initialize-And-Install-Programs" -Parameters @{ ProgramIDs = $selectedProgramIDs } -ForceAsync
                 }
                 else {
@@ -94,7 +94,7 @@
         $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
         if ($UpdateAllProgramsButton) {
             $UpdateAllProgramsButton.Add_Click({
-                Show-Notification -Title "AtualizaÃ§Ã£o Geral" -Message "O processo continuarÃ¡ em uma nova janela..."
+                Show-Notification -Title "Atualização Geral" -Message "O processo continuarÃ¡ em uma nova janela..."
                 Invoke-ElevatedProcess -FunctionName "Initialize-And-Upgrade-All" -ForceAsync
             })
         }

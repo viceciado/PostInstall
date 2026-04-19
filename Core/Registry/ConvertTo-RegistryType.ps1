@@ -1,7 +1,7 @@
 ﻿function ConvertTo-RegistryType {
     <#
     .SYNOPSIS
-        Converte uma string de tipo de registro em representaÃ§Ã£o normalizada.
+        Converte uma string de tipo de registro em representação normalizada.
     .OUTPUTS
         Hashtable com chaves 'Up' (tipo uppercase) e 'Ps' (PropertyType para New-ItemProperty).
     #>

@@ -1,9 +1,9 @@
 ﻿function Invoke-ElevatedProcess {
     <#
     .SYNOPSIS
-        Executa processos externos ou funÃ§Ãµes PowerShell, opcionalmente em processo separado.
+        Executa processos externos ou funções PowerShell, opcionalmente em processo separado.
     .DESCRIPTION
-        Assume que o processo atual jÃ¡ possui privilÃ©gios administrativos.
+        Assume que o processo atual jÃ¡ possui privilégios administrativos.
         Delega para Invoke-PowerShellFunction (ParameterSet 'Function') ou
         Invoke-ExternalProcess (ParameterSet 'Process').
     #>

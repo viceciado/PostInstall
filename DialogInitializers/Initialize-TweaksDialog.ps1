@@ -1,7 +1,7 @@
 ﻿function Get-TweaksDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo TweaksDialog.
+        Retorna o ScriptBlock de configuração do diÃ¡logo TweaksDialog.
     #>
     return {
         param($tweaksDialogWindow)
@@ -20,7 +20,7 @@
             $script:ApplySelectedTweaksButton.Background
         } else { $null }
 
-        #  ScriptBlock de atualizaÃ§Ã£o do estado dos botÃµes 
+        #  ScriptBlock de atualização do estado dos botÃµes 
         $script:updateApplyButtonState = {
             try {
                 $checkedCount = ($script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }).Count
@@ -42,7 +42,7 @@
                 if ($appliedCount -gt 0) {
                     $script:RestoreDefaultsButton.IsEnabled  = $true
                     $script:RestoreDefaultsButton.Background = $global:PSConst.Colors.Accent
-                    $script:RestoreDefaultsButton.Content    = "Desfazer $appliedCount alteraÃ§Ãµes"
+                    $script:RestoreDefaultsButton.Content    = "Desfazer $appliedCount alterações"
                 }
                 else {
                     $script:RestoreDefaultsButton.IsEnabled  = $false
@@ -51,7 +51,7 @@
                 }
             }
             catch {
-                Write-InstallLog "Erro ao atualizar estado do botÃ£o Aplicar: $($_.Exception.Message)" -Status "AVISO"
+                Write-InstallLog "Erro ao atualizar estado do botão Aplicar: $($_.Exception.Message)" -Status "AVISO"
             }
         }
 
@@ -64,7 +64,7 @@
         if (-not $tweaksCategories) { $tweaksCategories = @() }
         $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalize" }
 
-        #  BotÃ£o "Todos" 
+        #  Botão "Todos" 
         $allButton = New-Object System.Windows.Controls.Button
         $allButton.Style = $filterButtonStyle
         $allButton.FocusVisualStyle = $null
@@ -141,7 +141,7 @@
         $sep2.VerticalAlignment = "Center"
         $FilterButtonsPanel.Children.Add($sep2)
 
-        #  BotÃ£o "Marcar tudo" 
+        #  Botão "Marcar tudo" 
         $checkAllButton = New-Object System.Windows.Controls.Button
         $checkAllButton.Style = $filterButtonStyle
         $checkAllButton.FocusVisualStyle = $null
@@ -159,7 +159,7 @@
             & $script:updateApplyButtonState
         })
 
-        #  BotÃ£o "Limpar seleÃ§Ã£o" 
+        #  Botão "Limpar seleção" 
         $clearAllButton = New-Object System.Windows.Controls.Button
         $clearAllButton.Style = $filterButtonStyle
         $clearAllButton.FocusVisualStyle = $null
@@ -170,7 +170,7 @@
         $iconTextClearAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
         $iconTextClearAll.FontSize = 16
         $clearAllButton.Content = $iconTextClearAll
-        $clearAllButton.ToolTip = "Limpar seleÃ§Ã£o"
+        $clearAllButton.ToolTip = "Limpar seleção"
         $FilterButtonsPanel.Children.Add($clearAllButton)
         $clearAllButton.Add_Click({
             $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
@@ -201,7 +201,7 @@
         $script:RestoreDefaultsButton.Add_Click({
             try {
                 if (-not $global:ScriptContext.AppliedTweaks -or $global:ScriptContext.AppliedTweaks.Count -eq 0) {
-                    Show-MessageDialog -Title "Restaurar padrÃµes" -Message "NÃ£o hÃ¡ tweaks aplicados para desfazer." -MessageType "Info" -Buttons "OK"
+                    Show-MessageDialog -Title "Restaurar padrÃµes" -Message "Não hÃ¡ tweaks aplicados para desfazer." -MessageType "Info" -Buttons "OK"
                     return
                 }
                 $names = $global:ScriptContext.AppliedTweaks.Keys
@@ -220,7 +220,7 @@
             }
         })
 
-        #  MarcaÃ§Ã£o de recomendados 
+        #  Marcação de recomendados 
         $RecommendedTweaksButton.Add_Click({
             $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
             $script:checkboxesCollection.Values | ForEach-Object {
@@ -259,14 +259,14 @@
                     if (-not (Test-Path $Path)) { continue }
                     $isInstalled = $true
                     if (Test-Path "$Path\rarreg.key") {
-                        Show-MessageDialog -Title "AtivaÃ§Ã£o do WinRAR" -Message "O arquivo rarreg.key jÃ¡ existe na pasta do WinRAR."
+                        Show-MessageDialog -Title "Ativação do WinRAR" -Message "O arquivo rarreg.key jÃ¡ existe na pasta do WinRAR."
                         return
                     }
                     $dlg = New-Object System.Windows.Forms.OpenFileDialog
                     $dlg.CheckFileExists = $true
                     $dlg.AutoUpgradeEnabled = $true
                     $dlg.Filter = "RarREG.key (*.key)|*.key"
-                    $dlg.Title = "Selecione o arquivo de ativaÃ§Ã£o do WinRAR"
+                    $dlg.Title = "Selecione o arquivo de ativação do WinRAR"
                     if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
 
                     $result = Invoke-ElevatedProcess -FunctionName "Copy-Item" -Parameters @{ Path = $dlg.FileName; Destination = $Path } -PassThru
@@ -280,7 +280,7 @@
                     }
                 }
                 if (-not $isInstalled) {
-                    Show-MessageDialog -Title "WinRAR nÃ£o encontrado" -Message "O WinRAR nÃ£o foi encontrado no sistema. Tente novamente apÃ³s a instalaÃ§Ã£o." -MessageType "Warning"
+                    Show-MessageDialog -Title "WinRAR não encontrado" -Message "O WinRAR não foi encontrado no sistema. Tente novamente após a instalação." -MessageType "Warning"
                 }
             })
         }

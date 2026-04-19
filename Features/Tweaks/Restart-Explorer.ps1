@@ -1,11 +1,11 @@
 ﻿function Restart-Explorer {
     <#
     .SYNOPSIS
-        Encerra o processo Explorer para forÃ§ar a aplicaÃ§Ã£o de mudanÃ§as de registro.
-        O Windows reinicia o Explorer automaticamente apÃ³s o encerramento.
+        Encerra o processo Explorer para forçar a aplicação de mudanças de registro.
+        O Windows reinicia o Explorer automaticamente após o encerramento.
     #>
     try {
-        Write-InstallLog "Reiniciando o Explorer para aplicar alteraÃ§Ãµes..."
+        Write-InstallLog "Reiniciando o Explorer para aplicar alterações..."
         $explorers = Get-Process -Name explorer -ErrorAction SilentlyContinue
         if ($explorers) {
             Stop-Process -Id ($explorers.Id) -Force -ErrorAction SilentlyContinue

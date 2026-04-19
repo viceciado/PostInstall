@@ -13,18 +13,18 @@
     $Host.UI.RawUI.WindowTitle = "PostInstall - Instalando $($ProgramIDs.Count) programas"
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     Clear-Host
-    Write-Host "=== INSTALAÃ‡ÃƒO DE PROGRAMAS ===" -ForegroundColor Cyan
+    Write-Host "=== INSTALAÇÃO DE PROGRAMAS ===" -ForegroundColor Cyan
     Write-Host "Winget: $WingetPath" -ForegroundColor DarkGray
     Write-Host ""
 
     if (-not (Test-Path $WingetPath)) {
-        Write-Host "ERRO CRÃTICO: ExecutÃ¡vel do Winget nÃ£o encontrado em $WingetPath" -ForegroundColor Red
+        Write-Host "ERRO CRÃTICO: ExecutÃ¡vel do Winget não encontrado em $WingetPath" -ForegroundColor Red
         Read-Host "Pressione ENTER para sair"
         return
     }
 
-    # Aplicar bypass de certificado (soluÃ§Ã£o para 0x8A15005E)
-    Write-Host "Aplicando configuraÃ§Ãµes de seguranÃ§a (BypassCertificatePinning)..." -ForegroundColor Yellow
+    # Aplicar bypass de certificado (solução para 0x8A15005E)
+    Write-Host "Aplicando configurações de segurança (BypassCertificatePinning)..." -ForegroundColor Yellow
     Start-Process -FilePath $WingetPath -ArgumentList "settings --enable BypassCertificatePinningForMicrosoftStore" -PassThru -Wait -NoNewWindow | Out-Null
 
     $total        = $ProgramIDs.Count
@@ -65,7 +65,7 @@
     }
 
     # Reverter bypass
-    Write-Host "Revertendo configuraÃ§Ãµes de seguranÃ§a..." -ForegroundColor Yellow
+    Write-Host "Revertendo configurações de segurança..." -ForegroundColor Yellow
     Start-Process -FilePath $WingetPath -ArgumentList "settings --disable BypassCertificatePinningForMicrosoftStore" -Wait -NoNewWindow | Out-Null
 
     Write-Host "=== RESUMO ===" -ForegroundColor Cyan

@@ -20,7 +20,7 @@
                 Write-InstallLog "Chave removida: $Path"
             }
             else {
-                Write-InstallLog "Chave nÃ£o encontrada para remover: $Path" -Status "AVISO"
+                Write-InstallLog "Chave não encontrada para remover: $Path" -Status "AVISO"
             }
             return $true
         }
@@ -61,7 +61,7 @@
     }
 }
 
-# Wrapper de compatibilidade com cÃ³digo anterior
+# Wrapper de compatibilidade com código anterior
 function Apply-RegistryEntry {
     [CmdletBinding()]
     param(

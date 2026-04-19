@@ -1,7 +1,7 @@
 ﻿function Get-AboutDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo AboutDialog.
+        Retorna o ScriptBlock de configuração do diÃ¡logo AboutDialog.
     #>
     return {
         param($aboutDialogWindow)
@@ -35,7 +35,7 @@
                     $copySerialButton.Visibility = "Visible"
                     $copySerialButton.Add_Click({
                         [System.Windows.Clipboard]::SetText($global:ScriptContext.System.Info.SerialNumber)
-                        Show-Notification -Title "NÃºmero de sÃ©rie copiado" -Message "VocÃª pode usar essa informaÃ§Ã£o para localizar os drivers da mÃ¡quina."
+                        Show-Notification -Title "NÃºmero de série copiado" -Message "VocÃª pode usar essa informação para localizar os drivers da mÃ¡quina."
                     })
                 }
                 else {
@@ -58,7 +58,7 @@
 
             if ($gpusText) {
                 $gpusText.Text = if ($global:ScriptContext.System.Info.GPUs -and $global:ScriptContext.System.Info.GPUs.Count -gt 0) {
-                    ($global:ScriptContext.System.Info.GPUs | ForEach-Object { "GPU: {0} - MemÃ³ria: {1} MB" -f $_.Name, $_.MemoryMB }) -join "`n"
+                    ($global:ScriptContext.System.Info.GPUs | ForEach-Object { "GPU: {0} - Memória: {1} MB" -f $_.Name, $_.MemoryMB }) -join "`n"
                 } else { "-" }
             }
         }

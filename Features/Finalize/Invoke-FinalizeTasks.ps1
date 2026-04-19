@@ -1,13 +1,13 @@
 ﻿function Invoke-FinalizeTasks {
     <#
     .SYNOPSIS
-    Executa tarefas de finalizaÃ§Ã£o (Registro e Tweaks) em uma Ãºnica sessÃ£o elevada.
+    Executa tarefas de finalização (Registro e Tweaks) em uma Ãºnica sessão elevada.
     
     .PARAMETER Owner
     Nome do proprietÃ¡rio registrado.
     
     .PARAMETER Organization
-    Nome da organizaÃ§Ã£o registrada.
+    Nome da organização registrada.
     
     .PARAMETER TweakNames
     Array com nomes dos tweaks a serem aplicados.
@@ -43,9 +43,9 @@
     # 2. Aplicar Tweaks
     if ($TweakNames -and $TweakNames.Count -gt 0) {
         try {
-            Write-InstallLog "Iniciando aplicaÃ§Ã£o de $($TweakNames.Count) tweaks..."
-            # Chama Invoke-TweaksManager. Como jÃ¡ estamos elevados (esta funÃ§Ã£o Ã© chamada via Invoke-ElevatedProcess),
-            # as chamadas internas de Invoke-TweaksManager detectarÃ£o que sÃ£o Admin e rodarÃ£o diretamente.
+            Write-InstallLog "Iniciando aplicação de $($TweakNames.Count) tweaks..."
+            # Chama Invoke-TweaksManager. Como jÃ¡ estamos elevados (esta função é chamada via Invoke-ElevatedProcess),
+            # as chamadas internas de Invoke-TweaksManager detectarão que são Admin e rodarão diretamente.
             Invoke-TweaksManager -Names $TweakNames -Mode "Apply" -SkipPowerActions
         }
         catch {

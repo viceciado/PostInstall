@@ -5,7 +5,7 @@
 
     .DESCRIPTION
     Centraliza estilos visuais reutilizados por mÃºltiplos diÃ¡logos
-    para reduzir duplicaÃ§Ã£o e facilitar manutenÃ§Ã£o.
+    para reduzir duplicação e facilitar manutenção.
     #>
 
     [CmdletBinding()]

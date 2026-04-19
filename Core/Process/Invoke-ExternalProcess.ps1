@@ -1,7 +1,7 @@
 ﻿function Invoke-ExternalProcess {
     <#
     .SYNOPSIS
-        Executa um processo externo (nÃ£o-PowerShell) com controle de janela e espera.
+        Executa um processo externo (não-PowerShell) com controle de janela e espera.
     #>
     [CmdletBinding()]
     param(
@@ -16,7 +16,7 @@
         [string]$WindowStyle = 'Normal'
     )
 
-    if ([string]::IsNullOrWhiteSpace($FilePath)) { throw "ParÃ¢metro FilePath nÃ£o pode ser vazio." }
+    if ([string]::IsNullOrWhiteSpace($FilePath)) { throw "Parâmetro FilePath não pode ser vazio." }
 
     try {
         $actualWait = if ($ForceAsync) { $false } else { $Wait }

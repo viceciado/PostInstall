@@ -12,13 +12,13 @@
     $Host.UI.RawUI.WindowTitle = "PostInstall - Preparando Ambiente"
     [Console]::OutputEncoding  = [System.Text.Encoding]::UTF8
     Clear-Host
-    Write-Host "=== PREPARAÃ‡ÃƒO DO WINGET ===" -ForegroundColor Cyan
+    Write-Host "=== PREPARAÇÃO DO WINGET ===" -ForegroundColor Cyan
     Write-Host "Verificando componentes necessÃ¡rios..."
     Write-Host ""
 
     try {
         $wingetPath = Install-WinGet
-        if (-not $wingetPath) { throw "Falha crÃ­tica: ExecutÃ¡vel do Winget nÃ£o retornado." }
+        if (-not $wingetPath) { throw "Falha crÃ­tica: ExecutÃ¡vel do Winget não retornado." }
         Install-Programs -ProgramIDs $ProgramIDs -WingetPath $wingetPath
         return $true
     }

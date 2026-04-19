@@ -9,14 +9,14 @@
         [switch]$SkipPowerActions
     )
     if ([string]::IsNullOrWhiteSpace($Name)) {
-        Write-InstallLog "Erro em Set-Tweak: parÃ¢metro Name vazio." -Status "ERRO"
+        Write-InstallLog "Erro em Set-Tweak: parâmetro Name vazio." -Status "ERRO"
         return $false
     }
 
     try {
         $tweak = Get-TweakByName -Name $Name
         if ($null -eq $tweak) {
-            Write-InstallLog "Tweak nÃ£o encontrado: $Name" -Status "ERRO"
+            Write-InstallLog "Tweak não encontrado: $Name" -Status "ERRO"
             return $false
         }
 
@@ -36,7 +36,7 @@
                             Write-InstallLog "Chave removida: $($entry.Path)"
                         }
                         else {
-                            Write-InstallLog "Chave nÃ£o encontrada para remover: $($entry.Path)" -Status "AVISO"
+                            Write-InstallLog "Chave não encontrada para remover: $($entry.Path)" -Status "AVISO"
                         }
                     }
                     catch {
@@ -54,7 +54,7 @@
         $scriptOk = $true
         foreach ($line in $scripts) {
             if ($SkipPowerActions -and ($line -match '(?i)Stop-Computer|Restart-Computer|\bshutdown(\.exe)?\b')) {
-                Write-InstallLog "AÃ§Ã£o de energia ignorada em '$Name': $line" -Status "AVISO"
+                Write-InstallLog "Ação de energia ignorada em '$Name': $line" -Status "AVISO"
                 continue
             }
             try {

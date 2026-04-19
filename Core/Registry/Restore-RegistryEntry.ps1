@@ -34,7 +34,7 @@
         }
 
         if (-not (Test-Path -Path $Path)) {
-            Write-InstallLog "Chave nÃ£o existe para restaurar: $Path" -Status "AVISO"
+            Write-InstallLog "Chave não existe para restaurar: $Path" -Status "AVISO"
             return $false
         }
 
@@ -47,7 +47,7 @@
                         Write-InstallLog "Entrada de registro removida: $Path :: $Name"
                     }
                     else {
-                        Write-InstallLog "Entrada nÃ£o existe para remover: $Path :: $Name" -Status "AVISO"
+                        Write-InstallLog "Entrada não existe para remover: $Path :: $Name" -Status "AVISO"
                     }
                     return $true
                 }
@@ -76,7 +76,7 @@
     }
 }
 
-# Wrapper de compatibilidade com cÃ³digo anterior
+# Wrapper de compatibilidade com código anterior
 function Undo-RegistryEntry {
     [CmdletBinding()]
     param(

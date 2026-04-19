@@ -1,7 +1,7 @@
 ﻿function Get-FinalizeDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo FinalizeDialog.
+        Retorna o ScriptBlock de configuração do diÃ¡logo FinalizeDialog.
     #>
     return {
         param($finalizeDialogWindow)
@@ -48,7 +48,7 @@
         if ($null -ne $global:ScriptContext.Config.ClientName)     { $ClientNameTextBox.Text = [string]$global:ScriptContext.Config.ClientName }
         if ($null -ne $global:ScriptContext.Config.TechnicianName) { $TechnicianTextBox.Text = [string]$global:ScriptContext.Config.TechnicianName }
 
-        #  BotÃ£o OK: executa finalizaÃ§Ã£o 
+        #  Botão OK: executa finalização 
         $finalizeOkButton.Add_Click({
             param($sender, $e)
             $wnd = [System.Windows.Window]::GetWindow($sender)
@@ -69,7 +69,7 @@
             $global:ScriptContext.Config.OsNumber       = $osValue
             $global:ScriptContext.Config.ClientName     = $clientValue
             $global:ScriptContext.Config.TechnicianName = $techValue
-            Write-InstallLog "Iniciando finalizaÃ§Ã£o. OS: $osValue, Cliente: $clientValue, TÃ©cnico: $techValue"
+            Write-InstallLog "Iniciando finalização. OS: $osValue, Cliente: $clientValue, Técnico: $techValue"
 
             $ownerString  = if (-not [string]::IsNullOrWhiteSpace($osValue)) { "OS ($osValue) - $clientValue" } else { $clientValue }
             $orgString    = "MasterNet InformÃ¡tica | (88) 99284-1517"
@@ -104,7 +104,7 @@
 
             if ($splash) {
                 $splashStatus = $splash.FindName("SplashStatusText")
-                if ($splashStatus) { $splashStatus.Text = "Aplicando configuraÃ§Ãµes finais. Aguarde..." }
+                if ($splashStatus) { $splashStatus.Text = "Aplicando configurações finais. Aguarde..." }
             }
 
             $wnd.Visibility = 'Hidden'
@@ -168,9 +168,9 @@
                 catch {}
             }
             catch {
-                Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalizaÃ§Ã£o: $($_.Exception.Message)" -MessageType "Error"
+                Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalização: $($_.Exception.Message)" -MessageType "Error"
                 $sender.IsEnabled = $true
-                if ($statusText) { $statusText.Text = "Erro na finalizaÃ§Ã£o." }
+                if ($statusText) { $statusText.Text = "Erro na finalização." }
             }
         })
     }

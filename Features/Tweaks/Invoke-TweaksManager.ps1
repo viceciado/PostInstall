@@ -1,7 +1,7 @@
 ﻿function Invoke-TweaksManager {
     <#
     .SYNOPSIS
-        Orquestra aplicaÃ§Ã£o ou desfazimento em lote de tweaks.
+        Orquestra aplicação ou desfazimento em lote de tweaks.
 
     .PARAMETER Tweaks
         Array de CheckBox WPF (com .Tag.Name) ou objetos tweak.

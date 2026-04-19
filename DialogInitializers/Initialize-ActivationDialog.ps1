@@ -1,7 +1,7 @@
 ﻿function Get-ActivationDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuraÃ§Ã£o do diÃ¡logo ActivationDialog.
+        Retorna o ScriptBlock de configuração do diÃ¡logo ActivationDialog.
     #>
     return {
         param($activationDialogWindow)
@@ -12,7 +12,7 @@
         $activateOemButton         = $activationDialogWindow.FindName("ActivateOemButton")
         $activateWindowsMasButton  = $activationDialogWindow.FindName("ActivateWindowsMasButton")
 
-        # Se jÃ¡ existe chave OEM carregada, prÃ©-configurar interface
+        # Se jÃ¡ existe chave OEM carregada, pré-configurar interface
         if (-not [String]::IsNullOrWhiteSpace($global:ScriptContext.Config.OemKey)) {
             $oemKeyTextBox.Text = $global:ScriptContext.Config.OemKey
             $oemKeyTextBox.FontFamily = "Cascadia Mono"
@@ -23,7 +23,7 @@
             $activateOemButton.IsEnabled = $true
         }
 
-        # â”€â”€ Localizar chave OEM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Localizar chave OEM 
         $findOemKeyButton.Add_Click({
             $productKey = $null
             try {
@@ -47,7 +47,7 @@
                     $copyBtn.Visibility     = "Visible"
                 }
                 else {
-                    $textBox.Text = "Chave OEM nÃ£o encontrada. Use o ativador MAS"
+                    $textBox.Text = "Chave OEM não encontrada. Use o ativador MAS"
                     Write-InstallLog "Nenhuma chave OEM encontrada no BIOS"
                     $activateBtn.IsEnabled = $false
                 }
@@ -64,14 +64,14 @@
             }
         })
 
-        # â”€â”€ Copiar chave OEM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Copiar chave OEM 
         $copyOemKeyButton.Add_Click({
             try {
                 $textBox = $activationDialogWindow.FindName("OemKeyTextBox")
                 if ($textBox) {
                     $textToCopy = $textBox.Text
                     if (-not [string]::IsNullOrWhiteSpace($textToCopy) -and
-                        $textToCopy -ne "Clique no botÃ£o abaixo para buscar pela chave OEM") {
+                        $textToCopy -ne "Clique no botão abaixo para buscar pela chave OEM") {
                         Set-Clipboard -Value $textToCopy
                         Write-InstallLog "Chave OEM copiada para a Ã¡rea de transferÃªncia"
                     }
@@ -85,7 +85,7 @@
             }
         })
 
-        # â”€â”€ Ativar com chave OEM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Ativar com chave OEM 
         $activateOemButton.Add_Click({
             $thisButton = $activationDialogWindow.FindName("ActivateOemButton")
             $textBox    = $activationDialogWindow.FindName("OemKeyTextBox")
@@ -93,8 +93,8 @@
 
             $productKey = $textBox.Text
             $invalidValues = @(
-                "Clique no botÃ£o abaixo para buscar pela chave OEM",
-                "NÃ£o encontrada",
+                "Clique no botão abaixo para buscar pela chave OEM",
+                "Não encontrada",
                 "Erro ao buscar"
             )
             if ($invalidValues -contains $productKey -or [string]::IsNullOrWhiteSpace($productKey)) {
@@ -112,38 +112,38 @@
 
                 $licensedStatus = $global:PSConst.WindowsLicense.Licensed
                 if ($licenseInfo -and $licenseInfo.LicenseStatus -eq $licensedStatus) {
-                    Write-InstallLog "AtivaÃ§Ã£o bem sucedida" -Status "SUCESSO"
+                    Write-InstallLog "Ativação bem sucedida" -Status "SUCESSO"
                     $thisButton.IsEnabled = $false
                     $thisButton.Content   = "Windows ativado!"
                     $thisButton.Background = $global:PSConst.Colors.Disabled
                 }
                 else {
-                    $currentStatus = if ($licenseInfo) { $licenseInfo.LicenseStatus } else { "NÃ£o determinado" }
+                    $currentStatus = if ($licenseInfo) { $licenseInfo.LicenseStatus } else { "Não determinado" }
                     $productKey | Set-Clipboard
-                    $msg = "Falha ao ativar o Windows usando a chave OEM. Status atual da licenÃ§a: $currentStatus. A chave foi copiada para a Ã¡rea de transferÃªncia. Tente ativar manualmente."
+                    $msg = "Falha ao ativar o Windows usando a chave OEM. Status atual da licença: $currentStatus. A chave foi copiada para a Ã¡rea de transferÃªncia. Tente ativar manualmente."
                     Write-InstallLog $msg -Status "ERRO"
                     $thisButton.IsEnabled  = $false
                     $thisButton.Content    = "Erro!"
                     $thisButton.Background = $global:PSConst.Colors.Error
-                    Show-MessageDialog -Message $msg -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
+                    Show-MessageDialog -Message $msg -Title "Ativação do sistema" -MessageType "Error" -Buttons "OK"
                 }
             }
             catch {
                 $errorMessage = $_.Exception.Message
                 if ($_.Exception.InnerException) { $errorMessage += " Detalhes: $($_.Exception.InnerException.Message)" }
-                Write-InstallLog "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Status "ERRO"
+                Write-InstallLog "Erro durante a ativação OEM: $errorMessage" -Status "ERRO"
                 $thisButton.IsEnabled  = $false
                 $thisButton.Content    = "Erro!"
                 $thisButton.Background = $global:PSConst.Colors.Error
-                Show-MessageDialog -Message "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
+                Show-MessageDialog -Message "Erro durante a ativação OEM: $errorMessage" -Title "Ativação do sistema" -MessageType "Error" -Buttons "OK"
             }
         })
 
-        # â”€â”€ Abrir ativador MAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Abrir ativador MAS 
         $activateWindowsMasButton.Add_Click({
             Write-InstallLog "Abrindo ativador MAS..."
             try {
-                Show-Notification -Title "Abrindo ativador MAS" -Message "Aguarde enquanto o script Ã© baixado."
+                Show-Notification -Title "Abrindo ativador MAS" -Message "Aguarde enquanto o script é baixado."
                 $jobNameMAS = "MAS_Activation_Job"
                 Get-Job -Name $jobNameMAS -ErrorAction SilentlyContinue | Remove-Job -Force -ErrorAction SilentlyContinue
 
@@ -156,7 +156,7 @@
             catch {
                 $errorMessage = "Erro ao tentar iniciar o ativador MAS: $($_.Exception.Message)"
                 Write-InstallLog $errorMessage -Status "ERRO"
-                Show-MessageDialog -Message "$errorMessage.`nVerifique a conexÃ£o com a internet." -Title "AtivaÃ§Ã£o do Sistema" -MessageType "Error" -Buttons "OK"
+                Show-MessageDialog -Message "$errorMessage.`nVerifique a conexão com a internet." -Title "Ativação do Sistema" -MessageType "Error" -Buttons "OK"
             }
         })
     }

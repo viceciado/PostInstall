@@ -1,7 +1,7 @@
 ﻿function Test-WinGet {
     <#
     .SYNOPSIS
-        Verifica o estado da instalaÃ§Ã£o do Winget e retorna informaÃ§Ãµes detalhadas.
+        Verifica o estado da instalação do Winget e retorna informações detalhadas.
     .OUTPUTS
         PSCustomObject com Status ('NotInstalled'|'Installed'|'Outdated'), Path, Version, IsPreview.
     #>
@@ -49,7 +49,7 @@
                 }
                 catch {
                     $result.Status = "Installed"
-                    Write-InstallLog "Aviso: NÃ£o foi possÃ­vel verificar atualizaÃ§Ã£o online do Winget." -Status "AVISO"
+                    Write-InstallLog "Aviso: Não foi possÃ­vel verificar atualização online do Winget." -Status "AVISO"
                 }
             }
         }
