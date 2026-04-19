@@ -31,8 +31,8 @@
         $processor = Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop
         $os = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
         $win = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -ErrorAction Stop
-        $disks = Get-WmiObject -Class Win32_DiskDrive | Where-Object { $_.MediaType -like "*Fixed*" } | Sort-Object -Property Index
-        $gpus = Get-WmiObject -Class Win32_VideoController
+        $disks = Get-CimInstance -ClassName Win32_DiskDrive -ErrorAction Stop | Where-Object { $_.MediaType -like "*Fixed*" } | Sort-Object -Property Index
+        $gpus = Get-CimInstance -ClassName Win32_VideoController -ErrorAction Stop
         
         # Determinar tipo de boot
         $bootType = "Indeterminado"

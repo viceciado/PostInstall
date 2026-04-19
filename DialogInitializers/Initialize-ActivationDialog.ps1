@@ -27,7 +27,7 @@
         $findOemKeyButton.Add_Click({
             $productKey = $null
             try {
-                $productKey = (Get-WmiObject -query 'select OA3xOriginalProductKey from SoftwareLicensingService').OA3xOriginalProductKey
+                $productKey = (Get-CimInstance -ClassName SoftwareLicensingService -ErrorAction Stop).OA3xOriginalProductKey
 
                 $textBox     = $activationDialogWindow.FindName("OemKeyTextBox")
                 $findBtn     = $activationDialogWindow.FindName("FindOemKeyButton")
@@ -104,9 +104,9 @@
 
             try {
                 Write-InstallLog "Tentando ativar o sistema usando a chave OEM encontrada..."
-                $SLSvc = Get-WmiObject -Class SoftwareLicensingService -ErrorAction Stop
-                $null = $SLSvc.InstallProductKey($productKey)
-                $null = $SLSvc.RefreshLicenseStatus()
+                $SLSvc = Get-CimInstance -ClassName SoftwareLicensingService -ErrorAction Stop
+                $null = Invoke-CimMethod -InputObject $SLSvc -MethodName InstallProductKey -Arguments @{ ProductKey = $productKey } -ErrorAction Stop
+                $null = Invoke-CimMethod -InputObject $SLSvc -MethodName RefreshLicenseStatus -ErrorAction Stop
                 Start-Sleep -Seconds 3
                 $licenseInfo = Get-CimInstance -Query 'SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID = "55c92734-d682-4d71-983e-d6ec3f16059f" AND PartialProductKey IS NOT NULL' | Select-Object -First 1
 

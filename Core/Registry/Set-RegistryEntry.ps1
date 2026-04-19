@@ -71,6 +71,7 @@ function Apply-RegistryEntry {
         [Parameter(Mandatory = $false)]$Value
     )
 
+    Write-InstallLog "Apply-RegistryEntry esta depreciada. Use Set-RegistryEntry." -Status "AVISO"
     return Set-RegistryEntry @PSBoundParameters
 }
 

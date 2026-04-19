@@ -153,7 +153,7 @@ Janela que permite escolher o modo de operação.
 
 Dividida em duas seções principais.
 #### Ativação OEM:
-- Utiliza **`Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey`** para localizar uma Product Key OEM registrada no firmware da máquina.
+- Utiliza **`Get-CimInstance -ClassName SoftwareLicensingService`** para localizar a Product Key OEM registrada no firmware da máquina (`OA3xOriginalProductKey`).
 - Se uma chave for localizada, ela é exibida no campo de texto, e o botão **Ativar** se torna disponível.
 - Ao clicar no botão **Ativar**, o script tenta realizar a ativação do sistema de forma nativa internamente. Caso a ativação seja bem-sucedida, uma mensagem de sucesso é exibida.
 - Se por algum motivo, a ativação usando a chave encontrada não funcionar, o usuário ainda pode copiar a chave OEM para realizar a ativação manualmente por meio da página de configurações do sistema.

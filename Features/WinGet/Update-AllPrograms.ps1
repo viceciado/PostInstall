@@ -52,6 +52,7 @@ function Upgrade-AllPrograms {
         [Parameter(Mandatory = $true)][string]$WingetPath
     )
 
+    Write-InstallLog "Upgrade-AllPrograms esta depreciada. Use Update-AllPrograms." -Status "AVISO"
     return Update-AllPrograms @PSBoundParameters
 }
 

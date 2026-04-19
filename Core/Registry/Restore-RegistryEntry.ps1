@@ -86,6 +86,7 @@ function Undo-RegistryEntry {
         [Parameter(Mandatory = $false)][string]$Type
     )
 
+    Write-InstallLog "Undo-RegistryEntry esta depreciada. Use Restore-RegistryEntry." -Status "AVISO"
     return Restore-RegistryEntry @PSBoundParameters
 }
 
