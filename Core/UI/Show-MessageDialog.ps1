@@ -110,23 +110,23 @@
         if ($iconText) {
             switch ($MessageType) {
                 "Info" {
-                    $iconText.Text = [char]0xE946  # Info icon (Segoe MDL2 Assets)
+                    $iconText.Text = $global:PSConst.Icons.Info
                     $iconText.Foreground = "#007ACC"
                 }
                 "Warning" {
-                    $iconText.Text = [char]0xE7BA  # Warning icon (Segoe MDL2 Assets)
+                    $iconText.Text = $global:PSConst.Icons.Warning
                     $iconText.Foreground = "#FF8C00"
                 }
                 "Error" {
-                    $iconText.Text = [char]0xE783  # Error icon (Segoe MDL2 Assets)
+                    $iconText.Text = $global:PSConst.Icons.Error
                     $iconText.Foreground = "#E81123"
                 }
                 "Question" {
-                    $iconText.Text = [char]0xE9CE  # Help icon (Segoe MDL2 Assets)
+                    $iconText.Text = $global:PSConst.Icons.Question
                     $iconText.Foreground = "#0078D4"
                 }
                 "Connection" {
-                    $iconText.Text = [char]0xEB55  # Connection icon (Segoe MDL2 Assets)
+                    $iconText.Text = $global:PSConst.Icons.Connection
                     $iconText.Foreground = "#FF8C00"
                 }
             }

@@ -158,11 +158,11 @@ function Update-ButtonUI {
             $currentTheme = Get-CurrentWindowsTheme
             
             if ($currentTheme -eq "Claro") {
-                $Button.Content = [char]0xE708  # Ícone de lua (tema escuro)
+                $Button.Content = $global:PSConst.Icons.Moon
                 $Button.ToolTip = "Aplicar tema escuro"
             }
             else {
-                $Button.Content = [char]0xE706  # Ícone de sol (tema claro)
+                $Button.Content = $global:PSConst.Icons.Sun
                 $Button.ToolTip = "Aplicar tema claro"
             }
             
@@ -176,7 +176,7 @@ function Update-ButtonUI {
 
     if ($Button -eq $AvoidSleepButton) {
         if ($global:ScriptContext.System.AvoidSleep -eq $true) {
-            $Button.Content = [char]0xEB50
+            $Button.Content = $global:PSConst.Icons.AvoidSleepOn
             # E781 lâmpada acesa
             # EB50 lâmpada com check
             # EA80 
@@ -189,7 +189,7 @@ function Update-ButtonUI {
             return $false
         }
         else {
-            $Button.Content = [char]0xE82F
+            $Button.Content = $global:PSConst.Icons.AvoidSleepOff
             $Button.Foreground = "White"
             $Button.ToolTip = "Clique para manter o computador ligado"
             return $true

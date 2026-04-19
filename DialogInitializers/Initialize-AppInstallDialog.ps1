@@ -32,7 +32,7 @@
             $errorContainer.Margin = "0,20,0,0"
 
             $errorIcon = New-Object System.Windows.Controls.TextBlock
-            $errorIcon.Text = [char]0xE783
+            $errorIcon.Text = $global:PSConst.Icons.Error
             $errorIcon.FontFamily = "Segoe MDL2 Assets"
             $errorIcon.FontSize = 32
             $errorIcon.Foreground = "Orange"

@@ -71,7 +71,7 @@
         $allButton.BorderThickness = 0
         $allButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
         $iconTextAll = New-Object System.Windows.Controls.TextBlock
-        $iconTextAll.Text = [char]0xF0E2
+        $iconTextAll.Text = $global:PSConst.Icons.All
         $iconTextAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
         $iconTextAll.FontSize = 16
         $allButton.Content = $iconTextAll
@@ -148,7 +148,7 @@
         $checkAllButton.BorderThickness = 0
         $checkAllButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
         $iconTextCheckAll = New-Object System.Windows.Controls.TextBlock
-        $iconTextCheckAll.Text = [char]0xE9D5
+        $iconTextCheckAll.Text = $global:PSConst.Icons.CheckAll
         $iconTextCheckAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
         $iconTextCheckAll.FontSize = 16
         $checkAllButton.Content = $iconTextCheckAll
@@ -166,7 +166,7 @@
         $clearAllButton.BorderThickness = 0
         $clearAllButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
         $iconTextClearAll = New-Object System.Windows.Controls.TextBlock
-        $iconTextClearAll.Text = [char]0xED62
+        $iconTextClearAll.Text = $global:PSConst.Icons.ClearAll
         $iconTextClearAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
         $iconTextClearAll.FontSize = 16
         $clearAllButton.Content = $iconTextClearAll

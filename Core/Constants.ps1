@@ -31,12 +31,17 @@ if (-not $global:PSConst) {
             CheckAll        = [char]0xE9D5   # Check / marcar tudo
             ClearAll        = [char]0xED62   # Borracha / limpar seleção
             Error           = [char]0xE783   # Exclamação — erro de carregamento
+            Warning         = [char]0xE7BA   # Aviso
+            Question        = [char]0xE9CE   # Ajuda / pergunta
+            Connection      = [char]0xEB55   # Conexão
             Settings        = [char]0xE713   # Engrenagem
             Info            = [char]0xE946   # Informação
             Notification    = [char]0xE7E7   # Sino — notificação
             Theme           = [char]0xE793   # Paleta de cores / tema
             Moon            = [char]0xE708   # Lua — tema escuro
             Sun             = [char]0xE706   # Sol — tema claro
+            AvoidSleepOn    = [char]0xEB50   # Lâmpada com check
+            AvoidSleepOff   = [char]0xE82F   # Lâmpada padrão
             Sleep           = [char]0xE708   # Lua — evitar suspensão
             NoSleep         = [char]0xE7E8   # Copo de café — modo ativo
             Close           = [char]0xE8BB   # X
@@ -67,6 +72,14 @@ if (-not $global:PSConst) {
         LogPaths = @{
             Primary  = "$env:SystemRoot\Setup\Scripts\Install.log"
             Fallback = "$env:APPDATA\Install.log"
+        }
+
+        # ─── Sentinelas e tipos especiais de Registro ───────────────────────
+        Registry = @{
+            DeleteKeyType = 'DeleteKey'
+            DeleteKeyTypeUpper = 'DELETEKEY'
+            RemoveEntrySentinel = '<RemoveEntry>'
+            RestoreKeySentinel = '<RestoreKey>'
         }
 
         # ─── IDs de navegadores conhecidos (detecção de conflito MSEdgeRedirect) ──

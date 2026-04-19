@@ -3,8 +3,8 @@
     .SYNOPSIS
         Desfaz uma entrada de registro (restaura valor original ou recria/remove chave).
     .NOTES
-        Use OriginalValue = '<RemoveEntry>' para remover a propriedade.
-        Use OriginalValue = '<RestoreKey>' em conjunto com Type = 'DeleteKey' para recriar a chave.
+        Use OriginalValue = '$($global:PSConst.Registry.RemoveEntrySentinel)' para remover a propriedade.
+        Use OriginalValue = '$($global:PSConst.Registry.RestoreKeySentinel)' em conjunto com Type = '$($global:PSConst.Registry.DeleteKeyType)' para recriar a chave.
     #>
     param(
         [Parameter(Mandatory = $true)] [string]$Path,
@@ -16,8 +16,8 @@
         $norm      = ConvertTo-RegistryType -Type $Type
         $typeUpper = $norm.Up
 
-        if ($typeUpper -eq 'DELETEKEY') {
-            if (($OriginalValue -as [string]) -eq '<RestoreKey>') {
+        if ($typeUpper -eq $global:PSConst.Registry.DeleteKeyTypeUpper) {
+            if (($OriginalValue -as [string]) -eq $global:PSConst.Registry.RestoreKeySentinel) {
                 if (-not (Test-Path -Path $Path)) {
                     New-Item -Path $Path -Force | Out-Null
                     Write-InstallLog "Chave restaurada (recriada): $Path"
@@ -40,7 +40,7 @@
 
         if ($Name) {
             if ($null -ne $OriginalValue) {
-                if (($OriginalValue -as [string]) -eq '<RemoveEntry>') {
+                if (($OriginalValue -as [string]) -eq $global:PSConst.Registry.RemoveEntrySentinel) {
                     $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
                     if ($null -ne $existing) {
                         Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue

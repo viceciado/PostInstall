@@ -23,8 +23,8 @@
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
-                if ($entry.PSObject.Properties['DeleteKey'] -and $entry.DeleteKey) {
-                    $ok = Restore-RegistryEntry -Path $entry.Path -OriginalValue $entry.OriginalValue -Type 'DeleteKey'
+                if ($entry.PSObject.Properties[$global:PSConst.Registry.DeleteKeyType] -and $entry.DeleteKey) {
+                    $ok = Restore-RegistryEntry -Path $entry.Path -OriginalValue $entry.OriginalValue -Type $global:PSConst.Registry.DeleteKeyType
                 }
                 else {
                     $ok = Restore-RegistryEntry -Path $entry.Path -Name $entry.Name -OriginalValue $entry.OriginalValue -Type $entry.Type

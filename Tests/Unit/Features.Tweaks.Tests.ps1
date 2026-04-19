@@ -17,11 +17,13 @@ BeforeAll {
 
     # Dot-source dependências necessárias
     . (Join-Path $script:ProjectRoot 'Core\Logging\Write-InstallLog.ps1')
+    . (Join-Path $script:ProjectRoot 'Core\Process\Invoke-ElevatedProcess.ps1')
     . (Join-Path $script:ProjectRoot 'Core\Registry\ConvertTo-RegistryType.ps1')
     . (Join-Path $script:ProjectRoot 'Core\Registry\Set-RegistryEntry.ps1')
     . (Join-Path $script:ProjectRoot 'Core\Registry\Restore-RegistryEntry.ps1')
     . (Join-Path $script:ProjectRoot 'Core\UI\Get-AvailableWindows.ps1')   # Get-AvailableItems
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Get-TweakByName.ps1')
+    . (Join-Path $script:ProjectRoot 'Features\Tweaks\Restart-Explorer.ps1')
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Invoke-TweaksManager.ps1')
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Set-Tweak.ps1')
     . (Join-Path $script:ProjectRoot 'Features\Tweaks\Restore-Tweak.ps1')

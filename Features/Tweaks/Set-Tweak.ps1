@@ -29,7 +29,7 @@
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
-                if ($entry.PSObject.Properties['DeleteKey'] -and $entry.DeleteKey) {
+                if ($entry.PSObject.Properties[$global:PSConst.Registry.DeleteKeyType] -and $entry.DeleteKey) {
                     try {
                         if (Test-Path -Path $entry.Path) {
                             Remove-Item -Path $entry.Path -Force -Recurse -ErrorAction SilentlyContinue
@@ -40,7 +40,7 @@
                         }
                     }
                     catch {
-                        Write-InstallLog "Erro em Set-Tweak (DeleteKey '$($entry.Path)'): $($_.Exception.Message)" -Status "ERRO"
+                        Write-InstallLog "Erro em Set-Tweak ($($global:PSConst.Registry.DeleteKeyType) '$($entry.Path)'): $($_.Exception.Message)" -Status "ERRO"
                         $regOk = $false
                     }
                     continue

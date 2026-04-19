@@ -14,7 +14,7 @@
         $typeUpper   = $norm.Up
         $psType      = $norm.Ps
 
-        if ($typeUpper -eq 'DELETEKEY') {
+        if ($typeUpper -eq $global:PSConst.Registry.DeleteKeyTypeUpper) {
             if (Test-Path -Path $Path) {
                 Remove-Item -Path $Path -Force -Recurse -ErrorAction SilentlyContinue
                 Write-InstallLog "Chave removida: $Path"
