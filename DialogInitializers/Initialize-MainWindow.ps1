@@ -136,7 +136,7 @@
             $script:officeMountedImagePath  = $selectedImagePath
             $InstallOfficeButton.Content    = "Desmontar imagem"
             $InstallOfficeButton.IsEnabled  = $true
-            $InstallOfficeButton.Background = $global:PSConst.Colors.SuccessAlt
+            $InstallOfficeButton.Background = $global:PSConst.Colors.Success
             $InstallOfficeButton.ToolTip    = "Clique aqui quando a instalação do Office tiver sido concluída"
 
             Write-InstallLog "Imagem montada na unidade ${driveLetter}:"
@@ -241,7 +241,7 @@
                             }
                             catch {
                                 $button.Content    = "Erro!"
-                                $button.Background = $global:PSConst.Colors.ErrorStrong
+                                $button.Background = $global:PSConst.Colors.Error
                                 Write-InstallLog "Erro ao limpar permissÃµes de $folderPath`: $_" -Status "ERRO"
                             }
                         }

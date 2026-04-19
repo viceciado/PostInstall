@@ -16,10 +16,8 @@ if (-not $global:PSConst) {
             Accent          = '#993233'   # Vermelho — botões de ação destrutiva / padrão
             Background      = '#1E1E1E'   # Fundo principal das janelas
             Surface         = '#2D2D30'   # Superfície de controles (botão padrão)
-            Success         = '#28A745'   # Verde — sucesso leve
-            SuccessAlt      = '#4CAF50'   # Verde — sucesso alternativo (Office/OEM)
-            Error           = '#CC6666'   # Vermelho suave — estado de erro em botão
-            ErrorStrong     = '#DC3545'   # Vermelho Bootstrap — erro crítico
+            Success         = '#28A745'   # Verde — ação bem-sucedida / ativar
+            Error           = '#CC6666'   # Vermelho — estado de erro em botão
             Disabled        = '#555555'   # Cinza — desabilitado / já executado
             Info            = '#0078D4'   # Azul — informação
             Warning         = '#FFA500'   # Laranja — aviso

@@ -19,7 +19,7 @@
             $copyOemKeyButton.Visibility = "Visible"
             $findOemKeyButton.IsEnabled = $false
             $findOemKeyButton.Background = $global:PSConst.Colors.Disabled
-            $activateOemButton.Background = $global:PSConst.Colors.SuccessAlt
+            $activateOemButton.Background = $global:PSConst.Colors.Success
             $activateOemButton.IsEnabled = $true
         }
 
@@ -42,7 +42,7 @@
                     Write-InstallLog "Clique em Ativar para usar a chave encontrada"
                     Show-Notification -Title "Chave OEM encontrada`n$productKey" -Message "Clique em Ativar para usar a chave encontrada."
 
-                    $activateBtn.Background = $global:PSConst.Colors.SuccessAlt
+                    $activateBtn.Background = $global:PSConst.Colors.Success
                     $activateBtn.IsEnabled  = $true
                     $copyBtn.Visibility     = "Visible"
                 }
