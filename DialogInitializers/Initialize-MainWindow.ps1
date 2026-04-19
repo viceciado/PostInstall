@@ -1,0 +1,418 @@
+﻿function Initialize-MainWindow {
+    <#
+    .SYNOPSIS
+        Registra todos os event handlers da MainWindow.
+
+    .DESCRIPTION
+        Recebe a instÃ¢ncia da MainWindow (xamlWindow) jÃ¡ carregada e registra nela
+        todos os handlers de clique, comportamento e navegaÃ§Ã£o.
+        MantÃ©m o Main.ps1 focado apenas no bootstrap do ciclo de vida da aplicaÃ§Ã£o.
+
+    .PARAMETER xamlWindow
+        InstÃ¢ncia da MainWindow carregada via XamlReader.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Window]$xamlWindow
+    )
+
+    # â”€â”€ Arrastar janela sem barra de tÃ­tulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $dialogBorder = $xamlWindow.FindName("DialogBorder")
+    $closeButton  = $xamlWindow.FindName("CloseButton")
+
+    if ($dialogBorder) {
+        $dialogBorder.Add_MouseDown({
+            param($sender, $e)
+            if ($e.LeftButton -eq 'Pressed') { $xamlWindow.DragMove() }
+        })
+    }
+
+    # â”€â”€ Evitar suspensÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $avoidSleepButton = $xamlWindow.FindName("AvoidSleepButton")
+    if ($avoidSleepButton) {
+        $avoidSleepButton.Add_Click({
+            if ($global:ScriptContext.System.AvoidSleep -eq $true) { Set-AvoidSleep }
+            else { Set-AvoidSleep -AvoidSleep $true }
+            Update-ButtonUI -Button $avoidSleepButton
+        })
+    }
+
+    # â”€â”€ Instalar programas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $appInstallButton = $xamlWindow.FindName("SelectAndInstallProgramsButton")
+    if ($appInstallButton) {
+        $appInstallButton.Add_Click({ Invoke-XamlDialog -WindowName 'AppInstallDialog' })
+    }
+
+    # â”€â”€ Instalar Office (montar/desmontar imagem) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $script:officeMountedImagePath      = $null
+    $script:originalOfficeButtonContent = $null
+    $script:originalOfficeButtonColor   = $null
+
+    $InstallOfficeButton = $xamlWindow.FindName("InstallOfficeButton")
+    if ($InstallOfficeButton) {
+        $script:originalOfficeButtonContent = $InstallOfficeButton.Content
+        $script:originalOfficeButtonColor   = $InstallOfficeButton.Background
+
+        $InstallOfficeButton.Add_Click({
+            # â”€â”€ Modo desmontagem â”€â”€
+            if ($script:officeMountedImagePath) {
+                $result = Show-MessageDialog -Message "Tem certeza que deseja desmontar a imagem de instalaÃ§Ã£o?" -Title "InstalaÃ§Ã£o do Office" -MessageType "Question" -Buttons "YesNo"
+                if ($result -eq "Yes") {
+                    try {
+                        Dismount-DiskImage -ImagePath $script:officeMountedImagePath -Confirm:$false -ErrorAction Stop
+                        Write-InstallLog "Imagem desmontada: $script:officeMountedImagePath"
+                        $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
+                        $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                        $script:officeMountedImagePath  = $null
+                        Show-Notification -Title "InstalaÃ§Ã£o do Office" -Message "Imagem desmontada com sucesso."
+                    }
+                    catch {
+                        $msg = "Erro ao desmontar a imagem: $($_.Exception.Message)"
+                        Write-InstallLog $msg -Status "ERRO"
+                        Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
+                    }
+                }
+                return
+            }
+
+            # â”€â”€ Modo montagem â”€â”€
+            $InstallOfficeButton.Content    = "Aguarde..."
+            $InstallOfficeButton.IsEnabled  = $false
+            $InstallOfficeButton.Background = "Gray"
+
+            $dlg = New-Object System.Windows.Forms.OpenFileDialog
+            $dlg.InitialDirectory    = [System.Environment]::GetFolderPath('Desktop')
+            $dlg.Filter              = "Arquivos de imagem (*.img)|*.img|Todos os arquivos (*.*)|*.*"
+            $dlg.Title               = "Localize a imagem de instalaÃ§Ã£o do Office"
+            $dlg.CheckFileExists     = $true
+            $dlg.CheckPathExists     = $true
+
+            if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
+                Write-InstallLog "InstalaÃ§Ã£o do Office cancelada pelo usuÃ¡rio"
+                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
+                $InstallOfficeButton.IsEnabled  = $true
+                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                return
+            }
+
+            $selectedImagePath = $dlg.FileName
+            Write-InstallLog "Arquivo selecionado: $selectedImagePath"
+
+            try {
+                $mountResult = Mount-DiskImage -ImagePath $selectedImagePath -PassThru -ErrorAction Stop
+            }
+            catch {
+                $msg = "Erro ao montar a imagem: $($_.Exception.Message)"
+                Write-InstallLog $msg -Status "ERRO"
+                Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
+                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
+                $InstallOfficeButton.IsEnabled  = $true
+                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                return
+            }
+
+            if (-not $mountResult) {
+                $msg = "Erro ao montar a imagem. Verifique se o arquivo Ã© vÃ¡lido e tente novamente."
+                Write-InstallLog $msg -Status "ERRO"
+                Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
+                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
+                $InstallOfficeButton.IsEnabled  = $true
+                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                return
+            }
+
+            $driveLetter = ($mountResult | Get-Volume).DriveLetter
+            if (-not $driveLetter) {
+                $msg = "Erro ao obter a letra da unidade. Verifique se a imagem foi montada corretamente."
+                Write-InstallLog $msg -Status "ERRO"
+                Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
+                Dismount-DiskImage -ImagePath $selectedImagePath -Confirm:$false -ErrorAction SilentlyContinue
+                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
+                $InstallOfficeButton.IsEnabled  = $true
+                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                return
+            }
+
+            $script:officeMountedImagePath  = $selectedImagePath
+            $InstallOfficeButton.Content    = "Desmontar imagem"
+            $InstallOfficeButton.IsEnabled  = $true
+            $InstallOfficeButton.Background = "#4CAF50"
+            $InstallOfficeButton.ToolTip    = "Clique aqui quando a instalaÃ§Ã£o do Office tiver sido concluÃ­da"
+
+            Write-InstallLog "Imagem montada na unidade ${driveLetter}:"
+            Show-MessageDialog -Message "Execute o arquivo de instalaÃ§Ã£o a partir da prÃ³xima tela.`n`nQuando a instalaÃ§Ã£o terminar, clique para desmontar a imagem." -Title "InstalaÃ§Ã£o do Office"
+
+            if (Test-Path -Path "$($driveLetter):\setup.exe") {
+                Start-Process -FilePath "explorer.exe" -ArgumentList ("/select,$($driveLetter):\setup.exe")
+            }
+            else {
+                Start-Process "${driveLetter}:\"
+            }
+        })
+    }
+
+    # â”€â”€ Tema do Windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $applyThemeButton = $xamlWindow.FindName("ApplyThemeButton")
+    if ($applyThemeButton) {
+        Update-ButtonUI -Button $applyThemeButton
+
+        $applyThemeButton.Add_Click({
+            try {
+                $currentTheme = Get-CurrentWindowsTheme
+                $newTheme = if ($currentTheme -eq "Claro") { "Escuro" } else { "Claro" }
+                if (Set-WindowsTheme -Theme $newTheme) {
+                    Update-ButtonUI -Button $applyThemeButton
+                    Write-InstallLog "Tema $($newTheme.ToLower()) aplicado"
+                }
+                else {
+                    Write-InstallLog "Falha ao aplicar o tema $($newTheme.ToLower())" -Status "ERRO"
+                }
+            }
+            catch {
+                Write-InstallLog "Erro ao aplicar tema: $($_.Exception.Message)" -Status "ERRO"
+            }
+        })
+    }
+
+    # â”€â”€ Tweaks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $TweaksButton = $xamlWindow.FindName("TweaksButton")
+    if ($TweaksButton) {
+        $TweaksButton.Add_Click({ Invoke-XamlDialog -WindowName 'TweaksDialog' })
+    }
+
+    # â”€â”€ Limpeza de permissÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $FixPermissionsButton = $xamlWindow.FindName("FixPermissionsButton")
+    if ($FixPermissionsButton) {
+        $FixPermissionsButton.Add_Click({
+            $selectedFolders = @()
+
+            if ($global:ScriptContext.Config.PersistedSelectedFolders.Count -gt 0) {
+                $usePersistedChoice = Show-MessageDialog -Message "VocÃª jÃ¡ selecionou $($global:ScriptContext.Config.PersistedSelectedFolders.Count) pastas anteriormente.`n`nDeseja continuar com a seleÃ§Ã£o anterior?" -Title "Limpeza de permissÃµes" -MessageType "Question" -Buttons "YesNoCancel"
+                if ($usePersistedChoice -eq "Yes") {
+                    $selectedFolders = $global:ScriptContext.Config.PersistedSelectedFolders
+                }
+                elseif ($usePersistedChoice -eq "No") {
+                    $global:ScriptContext.Config.PersistedSelectedFolders = @()
+                }
+                else { return }
+            }
+
+            if ($selectedFolders.Count -eq 0) {
+                do {
+                    $folderBrowserDialog = New-Object System.Windows.Forms.FolderBrowserDialog
+                    $folderBrowserDialog.Description = "Selecione a pasta para ajustar as permissÃµes`n`nAVISO: A limpeza Ã© recursiva."
+                    $folderBrowserDialog.ShowNewFolderButton = $false
+
+                    if ($folderBrowserDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+                        $selectedPath = $folderBrowserDialog.SelectedPath
+                        if ($selectedFolders -notcontains $selectedPath) { $selectedFolders += $selectedPath }
+                        $selectedFolders = Remove-RedundantSubfolders -FolderList $selectedFolders
+
+                        $message   = "Pasta(s) selecionada(s):`n$($selectedFolders -join "`n")`n`nDeseja selecionar mais pastas?"
+                        $addMore   = Show-MessageDialog -Title "Limpeza de permissÃµes" -Message $message -MessageType "Question" -Buttons "YesNo"
+                        if ($addMore -ne "Yes") { break }
+                    }
+                    else { break }
+                } while ($true)
+            }
+
+            if ($selectedFolders.Count -gt 0) {
+                $global:ScriptContext.Config.PersistedSelectedFolders = $selectedFolders
+                Write-InstallLog "Pastas selecionadas para a limpeza de permissÃµes:"
+                foreach ($folder in $selectedFolders) { Write-InstallLog $folder }
+
+                $cleanNowOrLater = Show-MessageDialog -Message "Deseja limpar as permissÃµes agora?`n`nCaso contrÃ¡rio, o script criarÃ¡ uma tarefa agendada que executarÃ¡ a limpeza de permissÃµes de forma automÃ¡tica e silenciosa no prÃ³ximo boot do sistema." -Title "Limpeza de permissÃµes" -MessageType "Question" -Buttons "YesNoCancel"
+
+                if ($cleanNowOrLater -eq "Yes") {
+                    Invoke-XamlDialog -WindowName "PermissionsDialog" -ConfigureDialog {
+                        param($dialog)
+                        $foldersStackPanel   = $dialog.FindName("FoldersStackPanel")
+                        $clearPersistedButton = $dialog.FindName("ClearPersistedButton")
+
+                        $cleanPermissions = {
+                            param($folderPath, $button)
+                            try {
+                                $button.IsEnabled = $false
+                                Invoke-ElevatedProcess -FilePath "icacls.exe" -ArgumentList "$folderPath /q /c /t /reset"
+                                $button.Content    = "Executado"
+                                $button.Background = "#28A745"
+                                Write-InstallLog "Limpeza de permissÃµes concluÃ­da para $folderPath"
+                                Show-Notification -Title "Limpeza de permissÃµes em:" -Message $folderPath
+                            }
+                            catch {
+                                $button.Content    = "Erro!"
+                                $button.Background = "#DC3545"
+                                Write-InstallLog "Erro ao limpar permissÃµes de $folderPath`: $_" -Status "ERRO"
+                            }
+                        }
+
+                        foreach ($folder in $selectedFolders) {
+                            $grid = New-Object System.Windows.Controls.Grid
+                            $grid.Margin = "0,5,0,5"
+                            $col1 = New-Object System.Windows.Controls.ColumnDefinition; $col1.Width = "*"
+                            $col2 = New-Object System.Windows.Controls.ColumnDefinition; $col2.Width = "Auto"
+                            $grid.ColumnDefinitions.Add($col1); $grid.ColumnDefinitions.Add($col2)
+
+                            $tb = New-Object System.Windows.Controls.TextBlock
+                            $tb.Text = $folder; $tb.VerticalAlignment = "Center"
+                            $tb.Margin = "5,0,10,0"; $tb.TextWrapping = "Wrap"
+                            [System.Windows.Controls.Grid]::SetColumn($tb, 0)
+
+                            $btn = New-Object System.Windows.Controls.Button
+                            $btn.Content = "Limpar"
+                            $btn.Style = $dialog.Resources["ActionButtonStyle"]
+                            $btn.Background = "#993233"
+                            [System.Windows.Controls.Grid]::SetColumn($btn, 1)
+                            $btn.Add_Click({ $cleanPermissions.Invoke($folder, $btn) }.GetNewClosure())
+
+                            $grid.Children.Add($tb); $grid.Children.Add($btn)
+                            $foldersStackPanel.Children.Add($grid)
+                        }
+
+                        if ($clearPersistedButton) {
+                            $clearPersistedButton.Add_Click({
+                                $confirm = Show-MessageDialog -Message "Tem certeza de que deseja limpar a seleÃ§Ã£o de pastas salva?`n`nIsso farÃ¡ com que vocÃª precise selecionar as pastas novamente na prÃ³xima vez." -Title "Confirmar Limpeza" -MessageType "Question" -Buttons "YesNo"
+                                if ($confirm -eq "Yes") {
+                                    $global:ScriptContext.Config.PersistedSelectedFolders = @()
+                                    $dialog.DialogResult = $false
+                                    $dialog.Close()
+                                }
+                            })
+                        }
+                    }
+                }
+                elseif ($cleanNowOrLater -eq "No") {
+                    $created = Register-PermissionsReset -selectedFolders $selectedFolders
+                    if ($created -eq $true) {
+                        Show-Notification -Title "Limpeza de permissÃµes" -Message "A tarefa foi criada com sucesso"
+                        $global:ScriptContext.Config.PersistedSelectedFolders = @()
+                    }
+                    else {
+                        $openLog = Show-MessageDialog -Message "Erro ao criar a tarefa.`n`nDeseja consultar o log para ver o problema?" -Title "Erro" -MessageType "Error" -Buttons "YesNo"
+                        if ($openLog -eq "Yes") { Invoke-XamlDialog -WindowName 'LogViewer' }
+                    }
+                }
+                # else: cancelado â€” nÃ£o faz nada
+            }
+        })
+    }
+
+    # â”€â”€ Ativar Windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $activateButton = $xamlWindow.FindName("ActivateButton")
+    if ($activateButton) {
+        $activateButton.Add_Click({ Invoke-XamlDialog -WindowName 'ActivationDialog' })
+    }
+
+    # â”€â”€ Windows Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $WUpdateButton = $xamlWindow.FindName("WUpdateButton")
+    if ($WUpdateButton) {
+        $WUpdateButton.Add_Click({
+            Write-InstallLog "Abrindo Windows Update"
+            Start-Process "ms-settings:windowsupdate-action"
+        })
+    }
+
+    # â”€â”€ Importar drivers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $importDriversButton = $xamlWindow.FindName("ImportDriversButton")
+    if ($importDriversButton) {
+        $importDriversButton.Add_Click({
+            $originalContent = $importDriversButton.Content
+            $importDriversButton.IsEnabled = $false
+            $importDriversButton.Content   = "Aguarde..."
+
+            Show-MessageDialog -Title "ImportaÃ§Ã£o de drivers" -Message "Essa funÃ§Ã£o deve ser usada somente em cenÃ¡rios especÃ­ficos. Sempre dÃª preferÃªncia para instalar os drivers da mÃ¡quina pelo site do fabricante ou pelo Windows Update."
+
+            $folderDlg = New-Object System.Windows.Forms.FolderBrowserDialog
+            $folderDlg.Description        = "Selecione a pasta contendo os drivers para importaÃ§Ã£o"
+            $folderDlg.ShowNewFolderButton = $false
+
+            if ($folderDlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+                $selectedPath = $folderDlg.SelectedPath
+                $infFiles = Get-ChildItem -Path $selectedPath -Filter "*.inf" -Recurse -ErrorAction SilentlyContinue
+
+                if ($infFiles.Count -eq 0) {
+                    Write-InstallLog "A pasta selecionada '$selectedPath' nÃ£o contÃ©m arquivos .inf." -Status "AVISO"
+                    Show-MessageDialog -Message "A pasta selecionada nÃ£o contÃ©m nenhum arquivo .inf vÃ¡lido. Por favor, selecione uma pasta que contenha drivers." -Title "ImportaÃ§Ã£o de drivers" -MessageType "Error"
+                    $importDriversButton.Content   = $originalContent
+                    $importDriversButton.IsEnabled = $true
+                    return
+                }
+
+                Write-InstallLog "Pasta selecionada: $selectedPath contendo $($infFiles.Count) drivers"
+                $confirm = Show-MessageDialog -Message "Quantidade de drivers encontrados na pasta: $($infFiles.Count)`n`nProsseguir com a instalaÃ§Ã£o?" -Title "ImportaÃ§Ã£o de drivers" -MessageType "Question" -Buttons "YesNo"
+                if ($confirm -eq "Yes") {
+                    $importDriversButton.Content   = "ImportaÃ§Ã£o iniciada!"
+                    $importDriversButton.IsEnabled = $true
+                    try {
+                        Invoke-ElevatedProcess -FilePath "pnputil.exe" -ArgumentList "/add-driver ""$selectedPath\*.inf"" /subdirs /install" -PassThru
+                    }
+                    catch {
+                        $msg = "Erro ao executar pnputil: $($_.Exception.Message)"
+                        Write-InstallLog $msg -Status "ERRO"
+                        $importDriversButton.Content = "Erro!"
+                        Show-MessageDialog -Message $msg -Title "ImportaÃ§Ã£o de drivers" -MessageType "Error"
+                    }
+                }
+                else {
+                    $importDriversButton.Content   = $originalContent
+                    $importDriversButton.IsEnabled = $true
+                }
+            }
+            else {
+                $importDriversButton.Content   = $originalContent
+                $importDriversButton.IsEnabled = $true
+            }
+        })
+    }
+
+    # â”€â”€ Gerenciador de dispositivos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $deviceManagerButton = $xamlWindow.FindName("DeviceManagerButton")
+    if ($deviceManagerButton) {
+        $deviceManagerButton.Add_Click({
+            Write-InstallLog "Abrindo Gerenciador de Dispositivos"
+            Start-Process "devmgmt.msc"
+        })
+    }
+
+    # â”€â”€ VersÃ£o do script / link GitHub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $scriptVersionButton = $xamlWindow.FindName("ScriptVersionButton")
+    if ($scriptVersionButton) {
+        if ($global:ScriptContext.ScriptVersion) {
+            $scriptVersionButton.Content = $global:ScriptContext.ScriptVersion
+        }
+        $scriptVersionButton.Add_Click({ Start-Process "https://github.com/viceciado/PostInstall/" })
+    }
+
+    # â”€â”€ Sobre â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $aboutButton = $xamlWindow.FindName("AboutButton")
+    if ($aboutButton) {
+        $aboutButton.Add_Click({ Invoke-XamlDialog -WindowName 'AboutDialog' })
+    }
+
+    # â”€â”€ Visualizar log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $viewLogButton = $xamlWindow.FindName("ViewLogButton")
+    if ($viewLogButton) {
+        $viewLogButton.Add_Click({ Invoke-XamlDialog -WindowName 'LogViewer' })
+    }
+
+    # â”€â”€ Finalizar instalaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $finalizeButton = $xamlWindow.FindName("FinalizeInstallButton")
+    if ($finalizeButton) {
+        $finalizeButton.Add_Click({ Invoke-XamlDialog -WindowName 'FinalizeDialog' })
+    }
+
+    # â”€â”€ RodapÃ©: atalho para log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    $footerStatusButton = $xamlWindow.FindName("FooterStatusButton")
+    if ($footerStatusButton) {
+        $footerStatusButton.Add_Click({ Invoke-XamlDialog -WindowName 'LogViewer' })
+    }
+
+    # â”€â”€ Fechar janela â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if ($closeButton) {
+        $closeButton.Add_Click({
+            $answer = Show-MessageDialog -Message "Deseja realmente fechar o script agora?`n`nIsso sÃ³ fecha a janela, mas nÃ£o encerra a configuraÃ§Ã£o.`nSe vocÃª reiniciar o computador, essa janela aparecerÃ¡ novamente.`n`nA forma correta de finalizar o script Ã© por meio do botÃ£o Finalizar instalaÃ§Ã£o na tela principal." -Title "Encerrar o Post-Install" -MessageType "Warning" -Buttons "YesNo"
+            if ($answer -eq "Yes") { $xamlWindow.Close() }
+        })
+    }
+}
+

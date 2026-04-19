@@ -4,111 +4,22 @@
         WindowStyle="None" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize" MaxHeight="700"
         AllowsTransparency="True" Background="Transparent" Foreground="White" FontFamily="Futura">
     <Window.Resources>
-        <Style x:Key="DialogButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontFamily" Value="Futura"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="FocusBorder" Background="{TemplateBinding Background}" CornerRadius="3">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="FocusBorder" Property="BorderBrush" Value="White"/>
-                                <Setter TargetName="FocusBorder" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.85"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter Property="Opacity" Value="0.7"/></Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
         <!-- Estilo para botões de ação individuais -->
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontFamily" Value="Futura"/>
+        <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource CommonDialogButtonStyle}">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="5,2"/>
             <Setter Property="MinWidth" Value="100"/>
             <Setter Property="Height" Value="30"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="FocusBorder" Background="{TemplateBinding Background}" CornerRadius="3">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="FocusBorder" Property="BorderBrush" Value="White"/>
-                                <Setter TargetName="FocusBorder" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.85"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter Property="Opacity" Value="0.7"/></Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5"/>
-                                <Setter Property="Background" Value="#666666"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                    <Setter Property="Background" Value="#666666"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontFamily" Value="Futura"/>
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
-        
-        <!-- Estilo para o botão de fechar -->
-        <Style x:Key="CloseButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="FocusBorder" Background="{TemplateBinding Background}" 
-                                CornerRadius="15"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"
-                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="FocusBorder" Property="BorderBrush" Value="White"/>
-                                <Setter TargetName="FocusBorder" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#4A4A4F"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#6A6A6F"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <Style TargetType="TextBlock" BasedOn="{StaticResource CommonDialogTextBlockStyle}"/>
     </Window.Resources>
     <Border x:Name="DialogBorder" 
             Background="#1E1E1E" 
@@ -137,7 +48,7 @@
                     
                     <Button x:Name="CloseButton" 
                             Content="✕" 
-                            Style="{StaticResource CloseButtonStyle}"
+                            Style="{StaticResource CommonCloseButtonStyle}"
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center" 
                             Margin="0,0,5,0"/>
@@ -180,51 +91,14 @@
                     <StackPanel x:Name="FoldersStackPanel" Orientation="Vertical"/>
                     <ScrollViewer.Resources>
                         <!-- Estilo discreto para a scrollbar, consistente com TweaksDialog -->
-                        <Style TargetType="{x:Type ScrollBar}">
-                            <Setter Property="Width" Value="8"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                                        <Grid>
-                                            <Track Name="PART_Track" IsDirectionReversed="True">
-                                                <Track.Thumb>
-                                                    <Thumb>
-                                                        <Thumb.Style>
-                                                            <Style TargetType="{x:Type Thumb}">
-                                                                <Setter Property="Background" Value="#4A4A4F"/>
-                                                                <Setter Property="BorderBrush" Value="Transparent"/>
-                                                                <Setter Property="Template">
-                                                                    <Setter.Value>
-                                                                        <ControlTemplate TargetType="{x:Type Thumb}">
-                                                                            <Border Background="{TemplateBinding Background}" 
-                                                                                    CornerRadius="4" 
-                                                                                    Margin="2,0"/>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                                    <Setter Property="Background" Value="#6A6A6F"/>
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </Setter.Value>
-                                                                </Setter>
-                                                            </Style>
-                                                        </Thumb.Style>
-                                                    </Thumb>
-                                                </Track.Thumb>
-                                            </Track>
-                                        </Grid>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
+                        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource SlimScrollBarStyle}"/>
                     </ScrollViewer.Resources>
                 </ScrollViewer>
                 
                 <!-- Botões de controle -->
                 <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="ClearPersistedButton" Content="Limpar seleção de pastas" Width="180" Height="35" 
-                           Style="{StaticResource DialogButtonStyle}" Background="#993233" Margin="0,0,10,0"/>
+                           Style="{StaticResource CommonDialogButtonStyle}" Background="#993233" Margin="0,0,10,0"/>
                 </StackPanel>
             </Grid>
         </Grid>

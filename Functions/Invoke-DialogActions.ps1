@@ -1,20 +1,20 @@
-function global:Invoke-XamlDialog {
+﻿function Invoke-XamlDialog {
     <#
     .SYNOPSIS
-    Configura e exibe qualquer diálogo XAML com configuração específica
+    Configura e exibe qualquer diÃ¡logo XAML com configuraÃ§Ã£o especÃ­fica
     
     .DESCRIPTION
-    Função genérica para abrir diálogos XAML com configurações específicas.
-    Carrega automaticamente o XAML pelo nome da janela e aplica configurações específicas.
+    FunÃ§Ã£o genÃ©rica para abrir diÃ¡logos XAML com configuraÃ§Ãµes especÃ­ficas.
+    Carrega automaticamente o XAML pelo nome da janela e aplica configuraÃ§Ãµes especÃ­ficas.
     
     .PARAMETER WindowName
     Nome da janela XAML a ser carregada (ex: 'ActivationDialog', 'AboutDialog')
     
     .PARAMETER ConfigureDialog
-    ScriptBlock que será executado para configurar eventos específicos do diálogo
+    ScriptBlock que serÃ¡ executado para configurar eventos especÃ­ficos do diÃ¡logo
     
     .PARAMETER ShowModal
-    Se verdadeiro, exibe o diálogo como modal. Padrão: $true
+    Se verdadeiro, exibe o diÃ¡logo como modal. PadrÃ£o: $true
     
     .EXAMPLE
     Invoke-XamlDialog -WindowName 'ActivationDialog'
@@ -39,51 +39,69 @@ function global:Invoke-XamlDialog {
     )
     
     try {
-        # Carregar o conteúdo XAML pelo nome da janela
+        # Carregar o conteÃºdo XAML pelo nome da janela
         $xamlContent = Get-XamlByWindowName -WindowName $WindowName
         if (-not $xamlContent) {
-            throw "Janela '$WindowName' não encontrada. Janelas disponíveis: $(Get-AvailableWindows -join ', ')"
+            throw "Janela '$WindowName' nÃ£o encontrada. Janelas disponÃ­veis: $(Get-AvailableWindows -join ', ')"
         }
         
-        # Se não foi fornecida configuração específica, usar configuração padrão baseada no tipo de janela
+        # Se nÃ£o foi fornecida configuraÃ§Ã£o especÃ­fica, usar configuraÃ§Ã£o padrÃ£o baseada no tipo de janela
         if (-not $ConfigureDialog) {
             $ConfigureDialog = Get-DefaultDialogConfiguration -WindowName $WindowName
         }
         
-        # Resolver janela pai automaticamente, se disponível
+        # Resolver janela pai automaticamente, se disponÃ­vel
         $owner = $null
-        if ($global:ScriptContext.MainWindow -is [System.Windows.Window]) {
-            $owner = $global:ScriptContext.MainWindow
+        if ($global:ScriptContext.UI.MainWindow -is [System.Windows.Window]) {
+            $owner = $global:ScriptContext.UI.MainWindow
         }
         
-        # Usar a função genérica para abrir o diálogo
+        # Usar a funÃ§Ã£o genÃ©rica para abrir o diÃ¡logo
         Show-XamlDialog -XamlContent $xamlContent -Owner $owner -ConfigureDialog $ConfigureDialog -ShowModal $ShowModal
     }
     catch {
-        Write-InstallLog "Erro ao abrir diálogo '$WindowName': $($_.Exception.Message)" -Status "ERRO"
+        Write-InstallLog "Erro ao abrir diÃ¡logo '$WindowName': $($_.Exception.Message)" -Status "ERRO"
         throw
     }
 }
 
-function global:Get-DefaultDialogConfiguration {
+function Get-DefaultDialogConfiguration {
     <#
     .SYNOPSIS
-    Retorna a configuração padrão para diálogos conhecidos
-    
-    .PARAMETER WindowName
-    Nome da janela para obter configuração padrão
+        Dispatcher: mapeia o nome da janela para a funÃ§Ã£o de configuraÃ§Ã£o do diÃ¡logo correspondente.
+        Cada configuraÃ§Ã£o fica em DialogInitializers/Initialize-<Nome>.ps1.
     #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$WindowName
     )
-    
+
+    switch ($WindowName) {
+        'AboutDialog'       { return Get-AboutDialogConfiguration }
+        'TweaksDialog'      { return Get-TweaksDialogConfiguration }
+        'AppInstallDialog'  { return Get-AppInstallDialogConfiguration }
+        'ActivationDialog'  { return Get-ActivationDialogConfiguration }
+        'LogViewer'         { return Get-LogViewerConfiguration }
+        'FinalizeDialog'    { return Get-FinalizeDialogConfiguration }
+        default             { return $null }
+    }
+}
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# CÃ“DIGO LEGADO ABAIXO â€” mantido temporariamente para referÃªncia durante a
+# migraÃ§Ã£o. Pode ser removido quando todos os testes passarem.
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function _Legacy_Get-DefaultDialogConfiguration_DEPRECATED {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$WindowName
+    )
     switch ($WindowName) {
         'AboutDialog' {
             return {
                 param($aboutDialogWindow)
                 
-                # Configurar informações do sistema
+                # Configurar informaÃ§Ãµes do sistema
 
                 $systemInfoPanel = $aboutDialogWindow.FindName("SystemInfoPanel")
                 $fallbackText = $aboutDialogWindow.FindName("FallbackText")
@@ -112,10 +130,10 @@ function global:Get-DefaultDialogConfiguration {
                     if ($copySerialButton) {
                         if ($global:SystemInfoData.SerialNumber) {
                             $copySerialButton.Visibility = "Visible"
-                            # Evento de clique para copiar o número de série
+                            # Evento de clique para copiar o nÃºmero de sÃ©rie
                             $copySerialButton.Add_Click({
                                 [System.Windows.Clipboard]::SetText($global:SystemInfoData.SerialNumber)
-                                Show-Notification -Title "Número de série copiado" -Message "Você pode usar essa informação para localizar os drivers da máquina."
+                                Show-Notification -Title "NÃºmero de sÃ©rie copiado" -Message "VocÃª pode usar essa informaÃ§Ã£o para localizar os drivers da mÃ¡quina."
                             })
                         }
                         else {
@@ -138,7 +156,7 @@ function global:Get-DefaultDialogConfiguration {
                     }
                     if ($gpusText) {
                         if ($global:SystemInfoData.GPUs -and $global:SystemInfoData.GPUs.Count -gt 0) {
-                            $gpusText.Text = ($global:SystemInfoData.GPUs | ForEach-Object { "GPU: {0} - Memória: {1} MB" -f $_.Name, $_.MemoryMB }) -join "`n"
+                            $gpusText.Text = ($global:SystemInfoData.GPUs | ForEach-Object { "GPU: {0} - MemÃ³ria: {1} MB" -f $_.Name, $_.MemoryMB }) -join "`n"
                         } else { $gpusText.Text = "-" }
                     }
                 }
@@ -171,15 +189,15 @@ function global:Get-DefaultDialogConfiguration {
 
                 $script:updateApplyButtonState = {
                     try {
-                        # Calcular quantos checkboxes estão marcados
+                        # Calcular quantos checkboxes estÃ£o marcados
                         $checkedCount = ($script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }).Count
                         $hasAnyChecked = $checkedCount -gt 0
 
                         if ($script:ApplySelectedTweaksButton -and ($script:ApplySelectedTweaksButton -is [System.Windows.Controls.Button])) {
-                            # Atualizar estado do botão diretamente (mesmo padrão do findOemKey)
+                            # Atualizar estado do botÃ£o diretamente (mesmo padrÃ£o do findOemKey)
                             $script:ApplySelectedTweaksButton.IsEnabled = $hasAnyChecked
                             
-                            # Atualizar texto do botão com contador
+                            # Atualizar texto do botÃ£o com contador
                             if ($hasAnyChecked) {
                                 $script:ApplySelectedTweaksButton.Content = "Aplicar $checkedCount tweaks"
                                 $script:ApplySelectedTweaksButton.Background = "#993233"
@@ -190,30 +208,30 @@ function global:Get-DefaultDialogConfiguration {
                             }
                         }
 
-                        # Habilitar/Desabilitar o botão "Restaurar padrões" com base nos tweaks aplicados
+                        # Habilitar/Desabilitar o botÃ£o "Restaurar padrÃµes" com base nos tweaks aplicados
                         $appliedCount = if ($null -ne $global:ScriptContext.AppliedTweaks) { $global:ScriptContext.AppliedTweaks.Count } else { 0 }
                         if ($appliedCount -gt 0) {
                             $script:RestoreDefaultsButton.IsEnabled = $true
                             $script:RestoreDefaultsButton.Background = "#993233"
-                            $script:RestoreDefaultsButton.Content = "Desfazer $($appliedCount) alterações"
+                            $script:RestoreDefaultsButton.Content = "Desfazer $($appliedCount) alteraÃ§Ãµes"
                         }
                         else {
                             $script:RestoreDefaultsButton.IsEnabled = $false
                             $script:RestoreDefaultsButton.Background = "#2D2D30"
-                            $script:RestoreDefaultsButton.Content = "Restaurar padrões"
+                            $script:RestoreDefaultsButton.Content = "Restaurar padrÃµes"
                         }
                     }
                     catch {
-                        Write-InstallLog "Erro ao atualizar estado do botão Aplicar: $($_.Exception.Message)" -Status "AVISO"
+                        Write-InstallLog "Erro ao atualizar estado do botÃ£o Aplicar: $($_.Exception.Message)" -Status "AVISO"
                     }
                 }
                 
-                # Inicializar a coleção de checkboxes
+                # Inicializar a coleÃ§Ã£o de checkboxes
                 $script:checkboxesCollection = @{}
                 
                 # Carregar Tweaks e Categorias a partir do JSON (sem depender de $configData)
                 $allTweaks = Get-AvailableItems -ItemType "Tweaks"
-                # Filtrar tweaks para excluir aqueles que pertencem APENAS à categoria 'Finalização'
+                # Filtrar tweaks para excluir aqueles que pertencem APENAS Ã  categoria 'FinalizaÃ§Ã£o'
                 $availableTweaks = $allTweaks | Where-Object { ($_.Category -notcontains "Finalize") }
 
                 # Carregar categorias via Get-AvailableItems, evitando caminho direto
@@ -221,14 +239,14 @@ function global:Get-DefaultDialogConfiguration {
                 if (-not $tweaksCategories) { $tweaksCategories = @() }
                 $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalize" }
                 
-                # Adicionar o botão "Todos"
+                # Adicionar o botÃ£o "Todos"
                 $allButton = New-Object System.Windows.Controls.Button
                 $allButton.Style = $filterButtonStyle
                 $allButton.FocusVisualStyle = $null
                 $allButton.BorderThickness = 0
                 $allButton.BorderBrush = [System.Windows.Media.Brushes]::Transparent
                 $iconTextAll = New-Object System.Windows.Controls.TextBlock
-                $iconTextAll.Text = [char]0xF0E2 # Ícone genérico para "Todos" (da fonte Segoe MDL2 Assets)
+                $iconTextAll.Text = [char]0xF0E2 # Ãcone genÃ©rico para "Todos" (da fonte Segoe MDL2 Assets)
                 $iconTextAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
                 $iconTextAll.FontSize = 16
                 $allButton.Content = $iconTextAll
@@ -236,7 +254,7 @@ function global:Get-DefaultDialogConfiguration {
                 $allButton.Tag = "All"
                 $FilterButtonsPanel.Children.Add($allButton)
                 
-                # Handler do botão "Todos"
+                # Handler do botÃ£o "Todos"
                 $allButton.Add_Click({
                         $script:checkboxesCollection.Values | ForEach-Object { $_.Visibility = "Visible" }
                     })
@@ -250,7 +268,7 @@ function global:Get-DefaultDialogConfiguration {
                 $separator.VerticalAlignment = "Center"
                 $FilterButtonsPanel.Children.Add($separator)
 
-                # Adicionar os botões para cada categoria do JSON
+                # Adicionar os botÃµes para cada categoria do JSON
                 foreach ($category in $filteredCategories) {
                     $button = New-Object System.Windows.Controls.Button
                     $button.Style = $filterButtonStyle
@@ -258,7 +276,7 @@ function global:Get-DefaultDialogConfiguration {
                     $button.BorderThickness = 0
                     $button.BorderBrush = [System.Windows.Media.Brushes]::Transparent
         
-                    # Criar o TextBlock para o ícone (conversão inline da entidade)
+                    # Criar o TextBlock para o Ã­cone (conversÃ£o inline da entidade)
                     $iconText = New-Object System.Windows.Controls.TextBlock
                     $iconValue = ""
                     if (-not [string]::IsNullOrWhiteSpace($category.Icon)) {
@@ -270,7 +288,7 @@ function global:Get-DefaultDialogConfiguration {
                     $iconText.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
                     $iconText.FontSize = 16
         
-                    # Aplicar a cor (conversão inline)
+                    # Aplicar a cor (conversÃ£o inline)
                     $colorBrush = [System.Windows.Media.Brushes]::White
                     try {
                         if (-not [string]::IsNullOrWhiteSpace($category.Color)) {
@@ -281,13 +299,13 @@ function global:Get-DefaultDialogConfiguration {
                     }
                     catch {}
                     
-                    # Definir o ícone como conteúdo do botão
+                    # Definir o Ã­cone como conteÃºdo do botÃ£o
                     $button.Content = $iconText
                     $button.Background = $colorBrush
                     $button.ToolTip = "$($category.Name): $($category.Description)"
                     $button.Tag = $category.Name # Usar a propriedade Tag para armazenar o nome da categoria
         
-                    # Adicionar o botão ao painel
+                    # Adicionar o botÃ£o ao painel
                     $FilterButtonsPanel.Children.Add($button)
         
                     # Adicionar o manipulador de evento para filtrar
@@ -314,7 +332,7 @@ function global:Get-DefaultDialogConfiguration {
                 $separator2.VerticalAlignment = "Center"
                 $FilterButtonsPanel.Children.Add($separator2)
 
-                # Adicionar o botão "Marcar tudo"
+                # Adicionar o botÃ£o "Marcar tudo"
                 $checkAllButton = New-Object System.Windows.Controls.Button
                 $checkAllButton.Style = $filterButtonStyle
                 $checkAllButton.FocusVisualStyle = $null
@@ -329,7 +347,7 @@ function global:Get-DefaultDialogConfiguration {
                 $checkAllButton.Tag = "CheckAll"
                 $FilterButtonsPanel.Children.Add($checkAllButton)
                 
-                # Handler do botão "Marcar tudo"
+                # Handler do botÃ£o "Marcar tudo"
                 $checkAllButton.Add_Click({
                         $script:checkboxesCollection.Values | ForEach-Object {
                             $_.IsChecked = $true
@@ -337,7 +355,7 @@ function global:Get-DefaultDialogConfiguration {
                         & $script:updateApplyButtonState
                     })
 
-                # Adicionar o botão "Limpar tudo"
+                # Adicionar o botÃ£o "Limpar tudo"
                 $clearAllButton = New-Object System.Windows.Controls.Button
                 $clearAllButton.Style = $filterButtonStyle
                 $clearAllButton.FocusVisualStyle = $null
@@ -348,11 +366,11 @@ function global:Get-DefaultDialogConfiguration {
                 $iconTextClearAll.FontFamily = [System.Windows.Media.FontFamily]("Segoe MDL2 Assets")
                 $iconTextClearAll.FontSize = 16
                 $clearAllButton.Content = $iconTextClearAll
-                $clearAllButton.ToolTip = "Limpar seleção"
+                $clearAllButton.ToolTip = "Limpar seleÃ§Ã£o"
                 $clearAllButton.Tag = "ClearAll"
                 $FilterButtonsPanel.Children.Add($clearAllButton)
                 
-                # Handler do botão "Limpar tudo"
+                # Handler do botÃ£o "Limpar tudo"
                 $clearAllButton.Add_Click({
                         $script:checkboxesCollection.Values | ForEach-Object {
                             $_.IsChecked = $false
@@ -375,7 +393,7 @@ function global:Get-DefaultDialogConfiguration {
                         $TweaksStackPanel.Children.Add($checkBox)
                         $script:checkboxesCollection[$tweak.Name] = $checkBox
 
-                        # Atualizar estado do botão Aplicar quando o usuário marcar/desmarcar
+                        # Atualizar estado do botÃ£o Aplicar quando o usuÃ¡rio marcar/desmarcar
                         $checkBox.Add_Checked({ & $script:updateApplyButtonState })
                         $checkBox.Add_Unchecked({ & $script:updateApplyButtonState })
                     }
@@ -388,12 +406,12 @@ function global:Get-DefaultDialogConfiguration {
                 $script:RestoreDefaultsButton.Add_Click({
                         try {
                             if ($null -eq $global:ScriptContext.AppliedTweaks -or $global:ScriptContext.AppliedTweaks.Count -eq 0) {
-                                Show-MessageDialog -Title "Restaurar padrões" -Message "Não há tweaks aplicados para desfazer." -MessageType "Info" -Buttons "OK"
+                                Show-MessageDialog -Title "Restaurar padrÃµes" -Message "NÃ£o hÃ¡ tweaks aplicados para desfazer." -MessageType "Info" -Buttons "OK"
                                 return
                             }
                             $names = $global:ScriptContext.AppliedTweaks.Keys
                             $list = ($names -join "`n")
-                            $confirm = Show-MessageDialog -Title "Restaurar padrões" -Message "Desfazer os $($names.Count) tweaks aplicados abaixo?`n`n$list" -MessageType "Question" -Buttons "YesNo"
+                            $confirm = Show-MessageDialog -Title "Restaurar padrÃµes" -Message "Desfazer os $($names.Count) tweaks aplicados abaixo?`n`n$list" -MessageType "Question" -Buttons "YesNo"
                             if ($confirm -ne "Yes") { return }
 
                             Invoke-TweaksManager -Names $names -Mode "Undo"
@@ -439,7 +457,7 @@ function global:Get-DefaultDialogConfiguration {
                         }
                     })
 
-                # Estado inicial do botão Aplicar
+                # Estado inicial do botÃ£o Aplicar
                 & $script:updateApplyButtonState
                 $SystemPropPerfButton.Add_Click({
                         Start-Process "SystemPropertiesPerformance"
@@ -456,7 +474,7 @@ function global:Get-DefaultDialogConfiguration {
                         foreach ($Path in $WinrarInstallLocations) {
                             if (Test-Path -Path $Path) {
                                 if (Test-Path -Path "$Path\rarreg.key") {
-                                    Show-MessageDialog -Title "Ativação do WinRAR" -Message "O arquivo rarreg.key já existe na pasta do WinRAR."
+                                    Show-MessageDialog -Title "AtivaÃ§Ã£o do WinRAR" -Message "O arquivo rarreg.key jÃ¡ existe na pasta do WinRAR."
                                     return
                                 }
                                 else {
@@ -464,7 +482,7 @@ function global:Get-DefaultDialogConfiguration {
                                     $RarRegKeyDialog.CheckFileExists = $true
                                     $RarRegKeyDialog.AutoUpgradeEnabled = $true
                                     $RarRegKeyDialog.Filter = "RarREG.key (*.key)|*.key"
-                                    $RarRegKeyDialog.Title = "Selecione o arquivo de ativação do WinRAR"
+                                    $RarRegKeyDialog.Title = "Selecione o arquivo de ativaÃ§Ã£o do WinRAR"
                                     if ($RarRegKeyDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
                                         $RarRegKeyFilePath = $RarRegKeyDialog.FileName
                                 
@@ -477,7 +495,7 @@ function global:Get-DefaultDialogConfiguration {
                                     }
     
                                     $RarRegKeyCopyResult = Invoke-ElevatedProcess -FunctionName "Copy-Item" -Parameters $Parameters -PassThru
-                                    if ($RarRegKeyCopyResult -eq $sucess) {
+                                    if ($RarRegKeyCopyResult -eq $success) {
                                         Show-Notification -Title "WinRAR ativado" -Message "Arquivo rarreg.key copiado para a pasta do WinRAR."
                                         Write-InstallLog "Arquivo rarreg.key copiado para a pasta do WinRAR"
                                     }
@@ -492,9 +510,9 @@ function global:Get-DefaultDialogConfiguration {
                             }
                         }
 
-                        # Verifica a flag após o loop
+                        # Verifica a flag apÃ³s o loop
                         if (-not $isWinRarInstalled) {
-                            Show-MessageDialog -Title "WinRAR não encontrado" -Message "O WinRAR não foi encontrado no sistema. Tente novamente após a instalação" -MessageType Warning
+                            Show-MessageDialog -Title "WinRAR nÃ£o encontrado" -Message "O WinRAR nÃ£o foi encontrado no sistema. Tente novamente apÃ³s a instalaÃ§Ã£o" -MessageType Warning
                         }
                     })
             }
@@ -526,7 +544,7 @@ function global:Get-DefaultDialogConfiguration {
                         }
                         $checkBox.Tag = $program.ProgramId
                         
-                        # Pré-selecionar programas recomendados
+                        # PrÃ©-selecionar programas recomendados
                         if ($program.Recommended -eq $true) {
                             $checkBox.IsChecked = $true
                         }
@@ -537,15 +555,15 @@ function global:Get-DefaultDialogConfiguration {
                 }
                 else {
                     Write-InstallLog "Nenhum programa encontrado no arquivo JSON" -Status "AVISO"
-                    # Criar StackPanel para organizar ícone e mensagem
+                    # Criar StackPanel para organizar Ã­cone e mensagem
                     $errorContainer = New-Object System.Windows.Controls.StackPanel
                     $errorContainer.Orientation = "Vertical"
                     $errorContainer.HorizontalAlignment = "Center"
                     $errorContainer.Margin = "0,20,0,0"
                     
-                    # Ícone de erro
+                    # Ãcone de erro
                     $errorIcon = New-Object System.Windows.Controls.TextBlock
-                    $errorIcon.Text = [char]0xE783  # Ícone de erro do Segoe MDL2 Assets
+                    $errorIcon.Text = [char]0xE783  # Ãcone de erro do Segoe MDL2 Assets
                     $errorIcon.FontFamily = "Segoe MDL2 Assets"
                     $errorIcon.FontSize = 32
                     $errorIcon.Foreground = "Orange"
@@ -554,7 +572,7 @@ function global:Get-DefaultDialogConfiguration {
                     
                     # Mensagem explicativa
                     $errorLabel = New-Object System.Windows.Controls.TextBlock
-                    $errorLabel.Text = "Falha ao ler a lista de programas padrão`nRealize a instalação manualmente."
+                    $errorLabel.Text = "Falha ao ler a lista de programas padrÃ£o`nRealize a instalaÃ§Ã£o manualmente."
                     $errorLabel.Foreground = "Orange"
                     $errorLabel.FontSize = 14
                     $errorLabel.TextAlignment = "Center"
@@ -567,7 +585,7 @@ function global:Get-DefaultDialogConfiguration {
                     $programsStackPanel.Children.Add($errorContainer)
                 }
                 
-                # Botão Instalar Selecionados
+                # BotÃ£o Instalar Selecionados
                 $installSelectedButton = $appInstallDialogWindow.FindName("InstallSelectedButtonDialog")
                 if ($installSelectedButton) {
                     $installSelectedButton.Add_Click({
@@ -590,7 +608,7 @@ function global:Get-DefaultDialogConfiguration {
                             
                             # Remove duplicatas e strings vazias
                             $selectedProgramIDs = $selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique
-                            Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalação: $($selectedProgramIDs -join ', ')"
+                            Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalaÃ§Ã£o: $($selectedProgramIDs -join ', ')"
 
                             $knownBrowserIDs = @("Google.Chrome", "Mozilla.Firefox", "Microsoft.Edge", "Opera.Opera")
                             $hasBrowser = $false
@@ -601,16 +619,16 @@ function global:Get-DefaultDialogConfiguration {
                                 }
                             }
                             if ($hasBrowser -and ($global:ScriptContext.isWin11 -eq $true)) {
-                                $MSEdgeRedirInstall = Show-MessageDialog -Title "Instalação de outros navegadores" -Message "Você marcou a instalação de um ou mais navegadores.`nDeseja também instalar o MSEdgeRedirect para substituir o navegador padrão do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
+                                $MSEdgeRedirInstall = Show-MessageDialog -Title "InstalaÃ§Ã£o de outros navegadores" -Message "VocÃª marcou a instalaÃ§Ã£o de um ou mais navegadores.`nDeseja tambÃ©m instalar o MSEdgeRedirect para substituir o navegador padrÃ£o do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
                                 if ($MSEdgeRedirInstall -eq "Yes") {
-                                    Show-Notification -Title "Instalação de programas" -Message "Configure o MSEdgeRedirect após a instalação."
+                                    Show-Notification -Title "InstalaÃ§Ã£o de programas" -Message "Configure o MSEdgeRedirect apÃ³s a instalaÃ§Ã£o."
                                     $selectedProgramIDs += "rcmaehl.MSEdgeRedirect"
                                 }
                             }
                             
                             if ($selectedProgramIDs.Count -gt 0) {
-                                # Notifica e lança o processo visível imediatamente
-                                Show-Notification -Title "Instalação de programas" -Message "O processo continuará em uma nova janela..."
+                                # Notifica e lanÃ§a o processo visÃ­vel imediatamente
+                                Show-Notification -Title "InstalaÃ§Ã£o de programas" -Message "O processo continuarÃ¡ em uma nova janela..."
                                 
                                 $params = @{ ProgramIDs = $selectedProgramIDs }
                                 Invoke-ElevatedProcess -FunctionName "Initialize-And-Install-Programs" -Parameters $params -ForceAsync
@@ -621,11 +639,11 @@ function global:Get-DefaultDialogConfiguration {
                         })
                 }
 
-                # Botão atualizar tudo usando Winget
+                # BotÃ£o atualizar tudo usando Winget
                 $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
                 if ($UpdateAllProgramsButton) {
                     $UpdateAllProgramsButton.Add_Click({
-                            Show-Notification -Title "Atualização Geral" -Message "O processo continuará em uma nova janela..."
+                            Show-Notification -Title "AtualizaÃ§Ã£o Geral" -Message "O processo continuarÃ¡ em uma nova janela..."
                             
                             Invoke-ElevatedProcess -FunctionName "Initialize-And-Upgrade-All" -ForceAsync
                         })
@@ -637,14 +655,14 @@ function global:Get-DefaultDialogConfiguration {
             return {
                 param($activationDialogWindow)
             
-                # Obter referências aos controles do diálogo de ativação
+                # Obter referÃªncias aos controles do diÃ¡logo de ativaÃ§Ã£o
                 $oemKeyTextBox = $activationDialogWindow.FindName("OemKeyTextBox")
                 $copyOemKeyButton = $activationDialogWindow.FindName("CopyOemKeyButton")
                 $findOemKeyButton = $activationDialogWindow.FindName("FindOemKeyButton")
                 $activateOemButton = $activationDialogWindow.FindName("ActivateOemButton")
                 $activateWindowsMasButton = $activationDialogWindow.FindName("ActivateWindowsMasButton")
 
-                # Verificar se já existe uma chave OEM global e configurar interface
+                # Verificar se jÃ¡ existe uma chave OEM global e configurar interface
                 if (-not [String]::IsNullOrWhiteSpace($global:OemKey)) {
                     $oemKeyTextBox.Text = $global:OemKey
                     $oemKeyTextBox.FontFamily = "Cascadia Mono"
@@ -655,13 +673,13 @@ function global:Get-DefaultDialogConfiguration {
                     $activateOemButton.IsEnabled = $true
                 }
             
-                # Lógica para o botão "Localizar Chave OEM"
+                # LÃ³gica para o botÃ£o "Localizar Chave OEM"
                 $findOemKeyButton.Add_Click({
                         $productKey = $null
                         try {                    
                             $productKey = (Get-WmiObject -query 'select OA3xOriginalProductKey from SoftwareLicensingService').OA3xOriginalProductKey
                             
-                            # Obter referências dos controles no escopo correto
+                            # Obter referÃªncias dos controles no escopo correto
                             $textBox = $dialog.FindName("OemKeyTextBox")
                             $findBtn = $dialog.FindName("FindOemKeyButton")
                             $activateBtn = $dialog.FindName("ActivateOemButton")
@@ -681,7 +699,7 @@ function global:Get-DefaultDialogConfiguration {
                                 $copyBtn.Visibility = "Visible"
                             }
                             else {
-                                $textBox.Text = "Chave OEM não encontrada. Use o ativador MAS"
+                                $textBox.Text = "Chave OEM nÃ£o encontrada. Use o ativador MAS"
                                 Write-InstallLog "Nenhuma chave OEM encontrada no BIOS"
                                 $activateBtn.IsEnabled = $false
                             }
@@ -702,18 +720,18 @@ function global:Get-DefaultDialogConfiguration {
                         }
                     })
 
-                # Lógica para o botão de copiar chave OEM
+                # LÃ³gica para o botÃ£o de copiar chave OEM
                 $copyOemKeyButton.Add_Click({
                         try {
                             $textBox = $dialog.FindName("OemKeyTextBox")
                             if ($textBox) {
                                 $textToCopy = $textBox.Text
-                                if (-not [string]::IsNullOrWhiteSpace($textToCopy) -and $textToCopy -ne "Clique no botão abaixo para buscar pela chave OEM") {
+                                if (-not [string]::IsNullOrWhiteSpace($textToCopy) -and $textToCopy -ne "Clique no botÃ£o abaixo para buscar pela chave OEM") {
                                     Set-Clipboard -Value $textToCopy
-                                    Write-InstallLog "Chave OEM copiada para a área de transferência"
+                                    Write-InstallLog "Chave OEM copiada para a Ã¡rea de transferÃªncia"
                                 }
                                 else {
-                                    Write-InstallLog "Nenhuma chave OEM válida para copiar" -Status "AVISO"
+                                    Write-InstallLog "Nenhuma chave OEM vÃ¡lida para copiar" -Status "AVISO"
                                 }
                             }
                         }
@@ -722,16 +740,16 @@ function global:Get-DefaultDialogConfiguration {
                         }
                     })
 
-                # Lógica para o botão "Ativar com OEM"
+                # LÃ³gica para o botÃ£o "Ativar com OEM"
                 $activateOemButton.Add_Click({
                         $thisButton = $dialog.FindName("ActivateOemButton")
                         $textBox = $dialog.FindName("OemKeyTextBox")
                         $thisButton.IsEnabled = $false
 
                         $productKey = $textBox.Text
-                        # Verifica se a chave no campo de texto é válida para tentar a ativação
-                        if ($productKey -eq "Clique no botão abaixo para buscar pela chave OEM" -or $productKey -eq "Não encontrada" -or $productKey -eq "Erro ao buscar" -or [string]::IsNullOrWhiteSpace($productKey)) {
-                            Write-InstallLog "Nenhuma chave OEM válida para ativar encontrada ou inserida"
+                        # Verifica se a chave no campo de texto Ã© vÃ¡lida para tentar a ativaÃ§Ã£o
+                        if ($productKey -eq "Clique no botÃ£o abaixo para buscar pela chave OEM" -or $productKey -eq "NÃ£o encontrada" -or $productKey -eq "Erro ao buscar" -or [string]::IsNullOrWhiteSpace($productKey)) {
+                            Write-InstallLog "Nenhuma chave OEM vÃ¡lida para ativar encontrada ou inserida"
                             return
                         }
 
@@ -743,23 +761,23 @@ function global:Get-DefaultDialogConfiguration {
                             Start-Sleep -Seconds 3
                             $licenseInfo = Get-CimInstance -Query 'SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID = "55c92734-d682-4d71-983e-d6ec3f16059f" AND PartialProductKey IS NOT NULL' | Select-Object -First 1
 
-                            # LicenseStatus 1 indica que o produto está licenciado (ativado)
+                            # LicenseStatus 1 indica que o produto estÃ¡ licenciado (ativado)
                             if ($licenseInfo -and $licenseInfo.LicenseStatus -eq 1) {
-                                Write-InstallLog "Ativação bem sucedida" -Status "SUCESSO"
+                                Write-InstallLog "AtivaÃ§Ã£o bem sucedida" -Status "SUCESSO"
                                 $thisButton.IsEnabled = $false
                                 $thisButton.Content = "Windows ativado!"
                                 $thisButton.Background = "#555555"
                             }
                             else {
-                                # Falha na ativação (LicenseStatus não é 1 após tentar instalar a chave)
-                                $currentStatus = if ($licenseInfo) { $licenseInfo.LicenseStatus } else { "Não determinado" }
+                                # Falha na ativaÃ§Ã£o (LicenseStatus nÃ£o Ã© 1 apÃ³s tentar instalar a chave)
+                                $currentStatus = if ($licenseInfo) { $licenseInfo.LicenseStatus } else { "NÃ£o determinado" }
                                 $productKey | Set-Clipboard
-                                $UpdateActivationMsg = "Falha ao ativar o Windows usando a chave OEM. Status atual da licença: $currentStatus. A chave foi copiada para a área de transferência. Tente ativar manualmente."
+                                $UpdateActivationMsg = "Falha ao ativar o Windows usando a chave OEM. Status atual da licenÃ§a: $currentStatus. A chave foi copiada para a Ã¡rea de transferÃªncia. Tente ativar manualmente."
                                 Write-InstallLog  $UpdateActivationMsg -Status "ERRO"
                                 $thisButton.IsEnabled = $false
                                 $thisButton.Content = "Erro!"
                                 $thisButton.Background = "#CC6666" # Cor vermelha para erro
-                                Show-MessageDialog -Message $UpdateActivationMsg -Title "Ativação do sistema" -MessageType "Error" -Buttons "OK"
+                                Show-MessageDialog -Message $UpdateActivationMsg -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
                             }
                         }
                         catch {
@@ -767,19 +785,19 @@ function global:Get-DefaultDialogConfiguration {
                             if ($_.Exception.InnerException) {
                                 $errorMessage += " Detalhes: $($_.Exception.InnerException.Message)"
                             }
-                            Write-InstallLog "Erro durante a ativação OEM: $errorMessage" -Status "ERRO"
+                            Write-InstallLog "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Status "ERRO"
                             $thisButton.IsEnabled = $false
                             $thisButton.Content = "Erro!"
                             $thisButton.Background = "#CC6666" # Cor vermelha para erro
-                            Show-MessageDialog -Message "Erro durante a ativação OEM: $errorMessage" -Title "Ativação do sistema" -MessageType "Error" -Buttons "OK"
+                            Show-MessageDialog -Message "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
                         }
                     })
             
-                # Lógica para o botão "Abrir ativador MAS"
+                # LÃ³gica para o botÃ£o "Abrir ativador MAS"
                 $activateWindowsMasButton.Add_Click({
                         Write-InstallLog "Abrindo ativador MAS..."
                         try {
-                            Show-Notification -Title "Abrindo ativador MAS" -Message "Aguarde enquanto o script é baixado."
+                            Show-Notification -Title "Abrindo ativador MAS" -Message "Aguarde enquanto o script Ã© baixado."
                             $jobNameMAS = "MAS_Activation_Job"
 
                             # Remove qualquer job anterior com o mesmo nome para evitar conflitos
@@ -802,7 +820,7 @@ function global:Get-DefaultDialogConfiguration {
                             # Captura erros ao iniciar o Job ou configurar o ambiente
                             $errorMessage = "Erro ao tentar iniciar o ativador MAS: $($_.Exception.Message)"
                             Write-InstallLog  $errorMessage -Status "ERRO"
-                            Show-MessageDialog -Message "$errorMessage.`nVerifique a conexão com a internet." -Title "Ativação do Sistema" -MessageType "Error" -Buttons "OK"
+                            Show-MessageDialog -Message "$errorMessage.`nVerifique a conexÃ£o com a internet." -Title "AtivaÃ§Ã£o do Sistema" -MessageType "Error" -Buttons "OK"
                         }
                     })
             }
@@ -820,35 +838,35 @@ function global:Get-DefaultDialogConfiguration {
                     $currentLogPath_Value = if ($global:LogPath) { $global:LogPath } else { "$env:APPDATA\Install.log" }
                     
                     if (Test-Path $primaryLogPath) {
-                        $logContent.Add("Início do log principal [$primaryLogPath]")
+                        $logContent.Add("InÃ­cio do log principal [$primaryLogPath]")
                         $primaryLogLines = Get-Content -Path $primaryLogPath -ErrorAction SilentlyContinue
                         if ($primaryLogLines) {
                             $logContent.AddRange([string[]]$primaryLogLines)
                         }
                         else {
-                            $logContent.Add("O arquivo de log está vazio!")
+                            $logContent.Add("O arquivo de log estÃ¡ vazio!")
                         }
                         $logContent.Add("Fim do log principal")
                         $logContent.Add("")
                     }
                     
                     if ((Test-Path $currentLogPath_Value) -and ($currentLogPath_Value -ne $primaryLogPath)) {
-                        $logContent.Add("Início do log da sessão [$currentLogPath_Value]")
+                        $logContent.Add("InÃ­cio do log da sessÃ£o [$currentLogPath_Value]")
                         $currentLogLines = Get-Content -Path $currentLogPath_Value -ErrorAction SilentlyContinue
                         if ($currentLogLines) {
                             $logContent.AddRange([string[]]$currentLogLines)
                         }
                         else {
-                            $logContent.Add("O arquivo de log está vazio!")
+                            $logContent.Add("O arquivo de log estÃ¡ vazio!")
                         }
-                        $logContent.Add("Fim do log da sessão")
+                        $logContent.Add("Fim do log da sessÃ£o")
                     }
                     
                     $unifiedLogTextBox.Text = $logContent -join "`n"
                     $unifiedLogTextBox.ScrollToEnd()
                 }
                 catch {
-                    $errorMessage = "Erro crítico ao carregar logs: $($_.Exception.Message)"
+                    $errorMessage = "Erro crÃ­tico ao carregar logs: $($_.Exception.Message)"
                     $unifiedLogTextBox.Text = $errorMessage
                     Write-InstallLog  $errorMessage -Status "ERRO"
                 }
@@ -861,7 +879,7 @@ function global:Get-DefaultDialogConfiguration {
 
                 $FinalizeTweaksStackPanel = $finalizeDialogWindow.FindName("FinalizeTweaksStackPanel")
 
-                # Inicializar a coleção de checkboxes
+                # Inicializar a coleÃ§Ã£o de checkboxes
                 $script:checkboxesCollection = @{}
                 
                 if ($FinalizeTweaksStackPanel) {
@@ -880,7 +898,7 @@ function global:Get-DefaultDialogConfiguration {
                                         $checkBox.ToolTip = "$(($tweak.Description))"
                                     }
                                     
-                                    # Pré-selecionar tweaks recomendados
+                                    # PrÃ©-selecionar tweaks recomendados
                                     if ($tweak.IsRecommended -eq $true) {
                                         $checkBox.IsChecked = $true
                                     }
@@ -894,7 +912,7 @@ function global:Get-DefaultDialogConfiguration {
                             }
                         }
                         else {
-                            Show-MessageDialog -Title "Nenhum tweak disponível" -Message "Nenhum tweak foi encontrado no arquivo AvailableTweaks.json. Por favor, verifique se o arquivo está corretamente configurado." -MessageType "Info" -Buttons "OK"
+                            Show-MessageDialog -Title "Nenhum tweak disponÃ­vel" -Message "Nenhum tweak foi encontrado no arquivo AvailableTweaks.json. Por favor, verifique se o arquivo estÃ¡ corretamente configurado." -MessageType "Info" -Buttons "OK"
                         }
                     }
                     catch {
@@ -908,7 +926,7 @@ function global:Get-DefaultDialogConfiguration {
                 $TechnicianTextBox = $finalizeDialogWindow.FindName("TechnicianTextBox")
                 $finalizeOkButton = $finalizeDialogWindow.FindName("FinalizeOkButton")
 
-                # Pré-popular os campos a partir do ScriptContext
+                # PrÃ©-popular os campos a partir do ScriptContext
                 if ($null -ne $global:ScriptContext.OsNumber) { $OSNumberTextBox.Text = [string]$global:ScriptContext.OsNumber }
                 if ($null -ne $global:ScriptContext.ClientName) { $ClientNameTextBox.Text = [string]$global:ScriptContext.ClientName }
                 if ($null -ne $global:ScriptContext.TechnicianName) { $TechnicianTextBox.Text = [string]$global:ScriptContext.TechnicianName }
@@ -933,11 +951,11 @@ function global:Get-DefaultDialogConfiguration {
                         $global:ScriptContext.OsNumber = $osValue
                         $global:ScriptContext.ClientName = $clientValue
                         $global:ScriptContext.TechnicianName = $techValue
-                        $logEntry = "OS: $osValue, Cliente: $clientValue, Técnico: $techValue"
-                        Write-InstallLog "Iniciando finalização. $logEntry"
+                        $logEntry = "OS: $osValue, Cliente: $clientValue, TÃ©cnico: $techValue"
+                        Write-InstallLog "Iniciando finalizaÃ§Ã£o. $logEntry"
 
                         $ownerString = if (-not [string]::IsNullOrWhiteSpace($osValue)) { "OS ($osValue) - $clientValue" } else { $clientValue }
-                        $orgString = "MasterNet Informática | (88) 99284-1517"
+                        $orgString = "MasterNet InformÃ¡tica | (88) 99284-1517"
                         
                         $selectedTweaksNames = @()
                         if ($script:checkboxesCollection) {
@@ -966,7 +984,7 @@ function global:Get-DefaultDialogConfiguration {
                         
                         if ($splash) {
                              $splashStatus = $splash.FindName("SplashStatusText")
-                             if ($splashStatus) { $splashStatus.Text = "Aplicando configurações finais. Aguarde..." }
+                             if ($splashStatus) { $splashStatus.Text = "Aplicando configuraÃ§Ãµes finais. Aguarde..." }
                         }
 
                         $wnd.Visibility = 'Hidden'
@@ -984,7 +1002,7 @@ function global:Get-DefaultDialogConfiguration {
                             # Criar frame para bloquear retorno do handler, mantendo UI ativa
                             $waitFrame = New-Object System.Windows.Threading.DispatcherFrame
                             
-                            # 8. Configurar Timer para monitorar conclusão
+                            # 8. Configurar Timer para monitorar conclusÃ£o
                             $timer = New-Object System.Windows.Threading.DispatcherTimer
                             $timer.Interval = [TimeSpan]::FromMilliseconds(500)
                             
@@ -998,7 +1016,7 @@ function global:Get-DefaultDialogConfiguration {
                                         $proc.Refresh()
                                     }
                                 } catch {
-                                    # Se der erro ao acessar HasExited, assume que terminou ou objeto inválido
+                                    # Se der erro ao acessar HasExited, assume que terminou ou objeto invÃ¡lido
                                     $processRunning = $false
                                 }
 
@@ -1011,7 +1029,7 @@ function global:Get-DefaultDialogConfiguration {
                                     # Liberar o frame ANTES de chamar Shutdown
                                     if ($waitFrame) { $waitFrame.Continue = $false }
                                     
-                                    # Executar ação final
+                                    # Executar aÃ§Ã£o final
                                     if ($shutdownRadio.IsChecked) {
                                         Write-InstallLog "Desligando o computador..."
                                         Start-Process "shutdown.exe" -ArgumentList "/s /t 60" -NoNewWindow
@@ -1026,7 +1044,7 @@ function global:Get-DefaultDialogConfiguration {
                                         Write-InstallLog "Encerrando script..."
                                         Set-PersistExec -Stop
                                         
-                                        # Fechar janelas explícitas
+                                        # Fechar janelas explÃ­citas
                                         $wnd.Close() # FinalizeDialog
                                         if ($splash) { $splash.Close() }
                                         if ($global:ScriptContext.MainWindow) { $global:ScriptContext.MainWindow.Close() }
@@ -1046,9 +1064,9 @@ function global:Get-DefaultDialogConfiguration {
                             } catch {}
                         }
                         catch {
-                            Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalização: $($_.Exception.Message)" -MessageType "Error"
+                            Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalizaÃ§Ã£o: $($_.Exception.Message)" -MessageType "Error"
                             $sender.IsEnabled = $true
-                            if ($statusText) { $statusText.Text = "Erro na finalização." }
+                            if ($statusText) { $statusText.Text = "Erro na finalizaÃ§Ã£o." }
                         }
                 })  
             }

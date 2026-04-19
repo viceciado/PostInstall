@@ -1,0 +1,68 @@
+﻿function Set-PersistExec {
+    <#
+    .SYNOPSIS
+    Retoma a execuÃ§Ã£o do script apÃ³s reinicios inesperados
+    
+    .DESCRIPTION
+    Ao ser chamada pela primeira vez, cria uma tarefa agendada para executar o script
+    sempre que o sistema for iniciado. Ao Finalizar a instalaÃ§Ã£o, remove a tarefa.
+    
+    .EXAMPLE
+    Set-PersistExec -ScriptPath "C:\Scripts\MyScript.ps1"
+    
+    .EXAMPLE
+    Set-PersistExec -Stop
+    #>
+
+    [CmdletBinding()]
+    param (
+        [string]$ScriptPath,
+        [switch]$Stop
+    )
+
+    # Determinar o caminho do script de forma robusta
+    if (-not $ScriptPath) {
+        $ScriptPath = if ($PSCommandPath) { 
+            $PSCommandPath 
+        } elseif ($MyInvocation.MyCommand.Path) { 
+            $MyInvocation.MyCommand.Path 
+        } else { 
+            [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName 
+        }
+    }
+
+    $existingTask = Get-ScheduledTask -TaskName "PostInstall" -ErrorAction SilentlyContinue
+
+    # Se for solicitado para parar, remover a tarefa
+    if ($Stop) {
+        try {
+            $existingTask = Get-ScheduledTask -TaskName "PostInstall" -ErrorAction SilentlyContinue
+            if ($existingTask) {
+                Unregister-ScheduledTask -TaskName "PostInstall" -Confirm:$false
+            }
+            return $true
+        }
+        catch {
+            Write-InstallLog "Erro em Set-PersistExec (-Stop): $($_.Exception.Message)" -Status "ERRO"
+            return $false
+        }
+    }
+    
+    if ($null -eq $existingTask) {
+        try {
+            $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ScriptPath`""
+            $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+            $principal = New-ScheduledTaskPrincipal -UserID $env:USERNAME -LogonType Interactive -RunLevel Highest
+            $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+            $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+            Register-ScheduledTask -TaskName "PostInstall" -InputObject $task | Out-Null
+            return $true
+        }
+        catch {
+            Write-InstallLog "Erro em Set-PersistExec (criaÃ§Ã£o): $($_.Exception.Message)" -Status "ERRO"
+            return $false
+        }
+    } else {
+        return $false
+    }
+}

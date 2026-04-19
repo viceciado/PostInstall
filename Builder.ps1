@@ -90,7 +90,7 @@ $header = @"
 Update-Progress "Inicializando compilação..." 0
 
 # Validar estrutura do projeto
-$requiredFolders = @("Functions", "Windows", "Data")
+$requiredFolders = @("Core", "Features", "DialogInitializers", "Windows", "Data")
 $missingFolders = @()
 
 foreach ($folder in $requiredFolders) {
@@ -140,26 +140,38 @@ Update-Progress "Configurando contexto global..." 20
 $globalContext = @"
 if (-not `$global:ScriptContext) {
     `$global:ScriptContext = @{
-        ScriptVersion       = "$(if ($IncludeVersion) { Get-Date -Format 'dd-MM-yyyy' } else { 'compiled' })"
-        XamlWindows         = @{}
-        SystemInfo          = `$null
-        OemKey              = `$null
-        IsAdministrator     = `$false
-        MainWindow          = `$null
-        AvailablePrograms   = @()
-        AvailableTweaks     = @()
-        AvoidSleep          = `$false
-        isWin11             = `$null
-        # Novos campos para dar suporte à importação segura em processo elevado
-        SkipEntryPoint      = `$false
-        IsCompiled          = `$true
-        CompiledScriptPath  = `$null
+        ScriptVersion          = "$(if ($IncludeVersion) { Get-Date -Format 'dd-MM-yyyy' } else { 'compiled' })"
+        IsCompiled             = `$true
+        SkipEntryPoint         = `$false
+        CompiledScriptPath     = `$null
+        AvailablePrograms      = @()
+        AvailableTweaks        = @()
+        AppliedTweaks          = @{}
+        UI = @{
+            XamlWindows        = @{}
+            MainWindow         = `$null
+            SplashScreenWindow = `$null
+        }
+        System = @{
+            IsAdministrator    = `$false
+            isWin11            = `$null
+            AvoidSleep         = `$false
+            Info               = `$null
+        }
+        Config = @{
+            OemKey                   = `$null
+            ClientName               = `$null
+            TechnicianName           = `$null
+            OsNumber                 = `$null
+            PersistedSelectedFolders = @()
+        }
     }
 } else {
     # Não sobrescrever ScriptContext existente; garantir apenas chaves essenciais
     if (-not `$global:ScriptContext.ContainsKey('IsCompiled')) { `$global:ScriptContext.IsCompiled = `$true } else { `$global:ScriptContext.IsCompiled = `$true }
     if (-not `$global:ScriptContext.ContainsKey('CompiledScriptPath')) { `$global:ScriptContext.CompiledScriptPath = `$null }
-    if (-not `$global:ScriptContext.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.XamlWindows) { `$global:ScriptContext.XamlWindows = @{} }
+    if (-not `$global:ScriptContext.ContainsKey('UI') -or `$null -eq `$global:ScriptContext.UI) { `$global:ScriptContext.UI = @{ XamlWindows = @{}; MainWindow = `$null; SplashScreenWindow = `$null } }
+    elseif (-not `$global:ScriptContext.UI.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.UI.XamlWindows) { `$global:ScriptContext.UI.XamlWindows = @{} }
     # Não alterar SkipEntryPoint aqui para preservar valor definido externamente
 }
 "@
@@ -175,11 +187,21 @@ if (-not `$global:ScriptContext.CompiledScriptPath) {
 
 # Carregar e adicionar todas as funções
 Update-Progress "Compilando funções..." 30
-$functionsPath = Join-Path $workingdir "Functions"
-$functionFiles = Get-ChildItem -Path $functionsPath -Filter "*.ps1" -File | Sort-Object Name
+
+# Coletar arquivos em ordem de dependência:
+#   1. Core/ (utilitários base)
+#   2. Features/ (funcionalidades de alto nível)
+#   3. DialogInitializers/ (inicializadores de janelas)
+#   4. Functions/ restante (legacy/dispatcher)
+$functionFiles = @(
+    if (Test-Path (Join-Path $workingdir 'Core'))               { Get-ChildItem (Join-Path $workingdir 'Core')               -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
+    if (Test-Path (Join-Path $workingdir 'Features'))           { Get-ChildItem (Join-Path $workingdir 'Features')           -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
+    if (Test-Path (Join-Path $workingdir 'DialogInitializers')) { Get-ChildItem (Join-Path $workingdir 'DialogInitializers') -Filter  '*.ps1' -File | Sort-Object Name }
+    if (Test-Path (Join-Path $workingdir 'Functions'))          { Get-ChildItem (Join-Path $workingdir 'Functions')          -Filter  '*.ps1' -File | Sort-Object Name }
+)
 
 if ($functionFiles.Count -eq 0) {
-    Write-Warning "Nenhuma função encontrada na pasta Functions"
+    Write-Warning "Nenhuma função encontrada"
 }
 else {
     foreach ($file in $functionFiles) {
@@ -257,8 +279,9 @@ if ($xamlFiles.Count -gt 0) {
             # Adicionar ao mapeamento global
             $windowBaseName = $file.BaseName
             $script_content.Add("if (-not `$global:ScriptContext) { `$global:ScriptContext = @{} }")
-            $script_content.Add("if (-not `$global:ScriptContext.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.XamlWindows) { `$global:ScriptContext.XamlWindows = @{} }")
-            $script_content.Add("`$global:ScriptContext.XamlWindows['$windowBaseName'] = '$variableName'")
+            $script_content.Add("if (-not `$global:ScriptContext.ContainsKey('UI') -or `$null -eq `$global:ScriptContext.UI) { `$global:ScriptContext.UI = @{} }")
+            $script_content.Add("if (-not `$global:ScriptContext.UI.ContainsKey('XamlWindows') -or `$null -eq `$global:ScriptContext.UI.XamlWindows) { `$global:ScriptContext.UI.XamlWindows = @{} }")
+            $script_content.Add("`$global:ScriptContext.UI.XamlWindows['$windowBaseName'] = '$variableName'")
             
             Write-Host "[COMPILADO] Interface: $($file.Name) -> `$$variableName" -ForegroundColor Green
         }
@@ -279,14 +302,15 @@ try {
     $startIndex = -1
     
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        if ($lines[$i] -match 'INICIALIZAÇÃO DAS JANELAS PRINCIPAIS' -or $lines[$i] -match 'INICIALIZACAO DAS JANELAS PRINCIPAIS') {
-            # Encontrar o 'try {' anterior
+        if ($lines[$i] -match '#region ENTRYPOINT' -or $lines[$i] -match 'INICIALIZA[CÇ][AÃ]O DAS JANELAS PRINCIPAIS') {
+            # Encontrar o 'try {' anterior ou usar a linha do marcador diretamente
             for ($j = $i; $j -ge 0; $j--) {
                 if ($lines[$j] -match '^\s*try\s*\{\s*$') {
                     $startIndex = $j
                     break
                 }
             }
+            if ($startIndex -lt 0) { $startIndex = $i }
             break
         }
     }

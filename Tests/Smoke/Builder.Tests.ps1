@@ -58,35 +58,35 @@ Describe 'Builder — compilação e artefato' -Tag 'Smoke' {
     Context 'Funções obrigatórias presentes no compilado' {
 
         It 'Write-InstallLog está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Write-InstallLog'
+            $script:OutputPath | Should -FileContentMatch 'function Write-InstallLog'
         }
 
         It 'ConvertTo-RegistryType está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:ConvertTo-RegistryType'
+            $script:OutputPath | Should -FileContentMatch 'function ConvertTo-RegistryType'
         }
 
         It 'Set-RegistryEntry está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Set-RegistryEntry'
+            $script:OutputPath | Should -FileContentMatch 'function Set-RegistryEntry'
         }
 
         It 'Restore-RegistryEntry está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Restore-RegistryEntry'
+            $script:OutputPath | Should -FileContentMatch 'function Restore-RegistryEntry'
         }
 
         It 'Get-AvailableItems está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Get-AvailableItems'
+            $script:OutputPath | Should -FileContentMatch 'function Get-AvailableItems'
         }
 
         It 'Set-Tweak está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Set-Tweak'
+            $script:OutputPath | Should -FileContentMatch 'function Set-Tweak'
         }
 
         It 'Install-WinGet está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Install-WinGet'
+            $script:OutputPath | Should -FileContentMatch 'function Install-WinGet'
         }
 
         It 'Get-DefaultDialogConfiguration está declarada' {
-            $script:OutputPath | Should -FileContentMatch 'function global:Get-DefaultDialogConfiguration'
+            $script:OutputPath | Should -FileContentMatch 'function Get-DefaultDialogConfiguration'
         }
 
         It 'Bloco ENTRYPOINT está presente' {
@@ -94,3 +94,4 @@ Describe 'Builder — compilação e artefato' -Tag 'Smoke' {
         }
     }
 }
+
