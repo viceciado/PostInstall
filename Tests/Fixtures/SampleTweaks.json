@@ -1,0 +1,58 @@
+{
+  "TweaksCategories": [
+    { "Name": "Recommended", "Description": "Tweaks recomendados", "IsRecommended": true }
+  ],
+  "Tweaks": [
+    {
+      "Name": "TestTweak-Registry",
+      "Description": "Tweak de teste com entrada de registro",
+      "Category": [ "Recommended" ],
+      "Win11Only": false,
+      "IsBoolean": true,
+      "IsRecommended": true,
+      "RefreshRequired": false,
+      "Registry": [
+        {
+          "Path": "HKCU:\\SOFTWARE\\_PostInstall_Tests\\TestTweak",
+          "Name": "TestValue",
+          "Type": "DWORD",
+          "Value": 1,
+          "OriginalValue": 0
+        }
+      ]
+    },
+    {
+      "Name": "TestTweak-Script",
+      "Description": "Tweak de teste com script",
+      "Category": [ "Recommended" ],
+      "Win11Only": false,
+      "IsBoolean": false,
+      "IsRecommended": false,
+      "RefreshRequired": false,
+      "InvokeScript": [
+        "Write-Host 'TestTweak-Script executed'"
+      ],
+      "UndoScript": [
+        "Write-Host 'TestTweak-Script undone'"
+      ]
+    },
+    {
+      "Name": "TestTweak-RefreshRequired",
+      "Description": "Tweak que requer restart do Explorer",
+      "Category": [ "Recommended" ],
+      "Win11Only": false,
+      "IsBoolean": true,
+      "IsRecommended": true,
+      "RefreshRequired": true,
+      "Registry": [
+        {
+          "Path": "HKCU:\\SOFTWARE\\_PostInstall_Tests\\TestRefresh",
+          "Name": "ExplorerVal",
+          "Type": "DWORD",
+          "Value": 1,
+          "OriginalValue": 0
+        }
+      ]
+    }
+  ]
+}

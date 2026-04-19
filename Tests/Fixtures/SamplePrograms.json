@@ -1,0 +1,18 @@
+{
+  "programs": [
+    {
+      "name": "TestApp-Alpha",
+      "programId": "Test.AlphaApp",
+      "category": "Testes",
+      "description": "Aplicativo de teste A",
+      "recommended": true
+    },
+    {
+      "name": "TestApp-Beta",
+      "programId": "Test.BetaApp",
+      "category": "Testes",
+      "description": "Aplicativo de teste B",
+      "recommended": false
+    }
+  ]
+}
