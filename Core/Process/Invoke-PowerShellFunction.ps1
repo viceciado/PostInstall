@@ -35,7 +35,7 @@
             }
         }
 
-        # â”€â”€ ExecuÃ§Ã£o em novo processo filho â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  ExecuÃ§Ã£o em novo processo filho 
         Write-InstallLog "Iniciando $FunctionName em novo processo..."
 
         $hostExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell.exe" }

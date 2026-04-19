@@ -25,7 +25,7 @@
         if ($tweak.PSObject.Properties['Command']     -and $tweak.Command)      { $scripts += $tweak.Command }
         if ($tweak.PSObject.Properties['InvokeScript'] -and $tweak.InvokeScript) { $scripts += $tweak.InvokeScript }
 
-        # â”€â”€ Aplicar entradas de registro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Aplicar entradas de registro 
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
@@ -50,7 +50,7 @@
             }
         }
 
-        # â”€â”€ Executar scripts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Executar scripts 
         $scriptOk = $true
         foreach ($line in $scripts) {
             if ($SkipPowerActions -and ($line -match '(?i)Stop-Computer|Restart-Computer|\bshutdown(\.exe)?\b')) {

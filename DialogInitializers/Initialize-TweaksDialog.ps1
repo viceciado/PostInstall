@@ -20,7 +20,7 @@
             $script:ApplySelectedTweaksButton.Background
         } else { $null }
 
-        # â”€â”€ ScriptBlock de atualizaÃ§Ã£o do estado dos botÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  ScriptBlock de atualizaÃ§Ã£o do estado dos botÃµes 
         $script:updateApplyButtonState = {
             try {
                 $checkedCount = ($script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }).Count
@@ -30,23 +30,23 @@
                     $script:ApplySelectedTweaksButton.IsEnabled = $hasAnyChecked
                     if ($hasAnyChecked) {
                         $script:ApplySelectedTweaksButton.Content    = "Aplicar $checkedCount tweaks"
-                        $script:ApplySelectedTweaksButton.Background = "#993233"
+                        $script:ApplySelectedTweaksButton.Background = $global:PSConst.Colors.Accent
                     }
                     else {
                         $script:ApplySelectedTweaksButton.Content    = "Aplicar"
-                        $script:ApplySelectedTweaksButton.Background = "#2D2D30"
+                        $script:ApplySelectedTweaksButton.Background = $global:PSConst.Colors.Surface
                     }
                 }
 
                 $appliedCount = if ($global:ScriptContext.AppliedTweaks) { $global:ScriptContext.AppliedTweaks.Count } else { 0 }
                 if ($appliedCount -gt 0) {
                     $script:RestoreDefaultsButton.IsEnabled  = $true
-                    $script:RestoreDefaultsButton.Background = "#993233"
+                    $script:RestoreDefaultsButton.Background = $global:PSConst.Colors.Accent
                     $script:RestoreDefaultsButton.Content    = "Desfazer $appliedCount alteraÃ§Ãµes"
                 }
                 else {
                     $script:RestoreDefaultsButton.IsEnabled  = $false
-                    $script:RestoreDefaultsButton.Background = "#2D2D30"
+                    $script:RestoreDefaultsButton.Background = $global:PSConst.Colors.Surface
                     $script:RestoreDefaultsButton.Content    = "Restaurar padrÃµes"
                 }
             }
@@ -57,14 +57,14 @@
 
         $script:checkboxesCollection = @{}
 
-        # â”€â”€ Carregar tweaks e categorias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Carregar tweaks e categorias 
         $allTweaks         = Get-AvailableItems -ItemType "Tweaks"
         $availableTweaks   = $allTweaks | Where-Object { $_.Category -notcontains "Finalize" }
         $tweaksCategories  = Get-AvailableItems -ItemType "TweaksCategories"
         if (-not $tweaksCategories) { $tweaksCategories = @() }
         $filteredCategories = $tweaksCategories | Where-Object { $_.Name -ne "Finalize" }
 
-        # â”€â”€ BotÃ£o "Todos" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  BotÃ£o "Todos" 
         $allButton = New-Object System.Windows.Controls.Button
         $allButton.Style = $filterButtonStyle
         $allButton.FocusVisualStyle = $null
@@ -90,7 +90,7 @@
         $sep1.VerticalAlignment = "Center"
         $FilterButtonsPanel.Children.Add($sep1)
 
-        # â”€â”€ BotÃµes de categoria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  BotÃµes de categoria 
         foreach ($category in $filteredCategories) {
             $button = New-Object System.Windows.Controls.Button
             $button.Style = $filterButtonStyle
@@ -141,7 +141,7 @@
         $sep2.VerticalAlignment = "Center"
         $FilterButtonsPanel.Children.Add($sep2)
 
-        # â”€â”€ BotÃ£o "Marcar tudo" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  BotÃ£o "Marcar tudo" 
         $checkAllButton = New-Object System.Windows.Controls.Button
         $checkAllButton.Style = $filterButtonStyle
         $checkAllButton.FocusVisualStyle = $null
@@ -159,7 +159,7 @@
             & $script:updateApplyButtonState
         })
 
-        # â”€â”€ BotÃ£o "Limpar seleÃ§Ã£o" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  BotÃ£o "Limpar seleÃ§Ã£o" 
         $clearAllButton = New-Object System.Windows.Controls.Button
         $clearAllButton.Style = $filterButtonStyle
         $clearAllButton.FocusVisualStyle = $null
@@ -177,7 +177,7 @@
             & $script:updateApplyButtonState
         })
 
-        # â”€â”€ Lista de checkboxes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Lista de checkboxes 
         if ($availableTweaks.Count -gt 0) {
             if ($global:ScriptContext.System.isWin11 -eq $false) {
                 $availableTweaks = $availableTweaks | Where-Object { $_.Win11Only -eq $false }
@@ -197,7 +197,7 @@
             Write-InstallLog "Nenhum tweak encontrado no arquivo JSON" -Status "AVISO"
         }
 
-        # â”€â”€ Restaurar padrÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Restaurar padrÃµes 
         $script:RestoreDefaultsButton.Add_Click({
             try {
                 if (-not $global:ScriptContext.AppliedTweaks -or $global:ScriptContext.AppliedTweaks.Count -eq 0) {
@@ -220,7 +220,7 @@
             }
         })
 
-        # â”€â”€ MarcaÃ§Ã£o de recomendados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  MarcaÃ§Ã£o de recomendados 
         $RecommendedTweaksButton.Add_Click({
             $script:checkboxesCollection.Values | ForEach-Object { $_.IsChecked = $false }
             $script:checkboxesCollection.Values | ForEach-Object {
@@ -232,7 +232,7 @@
             & $script:updateApplyButtonState
         })
 
-        # â”€â”€ Aplicar selecionados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Aplicar selecionados 
         $script:ApplySelectedTweaksButton.Add_Click({
             $selectedTweaks = $script:checkboxesCollection.Values | Where-Object { $_.IsChecked -eq $true }
             $selectedCount  = $selectedTweaks.Count
@@ -250,7 +250,7 @@
         $SystemPropPerfButton.Add_Click({ Start-Process "SystemPropertiesPerformance" })
         $InstalledUpdatesButton.Add_Click({ Start-Process "shell:AppUpdatesFolder" })
 
-        # â”€â”€ Registro do WinRAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Registro do WinRAR 
         if ($RarRegButton) {
             $RarRegButton.Add_Click({
                 $WinrarPaths = @("$env:ProgramFiles\WinRAR", "$env:ProgramFiles(x86)\WinRAR")

@@ -9,7 +9,7 @@
         $FinalizeTweaksStackPanel = $finalizeDialogWindow.FindName("FinalizeTweaksStackPanel")
         $script:checkboxesCollection = @{}
 
-        # â”€â”€ Carregar tweaks da categoria "Finalize" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Carregar tweaks da categoria "Finalize" 
         if ($FinalizeTweaksStackPanel) {
             try {
                 $finalizeTweaks = Get-AvailableItems -ItemType "Tweaks" | Where-Object { $_.Category -contains "Finalize" }
@@ -38,7 +38,7 @@
             }
         }
 
-        # â”€â”€ Campos de metadados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Campos de metadados 
         $OSNumberTextBox    = $finalizeDialogWindow.FindName("OsNumberTextBox")
         $ClientNameTextBox  = $finalizeDialogWindow.FindName("ClientNameTextBox")
         $TechnicianTextBox  = $finalizeDialogWindow.FindName("TechnicianTextBox")
@@ -48,7 +48,7 @@
         if ($null -ne $global:ScriptContext.Config.ClientName)     { $ClientNameTextBox.Text = [string]$global:ScriptContext.Config.ClientName }
         if ($null -ne $global:ScriptContext.Config.TechnicianName) { $TechnicianTextBox.Text = [string]$global:ScriptContext.Config.TechnicianName }
 
-        # â”€â”€ BotÃ£o OK: executa finalizaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  BotÃ£o OK: executa finalizaÃ§Ã£o 
         $finalizeOkButton.Add_Click({
             param($sender, $e)
             $wnd = [System.Windows.Window]::GetWindow($sender)
@@ -87,7 +87,7 @@
                 $statusText.Text = "Finalizando... Aguarde."
             }
 
-            # â”€â”€ Mostrar SplashScreen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            #  Mostrar SplashScreen 
             $splash = $global:ScriptContext.UI.SplashScreenWindow
             if (-not $splash -or -not $splash.IsLoaded) {
                 $xamlContent = Get-XamlByWindowName -WindowName 'SplashScreen'

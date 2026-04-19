@@ -16,7 +16,7 @@
         [System.Windows.Window]$xamlWindow
     )
 
-    # â”€â”€ Arrastar janela sem barra de tÃ­tulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Arrastar janela sem barra de tÃ­tulo 
     $dialogBorder = $xamlWindow.FindName("DialogBorder")
     $closeButton  = $xamlWindow.FindName("CloseButton")
 
@@ -27,7 +27,7 @@
         })
     }
 
-    # â”€â”€ Evitar suspensÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Evitar suspensÃ£o 
     $avoidSleepButton = $xamlWindow.FindName("AvoidSleepButton")
     if ($avoidSleepButton) {
         $avoidSleepButton.Add_Click({
@@ -37,13 +37,13 @@
         })
     }
 
-    # â”€â”€ Instalar programas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Instalar programas 
     $appInstallButton = $xamlWindow.FindName("SelectAndInstallProgramsButton")
     if ($appInstallButton) {
         $appInstallButton.Add_Click({ Invoke-XamlDialog -WindowName 'AppInstallDialog' })
     }
 
-    # â”€â”€ Instalar Office (montar/desmontar imagem) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Instalar Office (montar/desmontar imagem) 
     $script:officeMountedImagePath      = $null
     $script:originalOfficeButtonContent = $null
     $script:originalOfficeButtonColor   = $null
@@ -54,7 +54,7 @@
         $script:originalOfficeButtonColor   = $InstallOfficeButton.Background
 
         $InstallOfficeButton.Add_Click({
-            # â”€â”€ Modo desmontagem â”€â”€
+            #  Modo desmontagem 
             if ($script:officeMountedImagePath) {
                 $result = Show-MessageDialog -Message "Tem certeza que deseja desmontar a imagem de instalaÃ§Ã£o?" -Title "InstalaÃ§Ã£o do Office" -MessageType "Question" -Buttons "YesNo"
                 if ($result -eq "Yes") {
@@ -75,7 +75,7 @@
                 return
             }
 
-            # â”€â”€ Modo montagem â”€â”€
+            #  Modo montagem 
             $InstallOfficeButton.Content    = "Aguarde..."
             $InstallOfficeButton.IsEnabled  = $false
             $InstallOfficeButton.Background = "Gray"
@@ -136,7 +136,7 @@
             $script:officeMountedImagePath  = $selectedImagePath
             $InstallOfficeButton.Content    = "Desmontar imagem"
             $InstallOfficeButton.IsEnabled  = $true
-            $InstallOfficeButton.Background = "#4CAF50"
+            $InstallOfficeButton.Background = $global:PSConst.Colors.SuccessAlt
             $InstallOfficeButton.ToolTip    = "Clique aqui quando a instalaÃ§Ã£o do Office tiver sido concluÃ­da"
 
             Write-InstallLog "Imagem montada na unidade ${driveLetter}:"
@@ -151,7 +151,7 @@
         })
     }
 
-    # â”€â”€ Tema do Windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Tema do Windows 
     $applyThemeButton = $xamlWindow.FindName("ApplyThemeButton")
     if ($applyThemeButton) {
         Update-ButtonUI -Button $applyThemeButton
@@ -174,13 +174,13 @@
         })
     }
 
-    # â”€â”€ Tweaks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Tweaks 
     $TweaksButton = $xamlWindow.FindName("TweaksButton")
     if ($TweaksButton) {
         $TweaksButton.Add_Click({ Invoke-XamlDialog -WindowName 'TweaksDialog' })
     }
 
-    # â”€â”€ Limpeza de permissÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Limpeza de permissÃµes 
     $FixPermissionsButton = $xamlWindow.FindName("FixPermissionsButton")
     if ($FixPermissionsButton) {
         $FixPermissionsButton.Add_Click({
@@ -235,13 +235,13 @@
                                 $button.IsEnabled = $false
                                 Invoke-ElevatedProcess -FilePath "icacls.exe" -ArgumentList "$folderPath /q /c /t /reset"
                                 $button.Content    = "Executado"
-                                $button.Background = "#28A745"
+                                $button.Background = $global:PSConst.Colors.Success
                                 Write-InstallLog "Limpeza de permissÃµes concluÃ­da para $folderPath"
                                 Show-Notification -Title "Limpeza de permissÃµes em:" -Message $folderPath
                             }
                             catch {
                                 $button.Content    = "Erro!"
-                                $button.Background = "#DC3545"
+                                $button.Background = $global:PSConst.Colors.ErrorStrong
                                 Write-InstallLog "Erro ao limpar permissÃµes de $folderPath`: $_" -Status "ERRO"
                             }
                         }
@@ -261,7 +261,7 @@
                             $btn = New-Object System.Windows.Controls.Button
                             $btn.Content = "Limpar"
                             $btn.Style = $dialog.Resources["ActionButtonStyle"]
-                            $btn.Background = "#993233"
+                            $btn.Background = $global:PSConst.Colors.Accent
                             [System.Windows.Controls.Grid]::SetColumn($btn, 1)
                             $btn.Add_Click({ $cleanPermissions.Invoke($folder, $btn) }.GetNewClosure())
 
@@ -297,13 +297,13 @@
         })
     }
 
-    # â”€â”€ Ativar Windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Ativar Windows 
     $activateButton = $xamlWindow.FindName("ActivateButton")
     if ($activateButton) {
         $activateButton.Add_Click({ Invoke-XamlDialog -WindowName 'ActivationDialog' })
     }
 
-    # â”€â”€ Windows Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Windows Update 
     $WUpdateButton = $xamlWindow.FindName("WUpdateButton")
     if ($WUpdateButton) {
         $WUpdateButton.Add_Click({
@@ -312,7 +312,7 @@
         })
     }
 
-    # â”€â”€ Importar drivers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Importar drivers 
     $importDriversButton = $xamlWindow.FindName("ImportDriversButton")
     if ($importDriversButton) {
         $importDriversButton.Add_Click({
@@ -365,7 +365,7 @@
         })
     }
 
-    # â”€â”€ Gerenciador de dispositivos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Gerenciador de dispositivos 
     $deviceManagerButton = $xamlWindow.FindName("DeviceManagerButton")
     if ($deviceManagerButton) {
         $deviceManagerButton.Add_Click({
@@ -374,7 +374,7 @@
         })
     }
 
-    # â”€â”€ VersÃ£o do script / link GitHub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  VersÃ£o do script / link GitHub 
     $scriptVersionButton = $xamlWindow.FindName("ScriptVersionButton")
     if ($scriptVersionButton) {
         if ($global:ScriptContext.ScriptVersion) {
@@ -383,31 +383,31 @@
         $scriptVersionButton.Add_Click({ Start-Process "https://github.com/viceciado/PostInstall/" })
     }
 
-    # â”€â”€ Sobre â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Sobre 
     $aboutButton = $xamlWindow.FindName("AboutButton")
     if ($aboutButton) {
         $aboutButton.Add_Click({ Invoke-XamlDialog -WindowName 'AboutDialog' })
     }
 
-    # â”€â”€ Visualizar log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Visualizar log 
     $viewLogButton = $xamlWindow.FindName("ViewLogButton")
     if ($viewLogButton) {
         $viewLogButton.Add_Click({ Invoke-XamlDialog -WindowName 'LogViewer' })
     }
 
-    # â”€â”€ Finalizar instalaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Finalizar instalaÃ§Ã£o 
     $finalizeButton = $xamlWindow.FindName("FinalizeInstallButton")
     if ($finalizeButton) {
         $finalizeButton.Add_Click({ Invoke-XamlDialog -WindowName 'FinalizeDialog' })
     }
 
-    # â”€â”€ RodapÃ©: atalho para log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  RodapÃ©: atalho para log 
     $footerStatusButton = $xamlWindow.FindName("FooterStatusButton")
     if ($footerStatusButton) {
         $footerStatusButton.Add_Click({ Invoke-XamlDialog -WindowName 'LogViewer' })
     }
 
-    # â”€â”€ Fechar janela â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #  Fechar janela 
     if ($closeButton) {
         $closeButton.Add_Click({
             $answer = Show-MessageDialog -Message "Deseja realmente fechar o script agora?`n`nIsso sÃ³ fecha a janela, mas nÃ£o encerra a configuraÃ§Ã£o.`nSe vocÃª reiniciar o computador, essa janela aparecerÃ¡ novamente.`n`nA forma correta de finalizar o script Ã© por meio do botÃ£o Finalizar instalaÃ§Ã£o na tela principal." -Title "Encerrar o Post-Install" -MessageType "Warning" -Buttons "YesNo"

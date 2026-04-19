@@ -11,17 +11,11 @@
         try {
             $logContent = New-Object System.Collections.Generic.List[string]
 
-            $primaryLogPath = if ($global:PSConst) {
-                $global:PSConst.LogPaths.Primary
-            } else {
-                "$env:SystemRoot\Setup\Scripts\Install.log"
-            }
+            $primaryLogPath = $global:PSConst.LogPaths.Primary
             $currentLogPath = if ($global:LogPath) {
                 $global:LogPath
-            } elseif ($global:PSConst) {
-                $global:PSConst.LogPaths.Fallback
             } else {
-                "$env:APPDATA\Install.log"
+                $global:PSConst.LogPaths.Fallback
             }
 
             if (Test-Path $primaryLogPath) {

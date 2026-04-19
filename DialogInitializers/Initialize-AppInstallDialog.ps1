@@ -52,7 +52,7 @@
             $programsStackPanel.Children.Add($errorContainer)
         }
 
-        # â”€â”€ Instalar selecionados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Instalar selecionados 
         $installSelectedButton = $appInstallDialogWindow.FindName("InstallSelectedButtonDialog")
         if ($installSelectedButton) {
             $installSelectedButton.Add_Click({
@@ -70,9 +70,7 @@
                 Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalaÃ§Ã£o: $($selectedProgramIDs -join ', ')"
 
                 # Detectar navegadores â†’ oferecer MSEdgeRedirect no Win11
-                $knownBrowserIDs = if ($global:PSConst) { $global:PSConst.KnownBrowserIDs } else {
-                    @("Google.Chrome", "Mozilla.Firefox", "Microsoft.Edge", "Opera.Opera")
-                }
+                $knownBrowserIDs = $global:PSConst.KnownBrowserIDs
                 $hasBrowser = $selectedProgramIDs | Where-Object { $knownBrowserIDs -contains $_ }
                 if ($hasBrowser -and ($global:ScriptContext.System.isWin11 -eq $true)) {
                     $msEdge = Show-MessageDialog -Title "InstalaÃ§Ã£o de outros navegadores" -Message "VocÃª marcou a instalaÃ§Ã£o de um ou mais navegadores.`nDeseja tambÃ©m instalar o MSEdgeRedirect para substituir o navegador padrÃ£o do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
@@ -92,7 +90,7 @@
             })
         }
 
-        # â”€â”€ Atualizar todos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Atualizar todos 
         $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
         if ($UpdateAllProgramsButton) {
             $UpdateAllProgramsButton.Add_Click({

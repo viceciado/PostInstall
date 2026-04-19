@@ -19,7 +19,7 @@
             return $false
         }
 
-        # â”€â”€ Restaurar entradas de registro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Restaurar entradas de registro 
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
@@ -33,7 +33,7 @@
             }
         }
 
-        # â”€â”€ Executar scripts de desfazer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        #  Executar scripts de desfazer 
         $undoScripts = @()
         if ($tweak.PSObject.Properties['UndoCommand'] -and $tweak.UndoCommand) { $undoScripts += $tweak.UndoCommand }
         if ($tweak.PSObject.Properties['UndoScript']  -and $tweak.UndoScript)  { $undoScripts += $tweak.UndoScript }

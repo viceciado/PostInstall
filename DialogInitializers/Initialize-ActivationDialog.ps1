@@ -18,8 +18,8 @@
             $oemKeyTextBox.FontFamily = "Cascadia Mono"
             $copyOemKeyButton.Visibility = "Visible"
             $findOemKeyButton.IsEnabled = $false
-            $findOemKeyButton.Background = "#555555"
-            $activateOemButton.Background = "#4CAF50"
+            $findOemKeyButton.Background = $global:PSConst.Colors.Disabled
+            $activateOemButton.Background = $global:PSConst.Colors.SuccessAlt
             $activateOemButton.IsEnabled = $true
         }
 
@@ -42,7 +42,7 @@
                     Write-InstallLog "Clique em Ativar para usar a chave encontrada"
                     Show-Notification -Title "Chave OEM encontrada`n$productKey" -Message "Clique em Ativar para usar a chave encontrada."
 
-                    $activateBtn.Background = "#4CAF50"
+                    $activateBtn.Background = $global:PSConst.Colors.SuccessAlt
                     $activateBtn.IsEnabled  = $true
                     $copyBtn.Visibility     = "Visible"
                 }
@@ -52,7 +52,7 @@
                     $activateBtn.IsEnabled = $false
                 }
                 $findBtn.IsEnabled  = $false
-                $findBtn.Background = "#555555"
+                $findBtn.Background = $global:PSConst.Colors.Disabled
             }
             catch {
                 $errorMsg = "Falha ao buscar chave OEM: $($_.Exception.Message)"
@@ -110,12 +110,12 @@
                 Start-Sleep -Seconds 3
                 $licenseInfo = Get-CimInstance -Query 'SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID = "55c92734-d682-4d71-983e-d6ec3f16059f" AND PartialProductKey IS NOT NULL' | Select-Object -First 1
 
-                $licensedStatus = if ($global:PSConst) { $global:PSConst.WindowsLicense.Licensed } else { 1 }
+                $licensedStatus = $global:PSConst.WindowsLicense.Licensed
                 if ($licenseInfo -and $licenseInfo.LicenseStatus -eq $licensedStatus) {
                     Write-InstallLog "AtivaÃ§Ã£o bem sucedida" -Status "SUCESSO"
                     $thisButton.IsEnabled = $false
                     $thisButton.Content   = "Windows ativado!"
-                    $thisButton.Background = "#555555"
+                    $thisButton.Background = $global:PSConst.Colors.Disabled
                 }
                 else {
                     $currentStatus = if ($licenseInfo) { $licenseInfo.LicenseStatus } else { "NÃ£o determinado" }
@@ -124,7 +124,7 @@
                     Write-InstallLog $msg -Status "ERRO"
                     $thisButton.IsEnabled  = $false
                     $thisButton.Content    = "Erro!"
-                    $thisButton.Background = "#CC6666"
+                    $thisButton.Background = $global:PSConst.Colors.Error
                     Show-MessageDialog -Message $msg -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
                 }
             }
@@ -134,7 +134,7 @@
                 Write-InstallLog "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Status "ERRO"
                 $thisButton.IsEnabled  = $false
                 $thisButton.Content    = "Erro!"
-                $thisButton.Background = "#CC6666"
+                $thisButton.Background = $global:PSConst.Colors.Error
                 Show-MessageDialog -Message "Erro durante a ativaÃ§Ã£o OEM: $errorMessage" -Title "AtivaÃ§Ã£o do sistema" -MessageType "Error" -Buttons "OK"
             }
         })
