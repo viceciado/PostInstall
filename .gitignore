@@ -25,3 +25,6 @@ Desktop.ini
 
 # Arquivos compilados (opcional - descomente se não quiser versionar)
 PostInstall.ps1
+
+# Resultados de testes e cobertura de código
+Tests/TestResults.xml
