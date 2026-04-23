@@ -33,7 +33,7 @@
         $avoidSleepButton.Add_Click({
             if ($global:ScriptContext.System.AvoidSleep -eq $true) { Set-AvoidSleep }
             else { Set-AvoidSleep -AvoidSleep $true }
-            Update-ButtonUI -Button $avoidSleepButton
+            Update-ButtonUI -Button ([System.Windows.Controls.Button]$args[0])
         })
     }
 
@@ -54,6 +54,8 @@
         $script:originalOfficeButtonColor   = $InstallOfficeButton.Background
 
         $InstallOfficeButton.Add_Click({
+            $btn = [System.Windows.Controls.Button]$args[0]
+
             #  Modo desmontagem 
             if ($script:officeMountedImagePath) {
                 $result = Show-MessageDialog -Message "Tem certeza que deseja desmontar a imagem de instalação?" -Title "Instalação do Office" -MessageType "Question" -Buttons "YesNo"
@@ -61,8 +63,8 @@
                     try {
                         Dismount-DiskImage -ImagePath $script:officeMountedImagePath -Confirm:$false -ErrorAction Stop
                         Write-InstallLog "Imagem desmontada: $script:officeMountedImagePath"
-                        $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
-                        $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                        $btn.Content    = $script:originalOfficeButtonContent
+                        $btn.Background = $script:originalOfficeButtonColor
                         $script:officeMountedImagePath  = $null
                         Show-Notification -Title "Instalação do Office" -Message "Imagem desmontada com sucesso."
                     }
@@ -76,9 +78,9 @@
             }
 
             #  Modo montagem 
-            $InstallOfficeButton.Content    = "Aguarde..."
-            $InstallOfficeButton.IsEnabled  = $false
-            $InstallOfficeButton.Background = "Gray"
+            $btn.Content    = "Aguarde..."
+            $btn.IsEnabled  = $false
+            $btn.Background = "Gray"
 
             $dlg = New-Object System.Windows.Forms.OpenFileDialog
             $dlg.InitialDirectory    = [System.Environment]::GetFolderPath('Desktop')
@@ -88,10 +90,10 @@
             $dlg.CheckPathExists     = $true
 
             if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
-                Write-InstallLog "Instalação do Office cancelada pelo usuÃ¡rio"
-                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
-                $InstallOfficeButton.IsEnabled  = $true
-                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                Write-InstallLog "Instalação do Office cancelada pelo usuário"
+                $btn.Content    = $script:originalOfficeButtonContent
+                $btn.IsEnabled  = $true
+                $btn.Background = $script:originalOfficeButtonColor
                 return
             }
 
@@ -105,9 +107,9 @@
                 $msg = "Erro ao montar a imagem: $($_.Exception.Message)"
                 Write-InstallLog $msg -Status "ERRO"
                 Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
-                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
-                $InstallOfficeButton.IsEnabled  = $true
-                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                $btn.Content    = $script:originalOfficeButtonContent
+                $btn.IsEnabled  = $true
+                $btn.Background = $script:originalOfficeButtonColor
                 return
             }
 
@@ -115,9 +117,9 @@
                 $msg = "Erro ao montar a imagem. Verifique se o arquivo é vÃ¡lido e tente novamente."
                 Write-InstallLog $msg -Status "ERRO"
                 Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
-                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
-                $InstallOfficeButton.IsEnabled  = $true
-                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                $btn.Content    = $script:originalOfficeButtonContent
+                $btn.IsEnabled  = $true
+                $btn.Background = $script:originalOfficeButtonColor
                 return
             }
 
@@ -127,17 +129,17 @@
                 Write-InstallLog $msg -Status "ERRO"
                 Show-MessageDialog -Message $msg -Title "Erro" -MessageType "Error"
                 Dismount-DiskImage -ImagePath $selectedImagePath -Confirm:$false -ErrorAction SilentlyContinue
-                $InstallOfficeButton.Content    = $script:originalOfficeButtonContent
-                $InstallOfficeButton.IsEnabled  = $true
-                $InstallOfficeButton.Background = $script:originalOfficeButtonColor
+                $btn.Content    = $script:originalOfficeButtonContent
+                $btn.IsEnabled  = $true
+                $btn.Background = $script:originalOfficeButtonColor
                 return
             }
 
             $script:officeMountedImagePath  = $selectedImagePath
-            $InstallOfficeButton.Content    = "Desmontar imagem"
-            $InstallOfficeButton.IsEnabled  = $true
-            $InstallOfficeButton.Background = $global:PSConst.Colors.Success
-            $InstallOfficeButton.ToolTip    = "Clique aqui quando a instalação do Office tiver sido concluída"
+            $btn.Content    = "Desmontar imagem"
+            $btn.IsEnabled  = $true
+            $btn.Background = $global:PSConst.Colors.Success
+            $btn.ToolTip    = "Clique aqui quando a instalação do Office tiver sido concluída"
 
             Write-InstallLog "Imagem montada na unidade ${driveLetter}:"
             Show-MessageDialog -Message "Execute o arquivo de instalação a partir da próxima tela.`n`nQuando a instalação terminar, clique para desmontar a imagem." -Title "Instalação do Office"
@@ -161,7 +163,7 @@
                 $currentTheme = Get-CurrentWindowsTheme
                 $newTheme = if ($currentTheme -eq "Claro") { "Escuro" } else { "Claro" }
                 if (Set-WindowsTheme -Theme $newTheme) {
-                    Update-ButtonUI -Button $applyThemeButton
+                    Update-ButtonUI -Button ([System.Windows.Controls.Button]$args[0])
                     Write-InstallLog "Tema $($newTheme.ToLower()) aplicado"
                 }
                 else {
@@ -316,9 +318,10 @@
     $importDriversButton = $xamlWindow.FindName("ImportDriversButton")
     if ($importDriversButton) {
         $importDriversButton.Add_Click({
-            $originalContent = $importDriversButton.Content
-            $importDriversButton.IsEnabled = $false
-            $importDriversButton.Content   = "Aguarde..."
+            $btn = [System.Windows.Controls.Button]$args[0]
+            $originalContent = $btn.Content
+            $btn.IsEnabled = $false
+            $btn.Content   = "Aguarde..."
 
             Show-MessageDialog -Title "Importação de drivers" -Message "Essa função deve ser usada somente em cenÃ¡rios especÃ­ficos. Sempre dÃª preferÃªncia para instalar os drivers da mÃ¡quina pelo site do fabricante ou pelo Windows Update."
 
@@ -332,35 +335,35 @@
 
                 if ($infFiles.Count -eq 0) {
                     Write-InstallLog "A pasta selecionada '$selectedPath' não contém arquivos .inf." -Status "AVISO"
-                    Show-MessageDialog -Message "A pasta selecionada não contém nenhum arquivo .inf vÃ¡lido. Por favor, selecione uma pasta que contenha drivers." -Title "Importação de drivers" -MessageType "Error"
-                    $importDriversButton.Content   = $originalContent
-                    $importDriversButton.IsEnabled = $true
+                    Show-MessageDialog -Message "A pasta selecionada não contém nenhum arquivo .inf válido. Por favor, selecione uma pasta que contenha drivers." -Title "Importação de drivers" -MessageType "Error"
+                    $btn.Content   = $originalContent
+                    $btn.IsEnabled = $true
                     return
                 }
 
                 Write-InstallLog "Pasta selecionada: $selectedPath contendo $($infFiles.Count) drivers"
                 $confirm = Show-MessageDialog -Message "Quantidade de drivers encontrados na pasta: $($infFiles.Count)`n`nProsseguir com a instalação?" -Title "Importação de drivers" -MessageType "Question" -Buttons "YesNo"
                 if ($confirm -eq "Yes") {
-                    $importDriversButton.Content   = "Importação iniciada!"
-                    $importDriversButton.IsEnabled = $true
+                    $btn.Content   = "Importação iniciada!"
+                    $btn.IsEnabled = $true
                     try {
                         Invoke-ElevatedProcess -FilePath "pnputil.exe" -ArgumentList "/add-driver ""$selectedPath\*.inf"" /subdirs /install" -PassThru
                     }
                     catch {
                         $msg = "Erro ao executar pnputil: $($_.Exception.Message)"
                         Write-InstallLog $msg -Status "ERRO"
-                        $importDriversButton.Content = "Erro!"
+                        $btn.Content = "Erro!"
                         Show-MessageDialog -Message $msg -Title "Importação de drivers" -MessageType "Error"
                     }
                 }
                 else {
-                    $importDriversButton.Content   = $originalContent
-                    $importDriversButton.IsEnabled = $true
+                    $btn.Content   = $originalContent
+                    $btn.IsEnabled = $true
                 }
             }
             else {
-                $importDriversButton.Content   = $originalContent
-                $importDriversButton.IsEnabled = $true
+                $btn.Content   = $originalContent
+                $btn.IsEnabled = $true
             }
         })
     }

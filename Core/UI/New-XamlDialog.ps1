@@ -30,18 +30,10 @@
         [xml]$xamlParsed = $XamlContent
         $dialog = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xamlParsed))
 
-        # Merge estilos compartilhados para reduzir duplicação entre diálogos.
-        if (Get-Command -Name Get-SharedDialogResourceDictionary -ErrorAction SilentlyContinue) {
-            $sharedResources = Get-SharedDialogResourceDictionary
-            if ($sharedResources) {
-                $dialog.Resources.MergedDictionaries.Add($sharedResources)
-            }
-        }
-        
         if ($Owner) {
             $dialog.Owner = $Owner
         }
-        
+
         return $dialog
     }
     catch {

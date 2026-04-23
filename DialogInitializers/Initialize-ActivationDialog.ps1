@@ -25,14 +25,14 @@
 
         #  Localizar chave OEM 
         $findOemKeyButton.Add_Click({
+            $wnd = [System.Windows.Window]::GetWindow($args[0])
             $productKey = $null
             try {
                 $productKey = (Get-CimInstance -ClassName SoftwareLicensingService -ErrorAction Stop).OA3xOriginalProductKey
-
-                $textBox     = $activationDialogWindow.FindName("OemKeyTextBox")
-                $findBtn     = $activationDialogWindow.FindName("FindOemKeyButton")
-                $activateBtn = $activationDialogWindow.FindName("ActivateOemButton")
-                $copyBtn     = $activationDialogWindow.FindName("CopyOemKeyButton")
+                $textBox     = $wnd.FindName("OemKeyTextBox")
+                $findBtn     = $wnd.FindName("FindOemKeyButton")
+                $activateBtn = $wnd.FindName("ActivateOemButton")
+                $copyBtn     = $wnd.FindName("CopyOemKeyButton")
 
                 if (-not [string]::IsNullOrWhiteSpace($productKey)) {
                     $textBox.FontFamily = "Cascadia Mono"
@@ -56,18 +56,19 @@
             }
             catch {
                 $errorMsg = "Falha ao buscar chave OEM: $($_.Exception.Message)"
-                $textBox = $activationDialogWindow.FindName("OemKeyTextBox")
+                $textBox = $wnd.FindName("OemKeyTextBox")
                 if ($textBox) { $textBox.Text = "Erro ao buscar chave OEM" }
                 Write-InstallLog $errorMsg -Status "ERRO"
-                $activateBtn = $activationDialogWindow.FindName("ActivateOemButton")
+                $activateBtn = $wnd.FindName("ActivateOemButton")
                 if ($activateBtn) { $activateBtn.IsEnabled = $false }
             }
         })
 
         #  Copiar chave OEM 
         $copyOemKeyButton.Add_Click({
+            $wnd = [System.Windows.Window]::GetWindow($args[0])
             try {
-                $textBox = $activationDialogWindow.FindName("OemKeyTextBox")
+                $textBox = $wnd.FindName("OemKeyTextBox")
                 if ($textBox) {
                     $textToCopy = $textBox.Text
                     if (-not [string]::IsNullOrWhiteSpace($textToCopy) -and
@@ -87,8 +88,9 @@
 
         #  Ativar com chave OEM 
         $activateOemButton.Add_Click({
-            $thisButton = $activationDialogWindow.FindName("ActivateOemButton")
-            $textBox    = $activationDialogWindow.FindName("OemKeyTextBox")
+            $wnd = [System.Windows.Window]::GetWindow($args[0])
+            $thisButton = $wnd.FindName("ActivateOemButton")
+            $textBox    = $wnd.FindName("OemKeyTextBox")
             $thisButton.IsEnabled = $false
 
             $productKey = $textBox.Text

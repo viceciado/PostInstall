@@ -43,21 +43,21 @@
             <Setter Property="Background" Value="#2D2D30"/>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="True">
-                    <Setter Property="Background" Value="#4CAF50"/>
+                    <Setter Property="Background" Value="#28A745"/>
                 </Trigger>
                 <MultiTrigger>
                     <MultiTrigger.Conditions>
                         <Condition Property="IsEnabled" Value="True"/>
                         <Condition Property="IsMouseOver" Value="True"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="#66BB6A"/>
+                    <Setter Property="Background" Value="#34C05A"/>
                 </MultiTrigger>
                 <MultiTrigger>
                     <MultiTrigger.Conditions>
                         <Condition Property="IsEnabled" Value="True"/>
                         <Condition Property="IsPressed" Value="True"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="#388E3C"/>
+                    <Setter Property="Background" Value="#1E8035"/>
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
@@ -91,14 +91,9 @@
                     <Button x:Name="CloseButton" 
                             Content="✕" 
                             Style="{StaticResource CommonMutedCloseButtonStyle}"
-                            Width="30" 
-                            Height="30" 
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center" 
-                            Margin="0,0,5,0"
-                            BorderThickness="0" 
-                            FontSize="16" 
-                            Cursor="Hand"/>
+                            Margin="0,0,5,0"/>
                 </Grid>
             </Border>
             
