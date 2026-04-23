@@ -224,12 +224,14 @@ try {
         }
         Write-InstallLog "ERRO FATAL no script principal: $($_.Exception.Message) `n$($_.ScriptStackTrace)" -Status "ERRO CRÍTICO"
         Show-MessageDialog -Message "Ocorreu um erro crítico: $($_.Exception.Message)" -Title "Erro na Aplicação" -MessageType "Error" 
+        Invoke-ApplicationShutdown -Reason $_.Exception.Message
         exit 1
     }
 }
 catch {
     Write-InstallLog "ERRO FATAL no script principal: $($_.Exception.Message) `n$($_.ScriptStackTrace)" -Status "ERRO CRÍTICO"
     Show-MessageDialog -Message "Ocorreu um erro crítico: $($_.Exception.Message)" -Title "Erro na Aplicação" -MessageType "Error" 
+    Invoke-ApplicationShutdown -Reason $_.Exception.Message
     exit
 }
 finally {

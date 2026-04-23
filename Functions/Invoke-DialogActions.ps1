@@ -47,7 +47,6 @@ function Invoke-XamlDialog {
     }
     catch {
         Write-InstallLog "Erro ao abrir dialogo '$WindowName': $($_.Exception.Message)" -Status "ERRO"
-        throw
     }
 }
 
