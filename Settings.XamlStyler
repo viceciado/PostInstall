@@ -1,0 +1,11 @@
+{
+  "AttributesTolerance": 2,
+  "KeepFirstAttributeOnSameLine": false,
+  "MaxAttributeCharactersPerLine": 120,
+  "MaxAttributesPerLine": 1,
+  "IndentSize": 4,
+  "IndentWithTabs": false,
+  "PutAttributeOrderRuleGroupsOnSeparateLines": false,
+  "RemoveEndingTagOfEmptyElement": true,
+  "SpaceBeforeClosingSlash": true
+}

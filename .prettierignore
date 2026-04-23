@@ -1,0 +1,6 @@
+# Managed by specialized formatters
+**/*.ps1
+**/*.xaml
+
+# Generated artifact
+PostInstall.ps1

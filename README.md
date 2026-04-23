@@ -303,6 +303,33 @@ Se o script conseguir localizar um número serial registrado no firmware, ele é
 .\PI-Downloader.cmd
 ```
 
+### Padronização de código e encoding
+
+O projeto agora possui um fluxo único de padronização para **PowerShell (.ps1)**, **XAML (.xaml)** e **JSON (.json)**, incluindo validação de **UTF-8 com BOM para todos os arquivos .ps1**.
+
+Validar (sem alterar arquivos):
+
+```powershell
+./Scripts/Format-All.ps1 -Mode Check
+```
+
+Corrigir automaticamente (inclui escrita de .ps1 com BOM):
+
+```powershell
+./Scripts/Format-All.ps1 -Mode Fix
+```
+
+Atalho equivalente via testes:
+
+```powershell
+./Tests/Lint-All.ps1 -Mode Check
+```
+
+> [!IMPORTANT]
+>
+> - Para compatibilidade com PowerShell 5.1, arquivos `.ps1` devem permanecer em **UTF-8 com BOM**.
+> - O pipeline de release valida esse requisito e bloqueia a release em caso de violação.
+
 ## Agradecimentos
 
 Os seguintes projetos serviram de base para a idealização do **PostInstall**:
