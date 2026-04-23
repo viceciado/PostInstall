@@ -111,15 +111,15 @@
             switch ($MessageType) {
                 "Info" {
                     $iconText.Text = $global:PSConst.Icons.Info
-                    $iconText.Foreground = $global:PSConst.Colors.InfoStrong
+                    $iconText.Foreground = $global:PSConst.Colors.Info
                 }
                 "Warning" {
                     $iconText.Text = $global:PSConst.Icons.Warning
-                    $iconText.Foreground = $global:PSConst.Colors.WarningStrong
+                    $iconText.Foreground = $global:PSConst.Colors.Warning
                 }
                 "Error" {
                     $iconText.Text = $global:PSConst.Icons.Error
-                    $iconText.Foreground = $global:PSConst.Colors.ErrorCritical
+                    $iconText.Foreground = $global:PSConst.Colors.Error
                 }
                 "Question" {
                     $iconText.Text = $global:PSConst.Icons.Question
@@ -127,7 +127,7 @@
                 }
                 "Connection" {
                     $iconText.Text = $global:PSConst.Icons.Connection
-                    $iconText.Foreground = $global:PSConst.Colors.WarningStrong
+                    $iconText.Foreground = $global:PSConst.Colors.Warning
                 }
             }
         }
