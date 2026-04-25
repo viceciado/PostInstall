@@ -33,8 +33,7 @@ param (
 if (Test-Path ".\$OutputName") {
     if ((Get-Item ".\$OutputName" -ErrorAction SilentlyContinue).IsReadOnly) {
         Remove-Item ".\$OutputName" -Force
-    }
-    else {
+    } else {
         Remove-Item ".\$OutputName" -Force -ErrorAction SilentlyContinue
     }
 }
@@ -48,14 +47,14 @@ Set-Location $workingdir
 # Função para atualizar progresso
 function Update-Progress {
     param (
-        [Parameter(Mandatory, position=0)]
+        [Parameter(Mandatory, position = 0)]
         [string]$StatusMessage,
 
-        [Parameter(Mandatory, position=1)]
-        [ValidateRange(0,100)]
+        [Parameter(Mandatory, position = 1)]
+        [ValidateRange(0, 100)]
         [int]$Percent,
 
-        [Parameter(position=2)]
+        [Parameter(position = 2)]
         [string]$Activity = "Compilando PostInstall"
     )
 
@@ -123,8 +122,8 @@ function Add-CompilationError {
     )
 
     $compilationErrors.Add([PSCustomObject]@{
-            Stage   = $Stage
-            File    = $File
+            Stage = $Stage
+            File = $File
             Message = $Message
         }) | Out-Null
 }
@@ -217,16 +216,15 @@ Update-Progress "Compilando funções..." 30
 #   3. DialogInitializers/ (inicializadores de janelas)
 #   4. Functions/ restante (dispatcher)
 $functionFiles = @(
-    if (Test-Path (Join-Path $workingdir 'Core'))               { Get-ChildItem (Join-Path $workingdir 'Core')               -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
-    if (Test-Path (Join-Path $workingdir 'Features'))           { Get-ChildItem (Join-Path $workingdir 'Features')           -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
+    if (Test-Path (Join-Path $workingdir 'Core')) { Get-ChildItem (Join-Path $workingdir 'Core')               -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
+    if (Test-Path (Join-Path $workingdir 'Features')) { Get-ChildItem (Join-Path $workingdir 'Features')           -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
     if (Test-Path (Join-Path $workingdir 'DialogInitializers')) { Get-ChildItem (Join-Path $workingdir 'DialogInitializers') -Filter  '*.ps1' -File | Sort-Object Name }
-    if (Test-Path (Join-Path $workingdir 'Functions'))          { Get-ChildItem (Join-Path $workingdir 'Functions')          -Filter  '*.ps1' -File | Sort-Object Name }
+    if (Test-Path (Join-Path $workingdir 'Functions')) { Get-ChildItem (Join-Path $workingdir 'Functions')          -Filter  '*.ps1' -File | Sort-Object Name }
 )
 
 if ($functionFiles.Count -eq 0) {
     Write-Warning "Nenhuma função encontrada"
-}
-else {
+} else {
     foreach ($file in $functionFiles) {
         try {
             $functionContent = Get-Content $file.FullName -Raw -Encoding UTF8 -ErrorAction Stop
@@ -256,8 +254,7 @@ else {
             $script_content.Add($functionContent)
             
             Write-Host "[COMPILADO] Função: $($file.Name)" -ForegroundColor Green
-        }
-        catch {
+        } catch {
             $message = $_.Exception.Message
             Write-Warning "Erro ao compilar função $($file.Name): $message"
             Add-CompilationError -Stage "Functions" -File $file.Name -Message $message
@@ -288,8 +285,7 @@ if ($jsonFiles.Count -gt 0) {
             $script_content.Add("'@ | ConvertFrom-Json")
             
             Write-Host "[COMPILADO] Dados: $($file.Name)" -ForegroundColor Green
-        }
-        catch {
+        } catch {
             $message = $_.Exception.Message
             Write-Warning "Erro ao compilar dados $($file.Name): $message"
             Add-CompilationError -Stage "Data" -File $file.Name -Message $message
@@ -312,7 +308,7 @@ if ($xamlFiles.Count -gt 0) {
             
             # Gerar nome da variável usando a mesma lógica do projeto original
             $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-            $variableName = $baseName.Substring(0,1).ToLower() + $baseName.Substring(1) + 'Xaml'
+            $variableName = $baseName.Substring(0, 1).ToLower() + $baseName.Substring(1) + 'Xaml'
             
             # $script_content.Add("`n# Interface: $($file.Name)")
             $script_content.Add("`$$variableName = @'")
@@ -327,8 +323,7 @@ if ($xamlFiles.Count -gt 0) {
             $script_content.Add("`$global:ScriptContext.UI.XamlWindows['$windowBaseName'] = '$variableName'")
             
             Write-Host "[COMPILADO] Interface: $($file.Name) -> `$$variableName" -ForegroundColor Green
-        }
-        catch {
+        } catch {
             $message = $_.Exception.Message
             Write-Warning "Erro ao compilar interface $($file.Name): $message"
             Add-CompilationError -Stage "XAML" -File $file.Name -Message $message
@@ -368,7 +363,7 @@ try {
     }
 
     # Pegar apenas a parte do código após o carregamento dinâmico
-    $processedLines = $lines[$startIndex..($lines.Count-1)]
+    $processedLines = $lines[$startIndex..($lines.Count - 1)]
     $processedContent = $processedLines -join "`r`n"
     Write-Host "[INFO] Código principal extraído a partir da linha $startIndex" -ForegroundColor Cyan
     
@@ -389,8 +384,7 @@ try {
     # Guard de entrada: só executa o Main se não estivermos importando como biblioteca
     $script_content.Add("if (-not `$global:ScriptContext.SkipEntryPoint) { Start-PostInstallMain }")
     Write-Host "[COMPILADO] Código principal integrado" -ForegroundColor Green
-}
-catch {
+} catch {
     Write-Error "Erro ao processar Main.ps1: $($_.Exception.Message)"
     Pop-Location
     exit 1
@@ -413,8 +407,7 @@ try {
     Write-Host "Funções compiladas: $($functionFiles.Count)" -ForegroundColor Cyan
     Write-Host "Interfaces compiladas: $($xamlFiles.Count)" -ForegroundColor Cyan
     Write-Host "Dados compilados: $($jsonFiles.Count)" -ForegroundColor Cyan
-}
-catch {
+} catch {
     Write-Error "Erro ao escrever arquivo compilado: $($_.Exception.Message)"
     Pop-Location
     exit 1
@@ -437,8 +430,7 @@ try {
     }
 
     Write-Host "[VALIDAÇÃO] Sintaxe do arquivo compilado está correta" -ForegroundColor Green
-}
-catch {
+} catch {
     Write-Error "Falha de sintaxe no arquivo compilado: $($_.Exception.Message)"
     Pop-Location
     exit 1

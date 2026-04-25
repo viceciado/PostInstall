@@ -41,8 +41,7 @@
                 Unregister-ScheduledTask -TaskName "PostInstall" -Confirm:$false
             }
             return $true
-        }
-        catch {
+        } catch {
             Write-InstallLog "Erro em Set-PersistExec (-Stop): $($_.Exception.Message)" -Status "ERRO"
             return $false
         }
@@ -57,8 +56,7 @@
             $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
             Register-ScheduledTask -TaskName "PostInstall" -InputObject $task | Out-Null
             return $true
-        }
-        catch {
+        } catch {
             Write-InstallLog "Erro em Set-PersistExec (criação): $($_.Exception.Message)" -Status "ERRO"
             return $false
         }

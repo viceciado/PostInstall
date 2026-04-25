@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Windows.Forms
+﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
@@ -6,34 +6,34 @@ Add-Type -AssemblyName System.Management
 
 $global:ScriptContext = @{
     # Metadados de build (lidos por dialogs e pelo Builder)
-    ScriptVersion     = "pre-build"
+    ScriptVersion = "pre-build"
 
     # Feature data — acesso de alta frequência por código de feature
     AvailablePrograms = @()
-    AvailableTweaks   = @()
-    AppliedTweaks     = @{}
+    AvailableTweaks = @()
+    AppliedTweaks = @{}
 
     # Estado de UI
     UI = @{
-        XamlWindows        = @{}
-        MainWindow         = $null
+        XamlWindows = @{}
+        MainWindow = $null
         SplashScreenWindow = $null
     }
 
     # Estado do sistema
     System = @{
-        IsAdministrator    = $false
-        isWin11            = $null
-        AvoidSleep         = $false
-        Info               = $null
+        IsAdministrator = $false
+        isWin11 = $null
+        AvoidSleep = $false
+        Info = $null
     }
 
     # Dados de sessão do usuário
     Config = @{
-        OemKey                   = $null
-        ClientName               = $null
-        TechnicianName           = $null
-        OsNumber                 = $null
+        OemKey = $null
+        ClientName = $null
+        TechnicianName = $null
+        OsNumber = $null
         PersistedSelectedFolders = @()
     }
 }
@@ -42,10 +42,10 @@ $global:ScriptContext = @{
 # Carrega em ordem de dependência: Core → Features → DialogInitializers → Functions (legacy)
 try {
     $sourceDirs = @(
-        @{ Path = Join-Path $PSScriptRoot 'Core';               Recurse = $true }
-        @{ Path = Join-Path $PSScriptRoot 'Features';           Recurse = $true }
+        @{ Path = Join-Path $PSScriptRoot 'Core'; Recurse = $true }
+        @{ Path = Join-Path $PSScriptRoot 'Features'; Recurse = $true }
         @{ Path = Join-Path $PSScriptRoot 'DialogInitializers'; Recurse = $false }
-        @{ Path = Join-Path $PSScriptRoot 'Functions';          Recurse = $false }
+        @{ Path = Join-Path $PSScriptRoot 'Functions'; Recurse = $false }
     )
 
     $loadedCount = 0
@@ -56,8 +56,7 @@ try {
 
         $files = if ($dir.Recurse) {
             Get-ChildItem $dir.Path -Recurse -Filter '*.ps1' -File | Sort-Object FullName
-        }
-        else {
+        } else {
             Get-ChildItem $dir.Path -Filter '*.ps1' -File | Sort-Object Name
         }
 
@@ -65,8 +64,7 @@ try {
             try {
                 . $file.FullName
                 $loadedCount++
-            }
-            catch {
+            } catch {
                 Write-Host "[ERRO] Falha ao carregar '$($file.Name)': $($_.Exception.Message)" -ForegroundColor Red
                 $failedFiles += $file.Name
             }
@@ -77,8 +75,7 @@ try {
     if ($failedFiles.Count -gt 0) {
         Write-Host "[AVISO] Falha ao carregar: $($failedFiles -join ', ')" -ForegroundColor Yellow
     }
-}
-catch {
+} catch {
     Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
@@ -107,8 +104,7 @@ try {
             $content = Get-XamlContent -XamlFileName $fileName -WindowsPath $windowsPath
             Set-Variable -Name $variableName -Value $content -Scope Script
             Write-Host "Variável '$variableName' definida para '$fileName'" -Status "SUCESSO"
-        }
-        catch {
+        } catch {
             Write-Host "Falha ao carregar '$fileName': $($_.Exception.Message)" -Status "ERRO"
             # Continuar com outros arquivos mesmo se um falhar
         }
@@ -126,8 +122,7 @@ try {
     }
     
     Write-Host "Mapeamento de janelas criado: $($global:ScriptContext.UI.XamlWindows.Keys -join ', ')" 
-}
-catch {
+} catch {
     Write-Host "Falha crítica no carregamento de XAML: $($_.Exception.Message)" -Status "ERRO"
     Show-MessageDialog -Message "Erro ao carregar arquivos de interface. Verifique se os arquivos XAML estão presentes na pasta Windows.`n`nDetalhes: $($_.Exception.Message)" -Title "Erro Crítico" -MessageType "Error" 
     exit 1
@@ -169,8 +164,7 @@ try {
 
         # Registrar todos os event handlers da MainWindow
         Initialize-MainWindow $xamlWindow
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro fatal ao carregar XAML principal: $($_.Exception.Message)" -Status "ERRO"
         exit 1
     }
@@ -202,22 +196,20 @@ try {
         # Exibir mensagem de novidades após a janela principal ser renderizada
         if ($FirstRun -eq $true) {
             $xamlWindow.Add_ContentRendered({
-                try {
-                    $headers = @{ 'User-Agent' = 'viceciado-PostInstall'; 'Accept' = 'application/vnd.github+json' }
-                    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/viceciado/PostInstall/releases/latest" -Headers $headers -Method Get -ErrorAction Stop
-                    $notes = $release.body
-                    if ([string]::IsNullOrWhiteSpace($notes)) { $notes = "Sem notas disponíveis" }
-                    Show-MessageDialog -Title "Post-Install $($release.tag_name)" -Message $notes -MessageType "Info"
-                }
-                catch {
-                    Show-MessageDialog -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
-                }
-            })  
+                    try {
+                        $headers = @{ 'User-Agent' = 'viceciado-PostInstall'; 'Accept' = 'application/vnd.github+json' }
+                        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/viceciado/PostInstall/releases/latest" -Headers $headers -Method Get -ErrorAction Stop
+                        $notes = $release.body
+                        if ([string]::IsNullOrWhiteSpace($notes)) { $notes = "Sem notas disponíveis" }
+                        Show-MessageDialog -Title "Post-Install $($release.tag_name)" -Message $notes -MessageType "Info"
+                    } catch {
+                        Show-MessageDialog -Title "Post-Install" -Message "Sem notas disponíveis" -MessageType "Info"
+                    }
+                })  
         }
         # Exibir a MainWindow (bloqueante)
         $xamlWindow.ShowDialog() | Out-Null
-    }
-    catch {
+    } catch {
         # Garantir que a splash screen seja fechada em caso de erro
         if ($SplashScreen -and $SplashScreen.IsVisible) {
             $SplashScreen.Close()
@@ -227,14 +219,12 @@ try {
         Invoke-ApplicationShutdown -Reason $_.Exception.Message
         exit 1
     }
-}
-catch {
+} catch {
     Write-InstallLog "ERRO FATAL no script principal: $($_.Exception.Message) `n$($_.ScriptStackTrace)" -Status "ERRO CRÍTICO"
     Show-MessageDialog -Message "Ocorreu um erro crítico: $($_.Exception.Message)" -Title "Erro na Aplicação" -MessageType "Error" 
     Invoke-ApplicationShutdown -Reason $_.Exception.Message
     exit
-}
-finally {
+} finally {
     # === ROTINAS DE LIMPEZA ===
     Write-InstallLog "Executando rotinas de limpeza..."
 
@@ -258,8 +248,7 @@ finally {
         }
         
         Write-InstallLog "Limpeza de jobs concluída com sucesso" -Status "SUCESSO"
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro durante a limpeza de jobs: $($_.Exception.Message)" -Status "AVISO"
     }
 

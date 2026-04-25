@@ -11,7 +11,7 @@
 #>
 
 BeforeAll {
-    $script:ProjectRoot  = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $script:ProjectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
     $script:FixturesPath = Join-Path $script:ProjectRoot 'Tests\Fixtures'
 
     $global:LogPath = Join-Path $env:TEMP 'PostInstall-Unit-UI-Test.log'

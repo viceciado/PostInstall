@@ -19,8 +19,7 @@ function Initialize-LogPath {
             $fileStream = [System.IO.File]::OpenWrite($Path)
             $fileStream.Close()
             return $true
-        }
-        catch {
+        } catch {
             return $false
         }
     }
@@ -29,8 +28,7 @@ function Initialize-LogPath {
     if (Test-WritePermission -Path $global:primaryLogPath) {
         Write-Host "Log configurado em: $global:primaryLogPath" -ForegroundColor Green
         return $global:primaryLogPath
-    }
-    else {
+    } else {
         Write-Host "Sem permissão no local padrão. Log redirecionado para: $global:fallbackLogPath" -ForegroundColor Yellow
         
         # Garantir que o fallback funcione
@@ -80,8 +78,7 @@ Início da sessão: $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")
 "@
         $header | Out-File -FilePath $global:LogPath
         Write-Host "Novo arquivo de log criado: $global:LogPath" -ForegroundColor Green
-    }
-    else {
+    } else {
         # Adicionar separador para nova sessão
         $separator = @"
 
@@ -144,8 +141,7 @@ function Write-InstallLog {
                 if ($footerStatus) {
                     $footerStatus.Content = "Status: $Message"
                 }
-            }
-            else {
+            } else {
                 $mainWindow.Dispatcher.Invoke([action] {
                         $footerStatus = $mainWindow.FindName("FooterStatusButton")
                         if ($footerStatus) {
@@ -153,8 +149,7 @@ function Write-InstallLog {
                         }
                     })
             }
-        }
-        catch {
+        } catch {
             # Evitar recursão infinita ao tentar logar erro do próprio Write-InstallLog
             Write-Host "Não foi possível atualizar o status no footer: $($_.Exception.Message)" -ForegroundColor Red
         }
@@ -189,7 +184,7 @@ function Write-SystemInfoToLog {
         # Renderizar objeto em texto amigável
         $sb = New-Object System.Text.StringBuilder
         [void]$sb.AppendLine("INFORMAÇÕES DO SISTEMA")
-        [void]$sb.AppendLine("="*50)
+        [void]$sb.AppendLine("=" * 50)
         [void]$sb.AppendLine("Informações da OS: Informações não fornecidas.")
         if ($SystemInfoData.Machine) {
             [void]$sb.AppendLine("Máquina: $($SystemInfoData.Machine.ChassisSKUNumber) $($SystemInfoData.Machine.Manufacturer) $($SystemInfoData.Machine.Model)")
@@ -208,7 +203,7 @@ function Write-SystemInfoToLog {
         }
         [void]$sb.AppendLine("")
         [void]$sb.AppendLine("DISCOS:")
-        [void]$sb.AppendLine("-"*20)
+        [void]$sb.AppendLine("-" * 20)
         if ($SystemInfoData.Disks) {
             $SystemInfoData.Disks | ForEach-Object {
                 [void]$sb.AppendLine("Disco $($_.Index): $($_.Model) ($($_.SizeGB) GB)")
@@ -216,7 +211,7 @@ function Write-SystemInfoToLog {
         }
         [void]$sb.AppendLine("")
         [void]$sb.AppendLine("GPUS:")
-        [void]$sb.AppendLine("-"*20)
+        [void]$sb.AppendLine("-" * 20)
         if ($SystemInfoData.GPUs) {
             $SystemInfoData.GPUs | ForEach-Object {
                 $mem = if ($_.MemoryMB) { "$($_.MemoryMB) MB" } else { "Desconhecida" }
@@ -224,13 +219,12 @@ function Write-SystemInfoToLog {
             }
         }
         $textToWrite = $sb.ToString()
-    }
-    elseif ($SystemInfo) {
+    } elseif ($SystemInfo) {
         $textToWrite = $SystemInfo
     }
 
     if ($global:LogPath -and $textToWrite) {
         $textToWrite | Out-File -FilePath $global:LogPath -Append
-        "`n" + "="*80 + "`n" | Out-File -FilePath $global:LogPath -Append
+        "`n" + "=" * 80 + "`n" | Out-File -FilePath $global:LogPath -Append
     }
 }

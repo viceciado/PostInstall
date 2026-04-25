@@ -11,10 +11,10 @@
 #>
 
 BeforeAll {
-    $script:ProjectRoot  = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-    $script:OutputName   = '_TestBuild.ps1'
-    $script:OutputPath   = Join-Path $script:ProjectRoot $script:OutputName
-    $script:BuilderPath  = Join-Path $script:ProjectRoot 'Builder.ps1'
+    $script:ProjectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $script:OutputName = '_TestBuild.ps1'
+    $script:OutputPath = Join-Path $script:ProjectRoot $script:OutputName
+    $script:BuilderPath = Join-Path $script:ProjectRoot 'Builder.ps1'
 
     # Limpar artefato anterior se existir
     if (Test-Path $script:OutputPath) { Remove-Item $script:OutputPath -Force }
@@ -118,8 +118,7 @@ function Test-BrokenBuilderSyntax {
             $exitCode | Should -Not -Be 0
             ($result | Out-String) | Should -Match 'Falha na compilação de blocos'
             (Test-Path $failOutputPath) | Should -BeFalse
-        }
-        finally {
+        } finally {
             if (Test-Path $brokenFile) { Remove-Item $brokenFile -Force -ErrorAction SilentlyContinue }
             if (Test-Path $failOutputPath) { Remove-Item $failOutputPath -Force -ErrorAction SilentlyContinue }
         }

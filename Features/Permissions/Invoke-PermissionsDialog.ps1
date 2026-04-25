@@ -12,7 +12,7 @@
 #>
 function Register-PermissionsReset {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string[]]$selectedFolders
     )
     
@@ -74,18 +74,18 @@ function Remove-RedundantSubfolders {
     )
     
     if ($FolderList.Count -le 1) {
-        return ,$FolderList
+        return , $FolderList
     }
     
     # Criar uma lista de objetos com caminho original e normalizado
-     $folderObjects = @()
-     for ($i = 0; $i -lt $FolderList.Count; $i++) {
-         $folderObjects += [PSCustomObject]@{
-             Original = $FolderList[$i]
-             Normalized = $FolderList[$i].TrimEnd('\', '/').ToLower()
-             Index = $i
-         }
-     }
+    $folderObjects = @()
+    for ($i = 0; $i -lt $FolderList.Count; $i++) {
+        $folderObjects += [PSCustomObject]@{
+            Original = $FolderList[$i]
+            Normalized = $FolderList[$i].TrimEnd('\', '/').ToLower()
+            Index = $i
+        }
+    }
     
     # ArrayList para melhor performance
     $parentFolders = New-Object System.Collections.ArrayList
@@ -123,5 +123,5 @@ function Remove-RedundantSubfolders {
     $result = @($parentFolders | ForEach-Object { $_.Original })
     
     # Garantir que retornamos um array mesmo com um único elemento
-    return ,$result
+    return , $result
 }

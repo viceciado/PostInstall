@@ -1,8 +1,8 @@
 ﻿function Install-Programs {
     <#
     .SYNOPSIS
-        Instala lista de programas usando um caminho especÃ­fico do Winget.
-        Projetado para rodar em processo separado (janela de console visÃ­vel).
+        Instala lista de programas usando um caminho específico do Winget.
+        Projetado para rodar em processo separado (janela de console visível).
     #>
     [CmdletBinding()]
     param(
@@ -18,7 +18,7 @@
     Write-Host ""
 
     if (-not (Test-Path $WingetPath)) {
-        Write-Host "ERRO CRÃTICO: ExecutÃ¡vel do Winget não encontrado em $WingetPath" -ForegroundColor Red
+        Write-Host "ERRO CRÍTICO: Executável do Winget não encontrado em $WingetPath" -ForegroundColor Red
         Read-Host "Pressione ENTER para sair"
         return
     }
@@ -27,11 +27,11 @@
     Write-Host "Aplicando configurações de segurança (BypassCertificatePinning)..." -ForegroundColor Yellow
     Start-Process -FilePath $WingetPath -ArgumentList "settings --enable BypassCertificatePinningForMicrosoftStore" -PassThru -Wait -NoNewWindow | Out-Null
 
-    $total        = $ProgramIDs.Count
-    $current      = 0
+    $total = $ProgramIDs.Count
+    $current = 0
     $successCount = 0
-    $failCount    = 0
-    $failedItems  = @()
+    $failCount = 0
+    $failedItems = @()
 
     foreach ($id in $ProgramIDs) {
         $current++
@@ -39,24 +39,23 @@
         Write-Host $id -ForegroundColor White
 
         $baseArgs = @("install", "--id", $id, "--source", "winget", "--exact",
-                      "--accept-source-agreements", "--accept-package-agreements", "--silent", "--force")
+            "--accept-source-agreements", "--accept-package-agreements", "--silent", "--force")
 
         # Tenta escopo machine primeiro
         Write-Host "    Tentando escopo Machine..." -ForegroundColor DarkGray
         $proc = Start-Process -FilePath $WingetPath -ArgumentList ($baseArgs + "--scope", "machine") -PassThru -Wait -NoNewWindow
-        $ok   = ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq $global:PSConst.WinGet.ExitCode_AlreadyLatest)
+        $ok = ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq $global:PSConst.WinGet.ExitCode_AlreadyLatest)
 
         if (-not $ok) {
             Write-Host "    Falha Machine (Code $($proc.ExitCode)). Tentando User..." -ForegroundColor DarkGray
             $proc = Start-Process -FilePath $WingetPath -ArgumentList ($baseArgs + "--scope", "user") -PassThru -Wait -NoNewWindow
-            $ok   = ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq $global:PSConst.WinGet.ExitCode_AlreadyLatest)
+            $ok = ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq $global:PSConst.WinGet.ExitCode_AlreadyLatest)
         }
 
         if ($ok) {
             Write-Host "    SUCESSO" -ForegroundColor Green
             $successCount++
-        }
-        else {
+        } else {
             Write-Host "    FALHA (Exit Code: $($proc.ExitCode))" -ForegroundColor Red
             $failCount++
             $failedItems += $id
@@ -78,9 +77,8 @@
     if ($failCount -gt 0) {
         Write-Host "`nPressione qualquer tecla para fechar..." -ForegroundColor Gray
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    }
-    else {
-        Write-Host "`nConcluÃ­do com sucesso. Fechando em 5 segundos..." -ForegroundColor Green
+    } else {
+        Write-Host "`nConcluído com sucesso. Fechando em 5 segundos..." -ForegroundColor Green
         Start-Sleep -Seconds 5
     }
 }

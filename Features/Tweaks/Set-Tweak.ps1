@@ -1,7 +1,7 @@
 ﻿function Set-Tweak {
     <#
     .SYNOPSIS
-        Aplica um tweak especÃ­fico pelo nome.
+        Aplica um tweak específico pelo nome.
     #>
     [CmdletBinding()]
     param(
@@ -22,10 +22,10 @@
 
         # Coletar scripts a executar (suporta Command ou InvokeScript)
         $scripts = @()
-        if ($tweak.PSObject.Properties['Command']     -and $tweak.Command)      { $scripts += $tweak.Command }
+        if ($tweak.PSObject.Properties['Command'] -and $tweak.Command) { $scripts += $tweak.Command }
         if ($tweak.PSObject.Properties['InvokeScript'] -and $tweak.InvokeScript) { $scripts += $tweak.InvokeScript }
 
-        #  Aplicar entradas de registro 
+        #  Aplicar entradas de registro
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
@@ -34,12 +34,10 @@
                         if (Test-Path -Path $entry.Path) {
                             Remove-Item -Path $entry.Path -Force -Recurse -ErrorAction SilentlyContinue
                             Write-InstallLog "Chave removida: $($entry.Path)"
-                        }
-                        else {
+                        } else {
                             Write-InstallLog "Chave não encontrada para remover: $($entry.Path)" -Status "AVISO"
                         }
-                    }
-                    catch {
+                    } catch {
                         Write-InstallLog "Erro em Set-Tweak ($($global:PSConst.Registry.DeleteKeyType) '$($entry.Path)'): $($_.Exception.Message)" -Status "ERRO"
                         $regOk = $false
                     }
@@ -60,8 +58,7 @@
             try {
                 Invoke-Expression $line
                 Write-InstallLog "Script executado para '$Name': $line"
-            }
-            catch {
+            } catch {
                 Write-InstallLog "Erro em Set-Tweak (script '$Name'): $($_.Exception.Message)" -Status "ERRO"
                 $scriptOk = $false
             }
@@ -69,14 +66,13 @@
 
         $success = $regOk -and $scriptOk
 
-        # Registrar apenas tweaks reversÃ­veis (IsBoolean: true)
+        # Registrar apenas tweaks reversíveis (IsBoolean: true)
         if ($success -and $tweak.IsBoolean -eq $true) {
             $global:ScriptContext.AppliedTweaks[$Name] = (Get-Date)
         }
 
         return $success
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Set-Tweak ('$Name'): $($_.Exception.Message)" -Status "ERRO"
         return $false
     }

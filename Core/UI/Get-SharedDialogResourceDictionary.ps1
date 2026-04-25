@@ -1,10 +1,10 @@
 ﻿function Get-SharedDialogResourceDictionary {
     <#
     .SYNOPSIS
-    Retorna estilos compartilhados para diÃ¡logos XAML.
+    Retorna estilos compartilhados para diálogos XAML.
 
     .DESCRIPTION
-    Centraliza estilos visuais reutilizados por mÃºltiplos diÃ¡logos
+    Centraliza estilos visuais reutilizados por múltiplos diálogos
     para reduzir duplicação e facilitar manutenção.
     #>
 
@@ -200,8 +200,7 @@
 
         [xml]$parsed = $sharedResourcesXaml
         return [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $parsed))
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Get-SharedDialogResourceDictionary: $($_.Exception.Message)" -Status "ERRO" -ErrorAction SilentlyContinue
         return $null
     }

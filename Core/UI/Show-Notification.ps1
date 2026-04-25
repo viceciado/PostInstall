@@ -55,10 +55,10 @@
         $RawXml = [xml] $Template.GetXml()
         
         # Configurar título (primeiro elemento de texto)
-        ($RawXml.toast.visual.binding.text | Where-Object {$_.id -eq "1"}).AppendChild($RawXml.CreateTextNode($Title)) > $null
+        ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "1" }).AppendChild($RawXml.CreateTextNode($Title)) > $null
         
         # Configurar texto principal (segundo elemento de texto)
-        ($RawXml.toast.visual.binding.text | Where-Object {$_.id -eq "2"}).AppendChild($RawXml.CreateTextNode($Message)) > $null
+        ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "2" }).AppendChild($RawXml.CreateTextNode($Message)) > $null
         
         # Criar documento XML serializado
         $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument

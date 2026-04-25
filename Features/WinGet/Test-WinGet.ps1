@@ -9,9 +9,9 @@
     param()
 
     $result = @{
-        Status    = "NotInstalled"
-        Path      = $null
-        Version   = $null
+        Status = "NotInstalled"
+        Path = $null
+        Version = $null
         IsPreview = $false
     }
 
@@ -19,8 +19,7 @@
     $cmd = Get-Command winget -ErrorAction SilentlyContinue
     if ($cmd) {
         $result.Path = $cmd.Source
-    }
-    else {
+    } else {
         # 2. Fallback para locais conhecidos
         $candidates = @(
             "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe",
@@ -30,8 +29,7 @@
             if ($c -like '*\**') {
                 $expanded = Get-ChildItem $c -ErrorAction SilentlyContinue | Select-Object -First 1
                 if ($expanded) { $result.Path = $expanded.FullName; break }
-            }
-            elseif (Test-Path $c) { $result.Path = $c; break }
+            } elseif (Test-Path $c) { $result.Path = $c; break }
         }
     }
 
@@ -39,21 +37,19 @@
         try {
             $verStr = (& $result.Path --version).Trim()
             if ($verStr) {
-                $result.Version   = $verStr
+                $result.Version = $verStr
                 $result.IsPreview = $verStr -match '-preview'
                 try {
-                    $latestJson      = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -ErrorAction Stop
-                    $latestTag       = $latestJson.tag_name.TrimStart('v')
-                    $currentClean    = $verStr -replace '-preview.*', ''
-                    $result.Status   = if ([System.Version]$currentClean -lt [System.Version]$latestTag) { "Outdated" } else { "Installed" }
-                }
-                catch {
+                    $latestJson = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -ErrorAction Stop
+                    $latestTag = $latestJson.tag_name.TrimStart('v')
+                    $currentClean = $verStr -replace '-preview.*', ''
+                    $result.Status = if ([System.Version]$currentClean -lt [System.Version]$latestTag) { "Outdated" } else { "Installed" }
+                } catch {
                     $result.Status = "Installed"
-                    Write-InstallLog "Aviso: Não foi possÃ­vel verificar atualização online do Winget." -Status "AVISO"
+                    Write-InstallLog "Aviso: Não foi possível verificar atualização online do Winget." -Status "AVISO"
                 }
             }
-        }
-        catch { $result.Status = "NotInstalled" }
+        } catch { $result.Status = "NotInstalled" }
     }
 
     return [PSCustomObject]$result

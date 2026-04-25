@@ -1,4 +1,4 @@
-function Invoke-XamlDialog {
+﻿function Invoke-XamlDialog {
     <#
     .SYNOPSIS
     Configura e exibe qualquer dialogo XAML com configuracao especifica
@@ -44,8 +44,7 @@ function Invoke-XamlDialog {
         }
         
         Show-XamlDialog -XamlContent $xamlContent -Owner $owner -ConfigureDialog $ConfigureDialog -ShowModal $ShowModal
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro ao abrir dialogo '$WindowName': $($_.Exception.Message)" -Status "ERRO"
     }
 }
@@ -62,12 +61,12 @@ function Get-DefaultDialogConfiguration {
     )
 
     switch ($WindowName) {
-        'AboutDialog'       { return Get-AboutDialogConfiguration }
-        'TweaksDialog'      { return Get-TweaksDialogConfiguration }
-        'AppInstallDialog'  { return Get-AppInstallDialogConfiguration }
-        'ActivationDialog'  { return Get-ActivationDialogConfiguration }
-        'LogViewer'         { return Get-LogViewerConfiguration }
-        'FinalizeDialog'    { return Get-FinalizeDialogConfiguration }
-        default             { return $null }
+        'AboutDialog' { return Get-AboutDialogConfiguration }
+        'TweaksDialog' { return Get-TweaksDialogConfiguration }
+        'AppInstallDialog' { return Get-AppInstallDialogConfiguration }
+        'ActivationDialog' { return Get-ActivationDialogConfiguration }
+        'LogViewer' { return Get-LogViewerConfiguration }
+        'FinalizeDialog' { return Get-FinalizeDialogConfiguration }
+        default { return $null }
     }
 }

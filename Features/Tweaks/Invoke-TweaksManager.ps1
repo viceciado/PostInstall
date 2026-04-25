@@ -13,7 +13,7 @@
         'Apply' para aplicar; 'Undo' para desfazer.
 
     .PARAMETER SkipPowerActions
-        Quando presente, ignora comandos de desligamento/reinÃ­cio nos scripts de tweak.
+        Quando presente, ignora comandos de desligamento/reinício nos scripts de tweak.
     #>
     [CmdletBinding()]
     param(
@@ -30,7 +30,7 @@
     $targetNames = @()
     if ($Tweaks -and $Tweaks.Count -gt 0) {
         $targetNames += $Tweaks | ForEach-Object {
-            if ($_.Tag)  { $_.Tag.Name }
+            if ($_.Tag) { $_.Tag.Name }
             elseif ($_.Name) { $_.Name }
             else { $_ }
         }
@@ -49,8 +49,7 @@
         if ($Mode -eq 'Apply') {
             $result = Invoke-ElevatedProcess -FunctionName 'Set-Tweak' -Parameters @{ Name = $name; SkipPowerActions = [bool]$SkipPowerActions } -PassThru
             if ($result -match 'True') { $successCount++ }
-        }
-        else {
+        } else {
             $result = Invoke-ElevatedProcess -FunctionName 'Restore-Tweak' -Parameters @{ Name = $name } -PassThru
             if ($result -match 'True') {
                 $successCount++
@@ -72,8 +71,7 @@
             if ($tw -and $tw.RefreshRequired) { $needsRefresh = $true; break }
         }
         if ($needsRefresh) { Restart-Explorer }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Aviso em Invoke-TweaksManager (refresh do Explorer): $($_.Exception.Message)" -Status "AVISO"
     }
 }

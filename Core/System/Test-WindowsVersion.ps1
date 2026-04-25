@@ -5,8 +5,7 @@
     
     if ($buildNumber -gt 19045) {
         $global:ScriptContext.System.isWin11 = $true
-    }
-    else {
+    } else {
         $global:ScriptContext.System.isWin11 = $false
     }
 }

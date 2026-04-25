@@ -43,7 +43,7 @@ Describe 'Set-RegistryEntry — HKCU sandbox' -Tag 'Integration' {
 
     Context 'DWORD' {
         BeforeAll { $script:DwordPath = "$($script:SandboxPath)\DWORD" }
-        AfterAll  { Remove-Item $script:DwordPath -Recurse -Force -ErrorAction SilentlyContinue }
+        AfterAll { Remove-Item $script:DwordPath -Recurse -Force -ErrorAction SilentlyContinue }
 
         It 'Cria a chave e grava valor DWORD 42' {
             $r = Set-RegistryEntry -Path $script:DwordPath -Name 'TestVal' -Type 'DWORD' -Value 42
@@ -61,7 +61,7 @@ Describe 'Set-RegistryEntry — HKCU sandbox' -Tag 'Integration' {
 
     Context 'STRING' {
         BeforeAll { $script:StringPath = "$($script:SandboxPath)\STRING" }
-        AfterAll  { Remove-Item $script:StringPath -Recurse -Force -ErrorAction SilentlyContinue }
+        AfterAll { Remove-Item $script:StringPath -Recurse -Force -ErrorAction SilentlyContinue }
 
         It 'Cria a chave e grava valor String' {
             $r = Set-RegistryEntry -Path $script:StringPath -Name 'StrVal' -Type 'STRING' -Value 'PostInstallTest'
@@ -72,7 +72,7 @@ Describe 'Set-RegistryEntry — HKCU sandbox' -Tag 'Integration' {
 
     Context 'QWORD' {
         BeforeAll { $script:QwordPath = "$($script:SandboxPath)\QWORD" }
-        AfterAll  { Remove-Item $script:QwordPath -Recurse -Force -ErrorAction SilentlyContinue }
+        AfterAll { Remove-Item $script:QwordPath -Recurse -Force -ErrorAction SilentlyContinue }
 
         It 'Grava valor QWORD (Int64)' {
             $r = Set-RegistryEntry -Path $script:QwordPath -Name 'BigVal' -Type 'QWORD' -Value 9999999999
@@ -83,7 +83,7 @@ Describe 'Set-RegistryEntry — HKCU sandbox' -Tag 'Integration' {
 
     Context 'MULTISTRING' {
         BeforeAll { $script:MultiPath = "$($script:SandboxPath)\MULTI" }
-        AfterAll  { Remove-Item $script:MultiPath -Recurse -Force -ErrorAction SilentlyContinue }
+        AfterAll { Remove-Item $script:MultiPath -Recurse -Force -ErrorAction SilentlyContinue }
 
         It 'Grava valor MultiString' {
             $r = Set-RegistryEntry -Path $script:MultiPath -Name 'MultiVal' -Type 'MULTISTRING' -Value @('A', 'B', 'C')

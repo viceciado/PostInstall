@@ -12,12 +12,12 @@
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]  $FunctionName,
-        [hashtable]$Parameters   = @{},
+        [hashtable]$Parameters = @{},
         [string]  $ScriptPath,
         [bool]    $PassThru,
         [bool]    $ForceAsync,
         [ValidateSet('Normal', 'Hidden', 'Minimized', 'Maximized')]
-        [string]  $WindowStyle   = 'Normal'
+        [string]  $WindowStyle = 'Normal'
     )
 
     if ([string]::IsNullOrWhiteSpace($FunctionName)) { throw "Parâmetro FunctionName não pode ser vazio." }
@@ -29,8 +29,7 @@
             if ($ScriptPath -and (Test-Path $ScriptPath)) { . $ScriptPath }
             if ($Parameters.Count -gt 0) {
                 return & $FunctionName @Parameters
-            }
-            else {
+            } else {
                 return & $FunctionName
             }
         }
@@ -40,16 +39,15 @@
 
         $hostExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell.exe" }
 
-        # Verificar se existe script compilado disponÃ­vel
+        # Verificar se existe script compilado disponível
         $compiledPath = $null
         try {
             if ($global:ScriptContext -and $global:ScriptContext.CompiledScriptPath -and (Test-Path $global:ScriptContext.CompiledScriptPath)) {
                 $compiledPath = $global:ScriptContext.CompiledScriptPath
             }
-        }
-        catch {}
+        } catch {}
 
-        # Raiz do projeto: sobe dois nÃ­veis a partir de Core/Process/
+        # Raiz do projeto: sobe dois níveis a partir de Core/Process/
         $projectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 
         $commandParts = @()
@@ -68,10 +66,9 @@
         if ($compiledPath) {
             $cp = $compiledPath -replace "'", "''"
             $commandParts += ". '$cp'"
-        }
-        elseif ($projectRoot -and (Test-Path $projectRoot)) {
+        } elseif ($projectRoot -and (Test-Path $projectRoot)) {
             $rp = $projectRoot -replace "'", "''"
-            # Core (dependÃªncias base primeiro)
+            # Core (dependências base primeiro)
             $commandParts += "Get-ChildItem '$rp\Core' -Recurse -Filter '*.ps1' | Sort-Object FullName | ForEach-Object { . `$_.FullName }"
             # Features
             $commandParts += "Get-ChildItem '$rp\Features' -Recurse -Filter '*.ps1' | Sort-Object FullName | ForEach-Object { . `$_.FullName }"
@@ -83,26 +80,23 @@
         $functionCall = $FunctionName
         if ($Parameters.Count -gt 0) {
             $paramString = ($Parameters.GetEnumerator() | ForEach-Object {
-                $k = $_.Key
-                $v = $_.Value
-                if ($v -is [bool]) {
-                    $boolLiteral = if ($v) { '$true' } else { '$false' }
-                    "-$k $boolLiteral"
-                }
-                elseif ($v -is [array]) {
-                    $arrayString = ($v | ForEach-Object {
-                        if ($_ -is [string])    { $e = $_ -replace "'", "''"; "'$e'" }
-                        elseif ($_ -is [bool])  { if ($_) { '$true' } else { '$false' } }
-                        else                    { "$_" }
-                    }) -join ","
-                    "-$k @($arrayString)"
-                }
-                elseif ($v -is [string]) {
-                    $escaped = $v -replace "'", "''"
-                    "-$k '$escaped'"
-                }
-                else { "-$k $v" }
-            }) -join " "
+                    $k = $_.Key
+                    $v = $_.Value
+                    if ($v -is [bool]) {
+                        $boolLiteral = if ($v) { '$true' } else { '$false' }
+                        "-$k $boolLiteral"
+                    } elseif ($v -is [array]) {
+                        $arrayString = ($v | ForEach-Object {
+                                if ($_ -is [string]) { $e = $_ -replace "'", "''"; "'$e'" }
+                                elseif ($_ -is [bool]) { if ($_) { '$true' } else { '$false' } }
+                                else { "$_" }
+                            }) -join ","
+                        "-$k @($arrayString)"
+                    } elseif ($v -is [string]) {
+                        $escaped = $v -replace "'", "''"
+                        "-$k '$escaped'"
+                    } else { "-$k $v" }
+                }) -join " "
             $functionCall += " $paramString"
         }
         $commandParts += $functionCall
@@ -117,8 +111,7 @@
             -ErrorAction  Stop
 
         return $process
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Invoke-PowerShellFunction ($FunctionName): $($_.Exception.Message)" -Status "ERRO" -ErrorAction SilentlyContinue
         throw
     }

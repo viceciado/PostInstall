@@ -2,7 +2,7 @@
     <#
     .SYNOPSIS
         Atualiza todos os programas instalados via Winget (upgrade --all).
-        Projetado para rodar em processo separado (janela de console visÃ­vel).
+        Projetado para rodar em processo separado (janela de console visível).
     #>
     [CmdletBinding()]
     param(
@@ -28,7 +28,7 @@
     Write-Host "Iniciando atualização geral..." -ForegroundColor White
     $proc = Start-Process -FilePath $WingetPath `
         -ArgumentList @("upgrade", "--all", "--source", "winget", "--accept-source-agreements",
-                        "--accept-package-agreements", "--silent", "--force", "--include-unknown") `
+        "--accept-package-agreements", "--silent", "--force", "--include-unknown") `
         -PassThru -Wait -NoNewWindow
 
     Write-Host "Revertendo configurações de segurança..." -ForegroundColor Yellow
@@ -37,8 +37,7 @@
     if ($proc.ExitCode -eq 0) {
         Write-Host "`nAtualização concluída com sucesso. Fechando em 5 segundos..." -ForegroundColor Green
         Start-Sleep -Seconds 5
-    }
-    else {
+    } else {
         Write-Host "`nO processo terminou com código: $($proc.ExitCode)." -ForegroundColor Yellow
         Write-Host "Pressione qualquer tecla para fechar..." -ForegroundColor Gray
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

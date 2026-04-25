@@ -13,7 +13,7 @@
         [Parameter(Mandatory = $false)][string]$Type
     )
     try {
-        $norm      = ConvertTo-RegistryType -Type $Type
+        $norm = ConvertTo-RegistryType -Type $Type
         $typeUpper = $norm.Up
 
         if ($typeUpper -eq $global:PSConst.Registry.DeleteKeyTypeUpper) {
@@ -21,13 +21,11 @@
                 if (-not (Test-Path -Path $Path)) {
                     New-Item -Path $Path -Force | Out-Null
                     Write-InstallLog "Chave restaurada (recriada): $Path"
-                }
-                else {
-                    Write-InstallLog "Chave jÃ¡ existe; nada a restaurar: $Path" -Status "AVISO"
+                } else {
+                    Write-InstallLog "Chave já existe; nada a restaurar: $Path" -Status "AVISO"
                 }
                 return $true
-            }
-            else {
+            } else {
                 Write-InstallLog "Nada a desfazer para DeleteKey: $Path" -Status "AVISO"
                 return $true
             }
@@ -45,8 +43,7 @@
                     if ($null -ne $existing) {
                         Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
                         Write-InstallLog "Entrada de registro removida: $Path :: $Name"
-                    }
-                    else {
+                    } else {
                         Write-InstallLog "Entrada não existe para remover: $Path :: $Name" -Status "AVISO"
                     }
                     return $true
@@ -54,23 +51,21 @@
 
                 $converted = $OriginalValue
                 switch ($typeUpper) {
-                    'DWORD'       { $converted = [int]$OriginalValue }
-                    'QWORD'       { $converted = [long]$OriginalValue }
+                    'DWORD' { $converted = [int]$OriginalValue }
+                    'QWORD' { $converted = [long]$OriginalValue }
                     'MULTISTRING' { if ($OriginalValue -isnot [array]) { $converted = @([string]$OriginalValue) } }
-                    default       { $converted = $OriginalValue }
+                    default { $converted = $OriginalValue }
                 }
                 Set-ItemProperty -Path $Path -Name $Name -Value $converted -ErrorAction Stop
                 Write-InstallLog "Registro restaurado: $Path :: $Name = $converted"
                 return $true
-            }
-            else {
+            } else {
                 Write-InstallLog "Valor original ausente para desfazer: $Path::$Name" -Status "AVISO"
                 return $false
             }
         }
         return $false
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Restore-RegistryEntry ($Path::$Name): $($_.Exception.Message)" -Status "ERRO"
         return $false
     }

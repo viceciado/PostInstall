@@ -52,12 +52,12 @@
         $dialogBorder = $dialog.FindName("DialogBorder")
         if ($dialogBorder) {
             $dialogBorder.Add_MouseDown({
-                $mouseEvent = $args[1]
-                if ($mouseEvent.LeftButton -eq 'Pressed') {
-                    $wnd = [System.Windows.Window]::GetWindow($args[0])
-                    if ($wnd) { $wnd.DragMove() }
-                }
-            })
+                    $mouseEvent = $args[1]
+                    if ($mouseEvent.LeftButton -eq 'Pressed') {
+                        $wnd = [System.Windows.Window]::GetWindow($args[0])
+                        if ($wnd) { $wnd.DragMove() }
+                    }
+                })
         }
 
         # Botão de fechar da barra de título (padronizado para todas as janelas)
@@ -72,11 +72,11 @@
         
         # Fechar diálogo ao pressionar a tecla Esc
         $dialog.Add_KeyDown({
-            $keyEvent = $args[1]
-            if ($keyEvent.Key -eq 'Escape') {
-                if ($args[0] -is [System.Windows.Window]) { $args[0].Close() }
-            }
-        })
+                $keyEvent = $args[1]
+                if ($keyEvent.Key -eq 'Escape') {
+                    if ($args[0] -is [System.Windows.Window]) { $args[0].Close() }
+                }
+            })
         
         # Executar configurações específicas do diálogo se fornecidas
         if ($ConfigureDialog) {
@@ -90,8 +90,7 @@
             $dialog.Show()
             return $dialog
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Show-XamlDialog: $($_.Exception.Message)" -Status "ERRO"
         throw
     }

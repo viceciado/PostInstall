@@ -96,11 +96,11 @@ Describe 'Set-RegistryEntry' -Tag 'Unit' {
     Context 'Criação de nova entrada (chave não existe)' {
         BeforeAll {
             Mock Write-InstallLog {}
-            Mock Test-Path        { $false }
-            Mock New-Item         {}
+            Mock Test-Path { $false }
+            Mock New-Item {}
             Mock Set-ItemProperty {}
             Mock New-ItemProperty {}
-            Mock Remove-Item      {}
+            Mock Remove-Item {}
             Mock Get-ItemProperty { $null }
         }
 
@@ -123,11 +123,11 @@ Describe 'Set-RegistryEntry' -Tag 'Unit' {
     Context 'Atualização de entrada existente' {
         BeforeAll {
             Mock Write-InstallLog {}
-            Mock Test-Path        { $true }
-            Mock New-Item         {}
+            Mock Test-Path { $true }
+            Mock New-Item {}
             Mock Set-ItemProperty {}
             Mock New-ItemProperty {}
-            Mock Remove-Item      {}
+            Mock Remove-Item {}
             Mock Get-ItemProperty { [PSCustomObject]@{ Val = 0 } }
         }
 
@@ -145,9 +145,9 @@ Describe 'Set-RegistryEntry' -Tag 'Unit' {
     Context 'DELETEKEY — chave existe' {
         BeforeAll {
             Mock Write-InstallLog {}
-            Mock Test-Path        { $true }
-            Mock New-Item         {}
-            Mock Remove-Item      {}
+            Mock Test-Path { $true }
+            Mock New-Item {}
+            Mock Remove-Item {}
             Mock Get-ItemProperty { $null }
         }
 
@@ -165,9 +165,9 @@ Describe 'Set-RegistryEntry' -Tag 'Unit' {
     Context 'DELETEKEY — chave não existe' {
         BeforeAll {
             Mock Write-InstallLog {}
-            Mock Test-Path        { $false }
-            Mock New-Item         {}
-            Mock Remove-Item      {}
+            Mock Test-Path { $false }
+            Mock New-Item {}
+            Mock Remove-Item {}
             Mock Get-ItemProperty { $null }
         }
 
@@ -185,9 +185,9 @@ Describe 'Set-RegistryEntry' -Tag 'Unit' {
     Context 'Falha de Set-ItemProperty' {
         BeforeAll {
             Mock Write-InstallLog {}
-            Mock Test-Path        { $true }
-            Mock New-Item         {}
-            Mock Remove-Item      {}
+            Mock Test-Path { $true }
+            Mock New-Item {}
+            Mock Remove-Item {}
             Mock Get-ItemProperty { [PSCustomObject]@{ Val = 0 } }
             Mock Set-ItemProperty { throw 'Access denied' }
         }
@@ -209,12 +209,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context 'Restaurar valor original' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $true }
-            Mock Set-ItemProperty    {}
-            Mock New-Item            {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $true }
+            Mock Set-ItemProperty {}
+            Mock New-Item {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { $null }
+            Mock Get-ItemProperty { $null }
         }
 
         It 'Chama Set-ItemProperty com o valor original' {
@@ -230,12 +230,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context '<RemoveEntry> remove a propriedade' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $true }
-            Mock Set-ItemProperty    {}
-            Mock New-Item            {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $true }
+            Mock Set-ItemProperty {}
+            Mock New-Item {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { [PSCustomObject]@{ Val = 1 } }
+            Mock Get-ItemProperty { [PSCustomObject]@{ Val = 1 } }
         }
 
         It 'Chama Remove-ItemProperty quando OriginalValue é <RemoveEntry>' {
@@ -251,12 +251,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context 'DELETEKEY — chave não existe (RestoreKey)' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $false }
-            Mock New-Item            {}
-            Mock Set-ItemProperty    {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $false }
+            Mock New-Item {}
+            Mock Set-ItemProperty {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { $null }
+            Mock Get-ItemProperty { $null }
         }
 
         It 'Cria a chave quando OriginalValue é <RestoreKey> e ela não existe' {
@@ -272,12 +272,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context 'DELETEKEY — chave já existe (RestoreKey)' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $true }
-            Mock New-Item            {}
-            Mock Set-ItemProperty    {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $true }
+            Mock New-Item {}
+            Mock Set-ItemProperty {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { $null }
+            Mock Get-ItemProperty { $null }
         }
 
         It 'Não recria a chave quando ela já existe' {
@@ -288,12 +288,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context 'Chave ausente (modo normal)' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $false }
-            Mock New-Item            {}
-            Mock Set-ItemProperty    {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $false }
+            Mock New-Item {}
+            Mock Set-ItemProperty {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { $null }
+            Mock Get-ItemProperty { $null }
         }
 
         It 'Retorna $false quando a chave não existe e não é DeleteKey' {
@@ -304,12 +304,12 @@ Describe 'Restore-RegistryEntry' -Tag 'Unit' {
 
     Context 'OriginalValue ausente' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Test-Path           { $true }
-            Mock New-Item            {}
-            Mock Set-ItemProperty    {}
+            Mock Write-InstallLog {}
+            Mock Test-Path { $true }
+            Mock New-Item {}
+            Mock Set-ItemProperty {}
             Mock Remove-ItemProperty {}
-            Mock Get-ItemProperty    { $null }
+            Mock Get-ItemProperty { $null }
         }
 
         It 'Retorna $false quando OriginalValue não é fornecido' {

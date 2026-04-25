@@ -10,16 +10,15 @@
         [Parameter(Mandatory = $false)]$Value
     )
     try {
-        $norm        = ConvertTo-RegistryType -Type $Type
-        $typeUpper   = $norm.Up
-        $psType      = $norm.Ps
+        $norm = ConvertTo-RegistryType -Type $Type
+        $typeUpper = $norm.Up
+        $psType = $norm.Ps
 
         if ($typeUpper -eq $global:PSConst.Registry.DeleteKeyTypeUpper) {
             if (Test-Path -Path $Path) {
                 Remove-Item -Path $Path -Force -Recurse -ErrorAction SilentlyContinue
                 Write-InstallLog "Chave removida: $Path"
-            }
-            else {
+            } else {
                 Write-InstallLog "Chave não encontrada para remover: $Path" -Status "AVISO"
             }
             return $true
@@ -31,14 +30,14 @@
 
         $converted = $Value
         switch ($typeUpper) {
-            'DWORD'        { $converted = [int]$Value }
-            'QWORD'        { $converted = [long]$Value }
-            'STRING'       { $converted = [string]$Value }
+            'DWORD' { $converted = [int]$Value }
+            'QWORD' { $converted = [long]$Value }
+            'STRING' { $converted = [string]$Value }
             'EXPANDSTRING' { $converted = [string]$Value }
-            'BINARY'       {
+            'BINARY' {
                 if ($Value -is [string]) { $converted = ($Value -split ',') | ForEach-Object { [byte]$_ } }
             }
-            'MULTISTRING'  {
+            'MULTISTRING' {
                 if ($Value -isnot [array]) { $converted = @([string]$Value) }
             }
             default { $converted = $Value }
@@ -47,15 +46,13 @@
         if ($Name) {
             if ($null -ne $existing) {
                 Set-ItemProperty -Path $Path -Name $Name -Value $converted -ErrorAction Stop
-            }
-            else {
+            } else {
                 New-ItemProperty -Path $Path -Name $Name -PropertyType $psType -Value $converted -Force -ErrorAction Stop | Out-Null
             }
         }
         Write-InstallLog "Registro aplicado: $Path :: $Name = $converted ($typeUpper/$psType)"
         return $true
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Set-RegistryEntry ($Path::$Name): $($_.Exception.Message)" -Status "ERRO"
         return $false
     }

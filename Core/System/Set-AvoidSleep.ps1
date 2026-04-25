@@ -26,21 +26,18 @@ public class PowerUtil {
         $result = [PowerUtil]::SetThreadExecutionState($flags)
         if ($result -eq 0) {
             Write-InstallLog "Erro em Set-AvoidSleep (ativar): código $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())" -Status "ERRO"
-        }
-        else {
+        } else {
             Write-InstallLog "O computador está configurado para não entrar em suspensão."
             if ($Silent -eq $false) {
                 Show-Notification -Title "Configuração de suspensão" -Message "O computador está configurado temporariamente para não entrar em suspensão."
             }
             $global:ScriptContext.System.AvoidSleep = $true
         }
-    }
-    else {
+    } else {
         $result = [PowerUtil]::SetThreadExecutionState([PowerUtil]::ES_CONTINUOUS)
         if ($result -eq 0) {
             Write-InstallLog "Erro em Set-AvoidSleep (restaurar): código $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())" -Status "ERRO"
-        }
-        else {
+        } else {
             Write-InstallLog "As configurações de suspensão foram restauradas."
             if ($Silent -eq $false) {
                 Show-Notification -Title "Configuração de suspensão" -Message "As configurações de suspensão foram restauradas ao padrão."

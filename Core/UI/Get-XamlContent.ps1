@@ -1,9 +1,9 @@
 ﻿function Get-XamlContent {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$XamlFileName,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$WindowsPath
     )
     
@@ -16,8 +16,7 @@
         $content = Get-Content -Path $xamlPath -Raw -ErrorAction Stop
         Write-InstallLog "XAML carregado com sucesso: $XamlFileName" -Status "SUCESSO"
         return $content
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Get-XamlContent ('$XamlFileName'): $($_.Exception.Message)" -Status "ERRO"
         throw
     }

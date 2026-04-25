@@ -8,6 +8,6 @@
     # Ex: MainWindow.xaml -> mainWindowXaml
     # Ex: SplashScreen.xaml -> splashScreenXaml
     # Ex: ActivationDialog.xaml -> activationDialogXaml
-    $variableName = $baseName.Substring(0,1).ToLower() + $baseName.Substring(1) + 'Xaml'
+    $variableName = $baseName.Substring(0, 1).ToLower() + $baseName.Substring(1) + 'Xaml'
     return $variableName
 }

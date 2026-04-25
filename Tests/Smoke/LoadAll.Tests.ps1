@@ -21,17 +21,17 @@ BeforeAll {
 
     #    ScriptContext mínimo esperado por Get-AvailableItems e Set-Tweak
     $global:ScriptContext = @{
-        IsCompiled    = $false
+        IsCompiled = $false
         AppliedTweaks = @{}
-        UI     = @{ XamlWindows = @{} }
+        UI = @{ XamlWindows = @{} }
         System = @{}
         Config = @{}
     }
 
     # ── Dot-source na ordem do Main.ps1 ─────────────────────────────────────
     $loadDirs = @(
-        @{ Path = Join-Path $script:ProjectRoot 'Core';     Recurse = $true  }
-        @{ Path = Join-Path $script:ProjectRoot 'Features'; Recurse = $true  }
+        @{ Path = Join-Path $script:ProjectRoot 'Core'; Recurse = $true }
+        @{ Path = Join-Path $script:ProjectRoot 'Features'; Recurse = $true }
         # DialogInitializers excluídos: WPF
         @{ Path = Join-Path $script:ProjectRoot 'Functions'; Recurse = $false }
     )
@@ -69,60 +69,60 @@ Describe 'Carregamento dos arquivos fonte' -Tag 'Smoke' {
     }
 
     Context 'Core — Logging' {
-        It 'Write-InstallLog está definida'     { Get-Command Write-InstallLog  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Initialize-LogFile está definida'   { Get-Command Initialize-LogFile -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Write-InstallLog está definida' { Get-Command Write-InstallLog  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Initialize-LogFile está definida' { Get-Command Initialize-LogFile -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Core — Registry' {
         It 'ConvertTo-RegistryType está definida' { Get-Command ConvertTo-RegistryType -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Set-RegistryEntry está definida'      { Get-Command Set-RegistryEntry      -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Restore-RegistryEntry está definida'  { Get-Command Restore-RegistryEntry  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Apply-RegistryEntry legado removido'   { Get-Command Apply-RegistryEntry    -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
-        It 'Undo-RegistryEntry legado removido'    { Get-Command Undo-RegistryEntry     -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
+        It 'Set-RegistryEntry está definida' { Get-Command Set-RegistryEntry      -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Restore-RegistryEntry está definida' { Get-Command Restore-RegistryEntry  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Apply-RegistryEntry legado removido' { Get-Command Apply-RegistryEntry    -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
+        It 'Undo-RegistryEntry legado removido' { Get-Command Undo-RegistryEntry     -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
     }
 
     Context 'Core — Process' {
-        It 'Invoke-ElevatedProcess está definida'     { Get-Command Invoke-ElevatedProcess     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Invoke-ExternalProcess está definida'     { Get-Command Invoke-ExternalProcess     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Invoke-PowerShellFunction está definida'  { Get-Command Invoke-PowerShellFunction  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Invoke-ElevatedProcess está definida' { Get-Command Invoke-ElevatedProcess     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Invoke-ExternalProcess está definida' { Get-Command Invoke-ExternalProcess     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Invoke-PowerShellFunction está definida' { Get-Command Invoke-PowerShellFunction  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Core — System' {
-        It 'Get-SystemInfo está definida'          { Get-Command Get-SystemInfo          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Get-SystemInfo está definida' { Get-Command Get-SystemInfo          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Test-InternetConnection está definida' { Get-Command Test-InternetConnection -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Test-WindowsVersion está definida'     { Get-Command Test-WindowsVersion     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Set-AvoidSleep está definida'          { Get-Command Set-AvoidSleep          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Set-WindowsTheme está definida'        { Get-Command Set-WindowsTheme        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Test-WindowsVersion está definida' { Get-Command Test-WindowsVersion     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Set-AvoidSleep está definida' { Get-Command Set-AvoidSleep          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Set-WindowsTheme está definida' { Get-Command Set-WindowsTheme        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Core — UI' {
-        It 'Get-AvailableItems está definida'       { Get-Command Get-AvailableItems       -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Get-AvailableWindows está definida'     { Get-Command Get-AvailableWindows     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Get-AvailableItems está definida' { Get-Command Get-AvailableItems       -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Get-AvailableWindows está definida' { Get-Command Get-AvailableWindows     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
         It 'Get-VariableNameFromFile está definida' { Get-Command Get-VariableNameFromFile -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Get-XamlContent está definida'          { Get-Command Get-XamlContent          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Get-XamlByWindowName está definida'     { Get-Command Get-XamlByWindowName     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'New-XamlDialog está definida'           { Get-Command New-XamlDialog           -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Get-XamlContent está definida' { Get-Command Get-XamlContent          -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Get-XamlByWindowName está definida' { Get-Command Get-XamlByWindowName     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'New-XamlDialog está definida' { Get-Command New-XamlDialog           -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Features — Tweaks' {
-        It 'Get-TweakByName está definida'   { Get-Command Get-TweakByName  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Set-Tweak está definida'         { Get-Command Set-Tweak        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Restore-Tweak está definida'     { Get-Command Restore-Tweak    -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Undo-Tweak legado removido'      { Get-Command Undo-Tweak       -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
+        It 'Get-TweakByName está definida' { Get-Command Get-TweakByName  -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Set-Tweak está definida' { Get-Command Set-Tweak        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Restore-Tweak está definida' { Get-Command Restore-Tweak    -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Undo-Tweak legado removido' { Get-Command Undo-Tweak       -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
         It 'Invoke-TweaksManager está definida' { Get-Command Invoke-TweaksManager -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Features — WinGet' {
-        It 'Test-WinGet está definida'       { Get-Command Test-WinGet        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Install-WinGet está definida'    { Get-Command Install-WinGet     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Install-Programs está definida'  { Get-Command Install-Programs   -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Update-AllPrograms está definida'{ Get-Command Update-AllPrograms -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Upgrade-AllPrograms legado removido'{ Get-Command Upgrade-AllPrograms -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
+        It 'Test-WinGet está definida' { Get-Command Test-WinGet        -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Install-WinGet está definida' { Get-Command Install-WinGet     -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Install-Programs está definida' { Get-Command Install-Programs   -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Update-AllPrograms está definida' { Get-Command Update-AllPrograms -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Upgrade-AllPrograms legado removido' { Get-Command Upgrade-AllPrograms -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
     }
 
     Context 'Features — Other' {
         It 'Invoke-FinalizeTasks está definida' { Get-Command Invoke-FinalizeTasks -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
-        It 'Set-PersistExec está definida'      { Get-Command Set-PersistExec      -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
+        It 'Set-PersistExec está definida' { Get-Command Set-PersistExec      -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty }
     }
 
     Context 'Functions — Dispatcher' {

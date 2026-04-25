@@ -35,9 +35,8 @@
         }
 
         return $dialog
-    }
-    catch {
-            Write-InstallLog "Erro em New-XamlDialog: $($_.Exception.Message)" -Status "ERRO"
+    } catch {
+        Write-InstallLog "Erro em New-XamlDialog: $($_.Exception.Message)" -Status "ERRO"
         throw
     }
 }

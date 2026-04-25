@@ -1,10 +1,10 @@
 ﻿function Invoke-FinalizeTasks {
     <#
     .SYNOPSIS
-    Executa tarefas de finalização (Registro e Tweaks) em uma Ãºnica sessão elevada.
+    Executa tarefas de finalização (Registro e Tweaks) em uma única sessão elevada.
     
     .PARAMETER Owner
-    Nome do proprietÃ¡rio registrado.
+    Nome do proprietário registrado.
     
     .PARAMETER Organization
     Nome da organização registrada.
@@ -34,8 +34,7 @@
             Write-InstallLog "Definindo RegisteredOrganization: $Organization"
             Set-ItemProperty -Path $regPath -Name "RegisteredOrganization" -Value $Organization -ErrorAction Stop
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Invoke-FinalizeTasks (registro): $($_.Exception.Message)" -Status "ERRO"
         $hadErrors = $true
     }
@@ -44,11 +43,10 @@
     if ($TweakNames -and $TweakNames.Count -gt 0) {
         try {
             Write-InstallLog "Iniciando aplicação de $($TweakNames.Count) tweaks..."
-            # Chama Invoke-TweaksManager. Como jÃ¡ estamos elevados (esta função é chamada via Invoke-ElevatedProcess),
+            # Chama Invoke-TweaksManager. Como já estamos elevados (esta função é chamada via Invoke-ElevatedProcess),
             # as chamadas internas de Invoke-TweaksManager detectarão que são Admin e rodarão diretamente.
             Invoke-TweaksManager -Names $TweakNames -Mode "Apply" -SkipPowerActions
-        }
-        catch {
+        } catch {
             Write-InstallLog "Erro em Invoke-FinalizeTasks (tweaks): $($_.Exception.Message)" -Status "ERRO"
             $hadErrors = $true
         }

@@ -10,8 +10,7 @@
         if ($explorers) {
             Stop-Process -Id ($explorers.Id) -Force -ErrorAction SilentlyContinue
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Aviso em Restart-Explorer: $($_.Exception.Message)" -Status "AVISO"
     }
 }

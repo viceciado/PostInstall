@@ -3,19 +3,19 @@
     .SYNOPSIS
         Executa processos externos ou funções PowerShell, opcionalmente em processo separado.
     .DESCRIPTION
-        Assume que o processo atual jÃ¡ possui privilégios administrativos.
+        Assume que o processo atual já possui privilégios administrativos.
         Delega para Invoke-PowerShellFunction (ParameterSet 'Function') ou
         Invoke-ExternalProcess (ParameterSet 'Process').
     #>
     [CmdletBinding(DefaultParameterSetName = 'Process')]
     param(
-        [Parameter(Mandatory = $true,  ParameterSetName = 'Process')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Process')]
         [string]$FilePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Process')]
         [string]$ArgumentList,
 
-        [Parameter(Mandatory = $true,  ParameterSetName = 'Function')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Function')]
         [string]$FunctionName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Function')]
@@ -63,8 +63,7 @@
                     -WindowStyle       $WindowStyle
             }
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Invoke-ElevatedProcess: $($_.Exception.Message)" -Status "ERRO" -ErrorAction SilentlyContinue
         throw $_
     }

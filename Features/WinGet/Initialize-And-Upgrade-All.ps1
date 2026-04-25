@@ -8,19 +8,18 @@
     param()
 
     $Host.UI.RawUI.WindowTitle = "PostInstall - Preparando Atualização"
-    [Console]::OutputEncoding  = [System.Text.Encoding]::UTF8
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     Clear-Host
     Write-Host "=== PREPARAÇÃO DO WINGET ===" -ForegroundColor Cyan
-    Write-Host "Verificando componentes necessÃ¡rios..."
+    Write-Host "Verificando componentes necessários..."
     Write-Host ""
 
     try {
         $wingetPath = Install-WinGet
-        if (-not $wingetPath) { throw "Falha crÃ­tica: ExecutÃ¡vel do Winget não retornado." }
+        if (-not $wingetPath) { throw "Falha crítica: Executável do Winget não retornado." }
         Update-AllPrograms -WingetPath $wingetPath
         return $true
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Initialize-And-Upgrade-All: $($_.Exception.Message)" -Status "ERRO" -ErrorAction SilentlyContinue
         Write-Host "`nERRO FATAL: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray

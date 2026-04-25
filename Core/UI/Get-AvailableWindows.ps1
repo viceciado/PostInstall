@@ -43,8 +43,7 @@
                     if ($script:compiledPrograms) {
                         if ($script:compiledPrograms.PSObject.Properties.Name -contains 'programs') {
                             return $script:compiledPrograms.programs
-                        }
-                        else {
+                        } else {
                             return $script:compiledPrograms
                         }
                     }
@@ -53,8 +52,7 @@
                     if ($script:compiledTweaks) {
                         if ($script:compiledTweaks.PSObject.Properties.Name -contains 'Tweaks') {
                             return $script:compiledTweaks.Tweaks
-                        }
-                        else {
+                        } else {
                             return $script:compiledTweaks
                         }
                     }
@@ -63,8 +61,7 @@
                     if ($script:compiledTweaks) {
                         if ($script:compiledTweaks.PSObject.Properties.Name -contains 'TweaksCategories') {
                             return $script:compiledTweaks.TweaksCategories
-                        }
-                        elseif ($script:compiledTweaks.PSObject.Properties.Name -contains 'Tweaks') {
+                        } elseif ($script:compiledTweaks.PSObject.Properties.Name -contains 'Tweaks') {
                             $names = $script:compiledTweaks.Tweaks |
                                 ForEach-Object { $_.Category } |
                                 Where-Object { $_ } |
@@ -102,24 +99,21 @@
             "Programs" {
                 if ($json.PSObject.Properties.Name -contains 'programs') {
                     return $json.programs
-                }
-                else {
+                } else {
                     return $json
                 }
             }
             "Tweaks" {
                 if ($json.PSObject.Properties.Name -contains 'Tweaks') {
                     return $json.Tweaks
-                }
-                else {
+                } else {
                     return $json
                 }
             }
             "TweaksCategories" {
                 if ($json.PSObject.Properties.Name -contains 'TweaksCategories') {
                     return $json.TweaksCategories
-                }
-                elseif ($json.PSObject.Properties.Name -contains 'Tweaks') {
+                } elseif ($json.PSObject.Properties.Name -contains 'Tweaks') {
                     $names = $json.Tweaks |
                         ForEach-Object { $_.Category } |
                         Where-Object { $_ } |
@@ -127,14 +121,12 @@
                         Select-Object -Unique |
                         Sort-Object
                     return ($names | ForEach-Object { [PSCustomObject]@{ Name = $_; Description = $null; Icon = $null; Color = $null; IsRecommended = $false } })
-                }
-                else {
+                } else {
                     return @()
                 }
             }
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Get-AvailableItems ($ItemType): $($_.Exception.Message)" -Status "ERRO"
         return @()
     }
@@ -154,8 +146,7 @@ function Get-AvailableWindows {
     
     if ($global:ScriptContext.UI.XamlWindows) {
         return $global:ScriptContext.UI.XamlWindows.Keys | Sort-Object
-    }
-    else {
+    } else {
         Write-Warning "Nenhuma janela XAML foi carregada ainda"
         return @()
     }

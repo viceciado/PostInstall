@@ -41,15 +41,12 @@
             $bootType = "UEFI"
             if ($secureBootStatus) {
                 $bootType += " com Secure Boot ativado"
-            }
-            else {
+            } else {
                 $bootType += " com Secure Boot desativado"
             }
-        }
-        catch [System.PlatformNotSupportedException] {
+        } catch [System.PlatformNotSupportedException] {
             $bootType = "Legacy"
-        }
-        catch {
+        } catch {
             $bootType = "UEFI (status do Secure Boot indeterminado)"
         }
         
@@ -66,7 +63,7 @@
                 NumberOfCores = $processor.NumberOfCores
                 LogicalProcessors = $processor.NumberOfLogicalProcessors
             }
-            TotalMemoryGB = [math]::Round($computerSystem.TotalPhysicalMemory/1GB, 2)
+            TotalMemoryGB = [math]::Round($computerSystem.TotalPhysicalMemory / 1GB, 2)
             OS = [pscustomobject]@{
                 Caption = $os.Caption
                 Architecture = $os.OSArchitecture
@@ -106,8 +103,7 @@
         }
         
         return $result
-    }
-    catch {
+    } catch {
         $errorMessage = "Erro em Get-SystemInfo: $($_.Exception.Message)"
         Write-InstallLog $errorMessage -Status "ERRO"
         return "Erro na coleta de informações do sistema"

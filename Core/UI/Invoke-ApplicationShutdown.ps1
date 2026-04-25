@@ -32,11 +32,11 @@
 
     $app = [System.Windows.Application]::Current
     if ($app -and $app.Dispatcher -and -not $app.Dispatcher.HasShutdownStarted) {
-        $app.Dispatcher.Invoke([Action]{
-            foreach ($win in @([System.Windows.Application]::Current.Windows)) {
-                try { $win.Close() } catch {}
-            }
-            [System.Windows.Application]::Current.Shutdown()
-        })
+        $app.Dispatcher.Invoke([Action] {
+                foreach ($win in @([System.Windows.Application]::Current.Windows)) {
+                    try { $win.Close() } catch {}
+                }
+                [System.Windows.Application]::Current.Shutdown()
+            })
     }
 }

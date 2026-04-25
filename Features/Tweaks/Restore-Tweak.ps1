@@ -1,7 +1,7 @@
 ﻿function Restore-Tweak {
     <#
     .SYNOPSIS
-        Desfaz um tweak especÃ­fico, restaurando os valores originais de registro.
+        Desfaz um tweak específico, restaurando os valores originais de registro.
     #>
     [CmdletBinding()]
     param(
@@ -19,40 +19,37 @@
             return $false
         }
 
-        #  Restaurar entradas de registro 
+        #  Restaurar entradas de registro
         $regOk = $true
         if ($tweak.Registry) {
             foreach ($entry in $tweak.Registry) {
                 if ($entry.PSObject.Properties[$global:PSConst.Registry.DeleteKeyType] -and $entry.DeleteKey) {
                     $ok = Restore-RegistryEntry -Path $entry.Path -OriginalValue $entry.OriginalValue -Type $global:PSConst.Registry.DeleteKeyType
-                }
-                else {
+                } else {
                     $ok = Restore-RegistryEntry -Path $entry.Path -Name $entry.Name -OriginalValue $entry.OriginalValue -Type $entry.Type
                 }
                 if (-not $ok) { $regOk = $false }
             }
         }
 
-        #  Executar scripts de desfazer 
+        #  Executar scripts de desfazer
         $undoScripts = @()
         if ($tweak.PSObject.Properties['UndoCommand'] -and $tweak.UndoCommand) { $undoScripts += $tweak.UndoCommand }
-        if ($tweak.PSObject.Properties['UndoScript']  -and $tweak.UndoScript)  { $undoScripts += $tweak.UndoScript }
+        if ($tweak.PSObject.Properties['UndoScript'] -and $tweak.UndoScript) { $undoScripts += $tweak.UndoScript }
 
         $scriptOk = $true
         foreach ($line in $undoScripts) {
             try {
                 Invoke-Expression $line
                 Write-InstallLog "Undo script executado para '$Name': $line"
-            }
-            catch {
+            } catch {
                 Write-InstallLog "Erro em Restore-Tweak (script '$Name'): $($_.Exception.Message)" -Status "ERRO"
                 $scriptOk = $false
             }
         }
 
         return ($regOk -and $scriptOk)
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Restore-Tweak ('$Name'): $($_.Exception.Message)" -Status "ERRO"
         return $false
     }

@@ -51,13 +51,11 @@
             if ($hasInternet) {
                 Write-InstallLog "Conexão com a internet confirmada" -Status "SUCESSO"
                 return $true
-            }
-            else {
+            } else {
                 Write-InstallLog "Sem conexão com a internet" -Status "AVISO"
                 return $false
             }
-        }
-        catch {
+        } catch {
             Write-InstallLog "Erro em Test-InternetConnection: $($_.Exception.Message)" -Status "ERRO"
             return $false
         }

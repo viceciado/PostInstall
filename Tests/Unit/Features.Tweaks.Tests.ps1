@@ -10,8 +10,8 @@
 #>
 
 BeforeAll {
-    $script:ProjectRoot  = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-    $script:FixturePath  = Join-Path $script:ProjectRoot 'Tests\Fixtures\SampleTweaks.json'
+    $script:ProjectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $script:FixturePath = Join-Path $script:ProjectRoot 'Tests\Fixtures\SampleTweaks.json'
 
     $global:LogPath = Join-Path $env:TEMP 'PostInstall-Unit-Tweaks-Test.log'
 
@@ -71,12 +71,12 @@ Describe 'Set-Tweak' -Tag 'Unit' {
 
     Context 'Tweak com Registry (IsBoolean = $true)' {
         BeforeAll {
-            Mock Write-InstallLog  {}
+            Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
-            Mock Set-RegistryEntry  { return $true }
-            Mock Invoke-Expression  {}
-            Mock Test-Path          { $false }
-            Mock Remove-Item        {}
+            Mock Set-RegistryEntry { return $true }
+            Mock Invoke-Expression {}
+            Mock Test-Path { $false }
+            Mock Remove-Item {}
         }
         BeforeEach {
             $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{}; UI = @{}; System = @{}; Config = @{} }
@@ -103,12 +103,12 @@ Describe 'Set-Tweak' -Tag 'Unit' {
 
     Context 'Tweak com Script (IsBoolean = $false)' {
         BeforeAll {
-            Mock Write-InstallLog  {}
+            Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
-            Mock Set-RegistryEntry  { return $true }
-            Mock Invoke-Expression  {}
-            Mock Test-Path          { $false }
-            Mock Remove-Item        {}
+            Mock Set-RegistryEntry { return $true }
+            Mock Invoke-Expression {}
+            Mock Test-Path { $false }
+            Mock Remove-Item {}
         }
         BeforeEach {
             $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{}; UI = @{}; System = @{}; Config = @{} }
@@ -130,12 +130,12 @@ Describe 'Set-Tweak' -Tag 'Unit' {
 
     Context 'Tweak inexistente' {
         BeforeAll {
-            Mock Write-InstallLog  {}
+            Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
-            Mock Set-RegistryEntry  { return $true }
-            Mock Invoke-Expression  {}
-            Mock Test-Path          { $false }
-            Mock Remove-Item        {}
+            Mock Set-RegistryEntry { return $true }
+            Mock Invoke-Expression {}
+            Mock Test-Path { $false }
+            Mock Remove-Item {}
         }
         BeforeEach {
             $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{} }
@@ -157,12 +157,12 @@ Describe 'Set-Tweak' -Tag 'Unit' {
 
     Context 'Falha no Set-RegistryEntry' {
         BeforeAll {
-            Mock Write-InstallLog  {}
+            Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
-            Mock Set-RegistryEntry  { return $false }
-            Mock Invoke-Expression  {}
-            Mock Test-Path          { $false }
-            Mock Remove-Item        {}
+            Mock Set-RegistryEntry { return $false }
+            Mock Invoke-Expression {}
+            Mock Test-Path { $false }
+            Mock Remove-Item {}
         }
         BeforeEach {
             $global:ScriptContext = @{ IsCompiled = $false; AppliedTweaks = @{} }
@@ -188,10 +188,10 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
 
     Context 'Tweak com Registry' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Get-AvailableItems  { return $script:SampleTweaks }
+            Mock Write-InstallLog {}
+            Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression   {}
+            Mock Invoke-Expression {}
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
@@ -211,10 +211,10 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
 
     Context 'Tweak com UndoScript' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Get-AvailableItems  { return $script:SampleTweaks }
+            Mock Write-InstallLog {}
+            Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression   {}
+            Mock Invoke-Expression {}
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
@@ -229,10 +229,10 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
 
     Context 'Tweak inexistente' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Get-AvailableItems  { return $script:SampleTweaks }
+            Mock Write-InstallLog {}
+            Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression   {}
+            Mock Invoke-Expression {}
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
@@ -247,10 +247,10 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
 
     Context 'Falha no Restore-RegistryEntry' {
         BeforeAll {
-            Mock Write-InstallLog    {}
-            Mock Get-AvailableItems  { return $script:SampleTweaks }
+            Mock Write-InstallLog {}
+            Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $false }
-            Mock Invoke-Expression   {}
+            Mock Invoke-Expression {}
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {

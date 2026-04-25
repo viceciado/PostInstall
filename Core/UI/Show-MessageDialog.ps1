@@ -85,11 +85,11 @@
         $dialogBorder = $dialog.FindName("DialogBorder")
         if ($dialogBorder) {
             $dialogBorder.Add_MouseDown({
-                param($sender, $e)
-                if ($e.LeftButton -eq 'Pressed') {
-                    $dialog.DragMove()
-                }
-            })
+                    param($sender, $e)
+                    if ($e.LeftButton -eq 'Pressed') {
+                        $dialog.DragMove()
+                    }
+                })
         }
         
         # Obter referências aos controles
@@ -142,9 +142,9 @@
                     $button1.Content = "OK"
                     $button1.Visibility = "Visible"
                     $button1.Add_Click({
-                        $script:dialogResult = "OK"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "OK"
+                            $dialog.Close()
+                        })
                 }
                 if ($button2) { $button2.Visibility = "Collapsed" }
                 if ($button3) { $button3.Visibility = "Collapsed" }
@@ -154,17 +154,17 @@
                     $button1.Content = "OK"
                     $button1.Visibility = "Visible"
                     $button1.Add_Click({
-                        $script:dialogResult = "OK"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "OK"
+                            $dialog.Close()
+                        })
                 }
                 if ($button2) {
                     $button2.Content = "Cancelar"
                     $button2.Visibility = "Visible"
                     $button2.Add_Click({
-                        $script:dialogResult = "Cancel"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Cancel"
+                            $dialog.Close()
+                        })
                 }
                 if ($button3) { $button3.Visibility = "Collapsed" }
             }
@@ -173,17 +173,17 @@
                     $button1.Content = "Tentar novamente"
                     $button1.Visibility = "Visible"
                     $button1.Add_Click({
-                        $script:dialogResult = "Retry"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Retry"
+                            $dialog.Close()
+                        })
                 }
                 if ($button2) {
                     $button2.Content = "Sair"
                     $button2.Visibility = "Visible"
                     $button2.Add_Click({
-                        $script:dialogResult = "Cancel"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Cancel"
+                            $dialog.Close()
+                        })
                 }
                 if ($button3) { $button3.Visibility = "Collapsed" }
             }
@@ -192,17 +192,17 @@
                     $button1.Content = "Sim"
                     $button1.Visibility = "Visible"
                     $button1.Add_Click({
-                        $script:dialogResult = "Yes"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Yes"
+                            $dialog.Close()
+                        })
                 }
                 if ($button2) {
                     $button2.Content = "Não"
                     $button2.Visibility = "Visible"
                     $button2.Add_Click({
-                        $script:dialogResult = "No"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "No"
+                            $dialog.Close()
+                        })
                 }
                 if ($button3) { $button3.Visibility = "Collapsed" }
             }
@@ -211,25 +211,25 @@
                     $button1.Content = "Sim"
                     $button1.Visibility = "Visible"
                     $button1.Add_Click({
-                        $script:dialogResult = "Yes"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Yes"
+                            $dialog.Close()
+                        })
                 }
                 if ($button2) {
                     $button2.Content = "Não"
                     $button2.Visibility = "Visible"
                     $button2.Add_Click({
-                        $script:dialogResult = "No"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "No"
+                            $dialog.Close()
+                        })
                 }
                 if ($button3) {
                     $button3.Content = "Cancelar"
                     $button3.Visibility = "Visible"
                     $button3.Add_Click({
-                        $script:dialogResult = "Cancel"
-                        $dialog.Close()
-                    })
+                            $script:dialogResult = "Cancel"
+                            $dialog.Close()
+                        })
                 }
             }
         }
@@ -237,19 +237,19 @@
         # Configurar botão de fechar (X)
         if ($closeButton) {
             $closeButton.Add_Click({
-                $script:dialogResult = "Cancel"
-                $dialog.Close()
-            })
+                    $script:dialogResult = "Cancel"
+                    $dialog.Close()
+                })
         }
         
         # Configurar tecla ESC para fechar
         $dialog.Add_KeyDown({
-            param($sender, $e)
-            if ($e.Key -eq "Escape") {
-                $script:dialogResult = "Cancel"
-                $dialog.Close()
-            }
-        })
+                param($sender, $e)
+                if ($e.Key -eq "Escape") {
+                    $script:dialogResult = "Cancel"
+                    $dialog.Close()
+                }
+            })
         
         # Exibir diálogo modal
         $dialog.ShowDialog() | Out-Null
@@ -262,8 +262,7 @@
         
         # Retornar resultado
         return $script:dialogResult
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Show-MessageDialog: $($_.Exception.Message)" -Status "ERRO"
         
         # Fallback para MessageBox nativo em caso de erro

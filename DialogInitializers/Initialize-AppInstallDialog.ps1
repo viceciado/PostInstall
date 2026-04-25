@@ -1,14 +1,14 @@
 ﻿function Get-AppInstallDialogConfiguration {
     <#
     .SYNOPSIS
-        Retorna o ScriptBlock de configuração do diÃ¡logo AppInstallDialog.
+        Retorna o ScriptBlock de configuração do diálogo AppInstallDialog.
     #>
     return {
         param($appInstallDialogWindow)
 
-        $programsStackPanel             = $appInstallDialogWindow.FindName("ProgramsStackPanelDialog")
+        $programsStackPanel = $appInstallDialogWindow.FindName("ProgramsStackPanelDialog")
         $script:customProgramIDsTextBox = $appInstallDialogWindow.FindName("CustomProgramIDsTextBox")
-        $script:checkboxesCollection    = @{}
+        $script:checkboxesCollection = @{}
 
         $availablePrograms = Get-AvailableItems -ItemType "Programs"
 
@@ -22,8 +22,7 @@
                 $programsStackPanel.Children.Add($checkBox)
                 $script:checkboxesCollection[$program.ProgramId] = $checkBox
             }
-        }
-        else {
+        } else {
             Write-InstallLog "Nenhum programa encontrado no arquivo JSON" -Status "AVISO"
 
             $errorContainer = New-Object System.Windows.Controls.StackPanel
@@ -56,47 +55,46 @@
         $installSelectedButton = $appInstallDialogWindow.FindName("InstallSelectedButtonDialog")
         if ($installSelectedButton) {
             $installSelectedButton.Add_Click({
-                [string[]]$selectedProgramIDs = @()
-                foreach ($key in $script:checkboxesCollection.Keys) {
-                    $cb = $script:checkboxesCollection[$key]
-                    if ($cb.IsChecked -eq $true) { $selectedProgramIDs += $cb.Tag }
-                }
-
-                $customText       = $script:customProgramIDsTextBox.Text
-                $customProgramIDs = $customText -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-                if ($customProgramIDs) { $selectedProgramIDs += $customProgramIDs }
-
-                $selectedProgramIDs = @($selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique)
-                Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalação: $($selectedProgramIDs -join ', ')"
-
-                # Detectar navegadores â†’ oferecer MSEdgeRedirect no Win11
-                $knownBrowserIDs = $global:PSConst.KnownBrowserIDs
-                $hasBrowser = $selectedProgramIDs | Where-Object { $knownBrowserIDs -contains $_ }
-                if ($hasBrowser -and ($global:ScriptContext.System.isWin11 -eq $true)) {
-                    $msEdge = Show-MessageDialog -Title "Instalação de outros navegadores" -Message "VocÃª marcou a instalação de um ou mais navegadores.`nDeseja também instalar o MSEdgeRedirect para substituir o navegador padrão do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
-                    if ($msEdge -eq "Yes") {
-                        Show-Notification -Title "Instalação de programas" -Message "Configure o MSEdgeRedirect após a instalação."
-                        $selectedProgramIDs += "rcmaehl.MSEdgeRedirect"
+                    [string[]]$selectedProgramIDs = @()
+                    foreach ($key in $script:checkboxesCollection.Keys) {
+                        $cb = $script:checkboxesCollection[$key]
+                        if ($cb.IsChecked -eq $true) { $selectedProgramIDs += $cb.Tag }
                     }
-                }
 
-                if ($selectedProgramIDs.Count -gt 0) {
-                    Show-Notification -Title "Instalação de programas" -Message "O processo continuarÃ¡ em uma nova janela..."
-                    Invoke-ElevatedProcess -FunctionName "Initialize-And-Install-Programs" -Parameters @{ ProgramIDs = $selectedProgramIDs } -ForceAsync
-                }
-                else {
-                    Show-MessageDialog -Title "Nenhum programa selecionado" -Message "Por favor, selecione pelo menos um programa para instalar."
-                }
-            })
+                    $customText = $script:customProgramIDsTextBox.Text
+                    $customProgramIDs = $customText -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    if ($customProgramIDs) { $selectedProgramIDs += $customProgramIDs }
+
+                    $selectedProgramIDs = @($selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique)
+                    Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalação: $($selectedProgramIDs -join ', ')"
+
+                    # Detectar navegadores â†’ oferecer MSEdgeRedirect no Win11
+                    $knownBrowserIDs = $global:PSConst.KnownBrowserIDs
+                    $hasBrowser = $selectedProgramIDs | Where-Object { $knownBrowserIDs -contains $_ }
+                    if ($hasBrowser -and ($global:ScriptContext.System.isWin11 -eq $true)) {
+                        $msEdge = Show-MessageDialog -Title "Instalação de outros navegadores" -Message "Você marcou a instalação de um ou mais navegadores.`nDeseja também instalar o MSEdgeRedirect para substituir o navegador padrão do sistema? (recomendado)" -MessageType "Question" -Buttons "YesNo"
+                        if ($msEdge -eq "Yes") {
+                            Show-Notification -Title "Instalação de programas" -Message "Configure o MSEdgeRedirect após a instalação."
+                            $selectedProgramIDs += "rcmaehl.MSEdgeRedirect"
+                        }
+                    }
+
+                    if ($selectedProgramIDs.Count -gt 0) {
+                        Show-Notification -Title "Instalação de programas" -Message "O processo continuará em uma nova janela..."
+                        Invoke-ElevatedProcess -FunctionName "Initialize-And-Install-Programs" -Parameters @{ ProgramIDs = $selectedProgramIDs } -ForceAsync
+                    } else {
+                        Show-MessageDialog -Title "Nenhum programa selecionado" -Message "Por favor, selecione pelo menos um programa para instalar."
+                    }
+                })
         }
 
         #  Atualizar todos 
         $UpdateAllProgramsButton = $appInstallDialogWindow.FindName("UpdateAllProgramsButton")
         if ($UpdateAllProgramsButton) {
             $UpdateAllProgramsButton.Add_Click({
-                Show-Notification -Title "Atualização Geral" -Message "O processo continuarÃ¡ em uma nova janela..."
-                Invoke-ElevatedProcess -FunctionName "Initialize-And-Upgrade-All" -ForceAsync
-            })
+                    Show-Notification -Title "Atualização Geral" -Message "O processo continuará em uma nova janela..."
+                    Invoke-ElevatedProcess -FunctionName "Initialize-And-Upgrade-All" -ForceAsync
+                })
         }
     }
 }

@@ -59,8 +59,7 @@ public class Win32 {
         $timeout = 100
 
         $null = [Win32]::SendMessageTimeout($HWND_BROADCAST, $WM_SETTINGCHANGE, [IntPtr]::Zero, "ImmersiveColorSet", $SMTO_ABORTIFHUNG, $timeout, [ref]([IntPtr]::Zero))
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Set-WindowsTheme: $($_.Exception.Message)" -Status "ERRO"
         $success = $false
     }
@@ -87,12 +86,10 @@ function Get-CurrentWindowsTheme {
         $CurrentTheme = Get-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -ErrorAction SilentlyContinue
         if ($CurrentTheme -and $CurrentTheme.AppsUseLightTheme -eq 1) {
             return "Claro"
-        }
-        else {
+        } else {
             return "Escuro"
         }
-    }
-    catch {
+    } catch {
         Write-InstallLog "Erro em Get-CurrentWindowsTheme: $($_.Exception.Message)" -Status "ERRO"
         return "Unknown"
     }
@@ -139,15 +136,13 @@ function Update-ButtonUI {
             if ($currentTheme -eq "Claro") {
                 $Button.Content = $global:PSConst.Icons.Moon
                 $Button.ToolTip = "Aplicar tema escuro"
-            }
-            else {
+            } else {
                 $Button.Content = $global:PSConst.Icons.Sun
                 $Button.ToolTip = "Aplicar tema claro"
             }
             
             return $currentTheme
-        }
-        catch {
+        } catch {
             Write-InstallLog "Erro em Update-ButtonUI (tema): $($_.Exception.Message)" -Status "ERRO"
             return "Unknown"
         }
@@ -166,8 +161,7 @@ function Update-ButtonUI {
             $Button.Foreground = "Yellow"
             $Button.ToolTip = "A suspensão de energia está desativada"
             return $false
-        }
-        else {
+        } else {
             $Button.Content = $global:PSConst.Icons.AvoidSleepOff
             $Button.Foreground = "White"
             $Button.ToolTip = "Clique para manter o computador ligado"
