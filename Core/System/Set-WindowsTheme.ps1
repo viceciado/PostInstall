@@ -152,8 +152,10 @@ function Update-ButtonUI {
         [string]$Foreground,
         [string]$Background
     )
+
+    $buttonName = $Button.Name
     
-    if ($Button -eq $applyThemeButton) {
+    if ($buttonName -eq "ApplyThemeButton") {
         try {
             $currentTheme = Get-CurrentWindowsTheme
             
@@ -174,7 +176,7 @@ function Update-ButtonUI {
         }
     }
 
-    if ($Button -eq $AvoidSleepButton) {
+    if ($buttonName -eq "AvoidSleepButton") {
         if ($global:ScriptContext.System.AvoidSleep -eq $true) {
             $Button.Content = $global:PSConst.Icons.AvoidSleepOn
             # E781 lâmpada acesa

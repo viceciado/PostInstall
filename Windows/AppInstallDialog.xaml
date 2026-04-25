@@ -6,16 +6,7 @@
     <Window.Resources>
         <Style TargetType="CheckBox" BasedOn="{StaticResource CommonCheckBoxStyle}"/>
 
-        <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#383838"/>
-            <Setter Property="Foreground" Value="LightGray"/>
-            <Setter Property="FontFamily" Value="Futura"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="BorderBrush" Value="#505050"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CaretBrush" Value="White"/>
-        </Style>
+        <Style TargetType="TextBox" BasedOn="{StaticResource CommonDialogInputTextBoxStyle}"/>
         
     </Window.Resources>
     <Border x:Name="DialogBorder" 
@@ -139,7 +130,7 @@
                             Width="220" 
                             Height="35" 
                             Style="{StaticResource CommonDialogButtonStyle}" 
-                            Background="#107C10"
+                            Background="#28A745"
                             HorizontalAlignment="Center"/>
                 </StackPanel>         
             </StackPanel>

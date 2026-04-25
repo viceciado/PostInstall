@@ -30,6 +30,8 @@
     #  Evitar suspensão 
     $avoidSleepButton = $xamlWindow.FindName("AvoidSleepButton")
     if ($avoidSleepButton) {
+        Update-ButtonUI -Button $avoidSleepButton
+
         $avoidSleepButton.Add_Click({
             if ($global:ScriptContext.System.AvoidSleep -eq $true) { Set-AvoidSleep }
             else { Set-AvoidSleep -AvoidSleep $true }

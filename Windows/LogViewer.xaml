@@ -7,16 +7,7 @@
         AllowsTransparency="True" Background="Transparent" Foreground="White" FontFamily="Futura">
     
     <Window.Resources>
-        <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#1E1E1E"/>
-            <Setter Property="Foreground" Value="#CECECE"/>
-            <Setter Property="FontFamily" Value="Consolas"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="BorderBrush" Value="#3F3F46"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CaretBrush" Value="White"/>
-        </Style>
+        <Style TargetType="TextBox" BasedOn="{StaticResource CommonDialogInputTextBoxStyle}"/>
         
         <Style TargetType="TextBlock" BasedOn="{StaticResource CommonDialogTextBlockStyle}"/>
     </Window.Resources>
@@ -59,6 +50,7 @@
                 <StackPanel x:Name="LogContentPanel">
                     <!-- Seção do Log Principal (se existir) -->
                     <TextBox x:Name="PrimaryLogTextBox" 
+                             Style="{StaticResource CommonDialogInputTextBoxStyle}"
                              TextWrapping="Wrap" 
                              VerticalScrollBarVisibility="Auto" 
                              HorizontalScrollBarVisibility="Auto"
@@ -74,7 +66,7 @@
                         </Grid.RowDefinitions>
                     
                         <!-- TextBox para exibir os logs unificados -->
-                        <TextBox Name="UnifiedLogTextBox" Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" IsReadOnly="True" FontFamily="Cascadia Mono" Background="#2E2E2E" Foreground="#D4D4D4" BorderThickness="1" BorderBrush="#444444" Padding="5" TextWrapping="Wrap"/>
+                        <TextBox Name="UnifiedLogTextBox" Grid.Row="0" Style="{StaticResource CommonDialogInputTextBoxStyle}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" IsReadOnly="True" FontFamily="Cascadia Mono" TextWrapping="Wrap"/>
                     </Grid>
                 </StackPanel>
             </ScrollViewer>

@@ -4,7 +4,7 @@
             "Name": "Recommended",
             "Description": "Tweaks essenciais e recomendados em uma instalação padrão.",
             "Icon": "&#xF78C;",
-            "Color": "Green",
+            "Color": "#28A745",
             "IsRecommended": true
         },
         {
