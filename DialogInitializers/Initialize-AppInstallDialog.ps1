@@ -56,7 +56,7 @@
         $installSelectedButton = $appInstallDialogWindow.FindName("InstallSelectedButtonDialog")
         if ($installSelectedButton) {
             $installSelectedButton.Add_Click({
-                $selectedProgramIDs = @()
+                [string[]]$selectedProgramIDs = @()
                 foreach ($key in $script:checkboxesCollection.Keys) {
                     $cb = $script:checkboxesCollection[$key]
                     if ($cb.IsChecked -eq $true) { $selectedProgramIDs += $cb.Tag }
@@ -66,7 +66,7 @@
                 $customProgramIDs = $customText -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
                 if ($customProgramIDs) { $selectedProgramIDs += $customProgramIDs }
 
-                $selectedProgramIDs = $selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique
+                $selectedProgramIDs = @($selectedProgramIDs | Where-Object { $_ -ne "" } | Sort-Object | Get-Unique)
                 Write-InstallLog "$($selectedProgramIDs.Count) programas marcados para instalação: $($selectedProgramIDs -join ', ')"
 
                 # Detectar navegadores â†’ oferecer MSEdgeRedirect no Win11
