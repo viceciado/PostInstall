@@ -25,7 +25,8 @@
     )
     
     $success = $true
-    # Parte 1: Atualiza o tema do sistema
+    
+    # Atualiza o tema do sistema
     $personalizePath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
     $appsUseLightThemeValue = if ($Theme -eq "Claro") { 1 } else { 0 }
     $systemUsesLightThemeValue = if ($Theme -eq "Claro") { 1 } else { 0 }
@@ -64,30 +65,6 @@ public class Win32 {
         $success = $false
     }
 
-    # Parte 2: Atualiza o wallpaper
-    $wallpapersPath = "$env:windir\Web\Wallpaper\Windows"
-
-    if ((Get-ChildItem -Path $wallpapersPath).Count -gt 0) {
-        $wallpaperIndex = if (($global:ScriptContext.System.isWin11 -eq $true) -and ($Theme -eq "Escuro")) { 1 } else { 0 }
-        $wallpaperFile = Get-ChildItem -Path $wallpapersPath | Sort-Object Name | Select-Object -Skip $wallpaperIndex -First 1
-        
-        if ($wallpaperFile) { $wallpaperFilePath = $wallpaperFile.FullName }
-        $wallpaperFilePath = Join-Path $wallpapersPath $wallpaperFile.Name
-        Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name Wallpaper -Value $wallpaperFilePath
-
-        if (-not ([System.Management.Automation.PSTypeName]'Wallpaper').Type) {
-            Add-Type -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-
-public class Wallpaper {
-[DllImport("user32.dll", CharSet = CharSet.Auto)]
-public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-}
-"@ -Language CSharp
-        }
-        [void][Wallpaper]::SystemParametersInfo(0x0014, 0, $wallpaperFilePath, 0x01 -bor 0x02)
-    }
     return $success
 }
 

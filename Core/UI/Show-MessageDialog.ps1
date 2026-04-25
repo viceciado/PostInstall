@@ -20,7 +20,7 @@
     Tipo de botões: OK, OKCancel, YesNo, YesNoCancel
     
     .PARAMETER Owner
-    Janela pai (opcional, usa $global:XamlMainWindow se disponível)
+    Janela pai (opcional, usa $global:ScriptContext.UI.MainWindow se disponível)
     
     .EXAMPLE
     Show-MessageDialog -Message "Operação concluída com sucesso!" -Title "Sucesso" -MessageType "Info"
@@ -64,8 +64,8 @@
         
         # Resolver owner automaticamente se não especificado
         # Verifica se MainWindow está disponível e é uma janela válida
-        if (-not $Owner -and $global:XamlMainWindow -and $global:XamlMainWindow -is [System.Windows.Window] -and $global:XamlMainWindow.IsLoaded) {
-            $Owner = $global:XamlMainWindow
+        if (-not $Owner -and $global:ScriptContext.UI.MainWindow -and $global:ScriptContext.UI.MainWindow -is [System.Windows.Window] -and $global:ScriptContext.UI.MainWindow.IsLoaded) {
+            $Owner = $global:ScriptContext.UI.MainWindow
         }
         
         # Criar diálogo
