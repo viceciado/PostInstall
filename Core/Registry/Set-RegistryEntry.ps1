@@ -61,17 +61,3 @@
     }
 }
 
-# Wrapper de compatibilidade com código anterior
-function Apply-RegistryEntry {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)] [string]$Path,
-        [Parameter(Mandatory = $false)][string]$Name,
-        [Parameter(Mandatory = $true)] [string]$Type,
-        [Parameter(Mandatory = $false)]$Value
-    )
-
-    Write-InstallLog "Apply-RegistryEntry esta depreciada. Use Set-RegistryEntry." -Status "AVISO"
-    return Set-RegistryEntry @PSBoundParameters
-}
-

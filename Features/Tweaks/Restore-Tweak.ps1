@@ -58,14 +58,3 @@
     }
 }
 
-# Wrapper de compatibilidade com código anterior
-function Undo-Tweak {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Name
-    )
-
-    Write-InstallLog "Undo-Tweak esta depreciada. Use Restore-Tweak." -Status "AVISO"
-    return Restore-Tweak @PSBoundParameters
-}
-

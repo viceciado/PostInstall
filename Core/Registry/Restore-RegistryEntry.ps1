@@ -76,17 +76,3 @@
     }
 }
 
-# Wrapper de compatibilidade com código anterior
-function Undo-RegistryEntry {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)] [string]$Path,
-        [Parameter(Mandatory = $false)][string]$Name,
-        [Parameter(Mandatory = $false)]$OriginalValue,
-        [Parameter(Mandatory = $false)][string]$Type
-    )
-
-    Write-InstallLog "Undo-RegistryEntry esta depreciada. Use Restore-RegistryEntry." -Status "AVISO"
-    return Restore-RegistryEntry @PSBoundParameters
-}
-

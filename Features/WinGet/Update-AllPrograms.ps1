@@ -45,14 +45,3 @@
     }
 }
 
-# Wrapper de compatibilidade com código anterior
-function Upgrade-AllPrograms {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$WingetPath
-    )
-
-    Write-InstallLog "Upgrade-AllPrograms esta depreciada. Use Update-AllPrograms." -Status "AVISO"
-    return Update-AllPrograms @PSBoundParameters
-}
-
