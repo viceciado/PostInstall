@@ -95,3 +95,34 @@ Describe 'Builder — compilação e artefato' -Tag 'Smoke' {
     }
 }
 
+Describe 'Builder — hardening de erro de compilação' -Tag 'Smoke' {
+    It 'Falha com código != 0 quando há erro em arquivo de função' {
+        $brokenFile = Join-Path $script:ProjectRoot 'Core\_TempBuilderBroken.ps1'
+        $failOutputName = '_TestBuild-Fail.ps1'
+        $failOutputPath = Join-Path $script:ProjectRoot $failOutputName
+
+        try {
+            if (Test-Path $brokenFile) { Remove-Item $brokenFile -Force }
+            if (Test-Path $failOutputPath) { Remove-Item $failOutputPath -Force }
+
+            @'
+function Test-BrokenBuilderSyntax {
+    param(
+        [string]$Name
+    # Deliberadamente inválido: parêntese/fechamento ausente
+'@ | Set-Content -Path $brokenFile -Encoding UTF8
+
+            $result = & powershell.exe -NoProfile -NonInteractive -File $script:BuilderPath -OutputName $failOutputName 2>&1
+            $exitCode = $LASTEXITCODE
+
+            $exitCode | Should -Not -Be 0
+            ($result | Out-String) | Should -Match 'Falha na compilação de blocos'
+            (Test-Path $failOutputPath) | Should -BeFalse
+        }
+        finally {
+            if (Test-Path $brokenFile) { Remove-Item $brokenFile -Force -ErrorAction SilentlyContinue }
+            if (Test-Path $failOutputPath) { Remove-Item $failOutputPath -Force -ErrorAction SilentlyContinue }
+        }
+    }
+}
+

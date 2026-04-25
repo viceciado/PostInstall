@@ -1,4 +1,5 @@
-﻿<#
+﻿#region Documentation and Parameters
+<#
 .SYNOPSIS
 Script compilador para o projeto PostInstall
 
@@ -6,39 +7,28 @@ Script compilador para o projeto PostInstall
 Este script compila todo o projeto PostInstall em um único arquivo .ps1 executável,
 incluindo todas as funções, arquivos XAML e dados JSON necessários.
 
-.PARAMETER Debug
-Mantém arquivos temporários para debugging
-
-.PARAMETER Run
-Executa o arquivo compilado após a criação
-
 .PARAMETER OutputName
-Nome do arquivo de saída (padrão: PostInstall-Compiled.ps1)
+Nome do arquivo de saída (padrão: PostInstall.ps1)
 
 .PARAMETER IncludeVersion
 Inclui timestamp na versão do script compilado
 
 .EXAMPLE
-.\Build-PostInstall.ps1
+.\Builder.ps1
 Compila o projeto com configurações padrão
 
 .EXAMPLE
-.\Build-PostInstall.ps1 -Debug -OutputName "MyPostInstall.ps1"
-Compila com modo debug e nome personalizado
-
-.EXAMPLE
-.\Build-PostInstall.ps1 -Run
-Compila e executa imediatamente
+.\Builder.ps1 -OutputName "MyPostInstall.ps1"
+Compila com nome personalizado
 #>
 
 param (
-    [switch]$Debug,
-    [switch]$Run,
     [string]$OutputName = "PostInstall.ps1",
-    [switch]$IncludeVersion = $true,
-    [string]$Arguments
+    [switch]$IncludeVersion = $true
 )
+#endregion
 
+#region Environment Setup
 # Verificar se já existe arquivo compilado e remover se necessário
 if (Test-Path ".\$OutputName") {
     if ((Get-Item ".\$OutputName" -ErrorAction SilentlyContinue).IsReadOnly) {
@@ -71,7 +61,9 @@ function Update-Progress {
 
     Write-Progress -Activity $Activity -Status $StatusMessage -PercentComplete $Percent
 }
+#endregion
 
+#region Project Validation
 # Cabeçalho do arquivo compilado
 $header = @"
 ################################################################################################################
@@ -81,7 +73,7 @@ $header = @"
 ### AVISO: Este arquivo foi gerado automaticamente. NÃO modifique este arquivo diretamente, pois ele será    ###
 ###        sobrescrito na próxima compilação.                                                                ###
 ###                                                                                                          ###
-###      Para modificações, edite os arquivos fonte na pasta do projeto e execute Build-PostInstall.ps1      ###
+###      Para modificações, edite os arquivos fonte na pasta do projeto e execute Builder.ps1                ###
 ###                                                                                                          ###
 ###                                    Build compilada em: $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")                               ###
 ################################################################################################################
@@ -114,10 +106,39 @@ if (-not (Test-Path "Main.ps1")) {
     exit 1
 }
 
+#endregion
+
+#region Header and Runtime Context
 Update-Progress "Validação concluída. Iniciando compilação..." 5
 
 # Criar lista para o conteúdo do script
 $script_content = [System.Collections.Generic.List[string]]::new()
+$compilationErrors = [System.Collections.Generic.List[object]]::new()
+
+function Add-CompilationError {
+    param(
+        [Parameter(Mandatory = $true)][string]$Stage,
+        [Parameter(Mandatory = $true)][string]$File,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    $compilationErrors.Add([PSCustomObject]@{
+            Stage   = $Stage
+            File    = $File
+            Message = $Message
+        }) | Out-Null
+}
+
+function Fail-IfCompilationErrors {
+    if ($compilationErrors.Count -gt 0) {
+        Write-Error "Falha na compilação de blocos. Erros encontrados:"
+        foreach ($err in $compilationErrors) {
+            Write-Error "[$($err.Stage)] $($err.File): $($err.Message)"
+        }
+        Pop-Location
+        exit 1
+    }
+}
 
 Update-Progress "Adicionando cabeçalho..." 10
 $script_content.Add($header)
@@ -184,7 +205,9 @@ if (-not `$global:ScriptContext.CompiledScriptPath) {
     try { `$global:ScriptContext.CompiledScriptPath = `$MyInvocation.MyCommand.Path } catch {}
 }
 "@)
+#endregion
 
+#region Compile Functions
 # Carregar e adicionar todas as funções
 Update-Progress "Compilando funções..." 30
 
@@ -192,7 +215,7 @@ Update-Progress "Compilando funções..." 30
 #   1. Core/ (utilitários base)
 #   2. Features/ (funcionalidades de alto nível)
 #   3. DialogInitializers/ (inicializadores de janelas)
-#   4. Functions/ restante (legacy/dispatcher)
+#   4. Functions/ restante (dispatcher)
 $functionFiles = @(
     if (Test-Path (Join-Path $workingdir 'Core'))               { Get-ChildItem (Join-Path $workingdir 'Core')               -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
     if (Test-Path (Join-Path $workingdir 'Features'))           { Get-ChildItem (Join-Path $workingdir 'Features')           -Recurse -Filter '*.ps1' -File | Sort-Object FullName }
@@ -207,6 +230,18 @@ else {
     foreach ($file in $functionFiles) {
         try {
             $functionContent = Get-Content $file.FullName -Raw -Encoding UTF8 -ErrorAction Stop
+
+            # Validar sintaxe do arquivo de função antes de incorporar ao compilado
+            $funcTokens = $null
+            $funcParseErrors = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseInput($functionContent, [ref]$funcTokens, [ref]$funcParseErrors)
+            if ($funcParseErrors -and $funcParseErrors.Count -gt 0) {
+                $messages = ($funcParseErrors | ForEach-Object {
+                        "$($_.Message) (linha $($_.Extent.StartLineNumber), coluna $($_.Extent.StartColumnNumber))"
+                    }) -join '; '
+                Add-CompilationError -Stage "Functions" -File $file.Name -Message $messages
+                continue
+            }
             
             # Corrigir referências de caminho para o arquivo compilado
             $functionContent = $functionContent -replace '\$scriptRoot = Split-Path -Parent \$PSScriptRoot', '$scriptRoot = $PSScriptRoot'
@@ -223,11 +258,15 @@ else {
             Write-Host "[COMPILADO] Função: $($file.Name)" -ForegroundColor Green
         }
         catch {
-            Write-Warning "Erro ao compilar função $($file.Name): $($_.Exception.Message)"
+            $message = $_.Exception.Message
+            Write-Warning "Erro ao compilar função $($file.Name): $message"
+            Add-CompilationError -Stage "Functions" -File $file.Name -Message $message
         }
     }
 }
+#endregion
 
+#region Compile JSON Data
 # Carregar e adicionar dados JSON
 Update-Progress "Compilando dados JSON..." 50
 $dataPath = Join-Path $workingdir "Data"
@@ -251,11 +290,15 @@ if ($jsonFiles.Count -gt 0) {
             Write-Host "[COMPILADO] Dados: $($file.Name)" -ForegroundColor Green
         }
         catch {
-            Write-Warning "Erro ao compilar dados $($file.Name): $($_.Exception.Message)"
+            $message = $_.Exception.Message
+            Write-Warning "Erro ao compilar dados $($file.Name): $message"
+            Add-CompilationError -Stage "Data" -File $file.Name -Message $message
         }
     }
 }
+#endregion
 
+#region Compile XAML
 # Carregar e adicionar arquivos XAML
 Update-Progress "Compilando interfaces XAML..." 70
 $windowsPath = Join-Path $workingdir "Windows"
@@ -286,18 +329,23 @@ if ($xamlFiles.Count -gt 0) {
             Write-Host "[COMPILADO] Interface: $($file.Name) -> `$$variableName" -ForegroundColor Green
         }
         catch {
-            Write-Warning "Erro ao compilar interface $($file.Name): $($_.Exception.Message)"
+            $message = $_.Exception.Message
+            Write-Warning "Erro ao compilar interface $($file.Name): $message"
+            Add-CompilationError -Stage "XAML" -File $file.Name -Message $message
         }
     }
 }
 
+Fail-IfCompilationErrors
+#endregion
+
+#region Integrate Main Entry Point
 # Adicionar código principal do Main.ps1 (excluindo partes já compiladas)
 Update-Progress "Integrando código principal..." 90
 try {
     $mainContent = Get-Content "Main.ps1" -Raw -Encoding UTF8 -ErrorAction Stop
-    
+
     # Encontrar início do código principal (após carregamento de XAML)
-    $startPattern = 'try {'
     $lines = $mainContent -split "`r?`n"
     $startIndex = -1
     
@@ -315,16 +363,14 @@ try {
         }
     }
     
-    if ($startIndex -ge 0) {
-        # Pegar apenas a parte do código após o carregamento dinâmico
-        $processedLines = $lines[$startIndex..($lines.Count-1)]
-        $processedContent = $processedLines -join "`r`n"
-        Write-Host "[INFO] Código principal extraído a partir da linha $startIndex" -ForegroundColor Cyan
-    } else {
-        # Fallback: usar todo o conteúdo e remover seções conhecidas
-        $processedContent = $mainContent
-        Write-Host "[INFO] Usando conteúdo completo como fallback" -ForegroundColor Yellow
+    if ($startIndex -lt 0) {
+        throw "Marcador de ENTRYPOINT não encontrado em Main.ps1. Estrutura obrigatória para compilação não atendida."
     }
+
+    # Pegar apenas a parte do código após o carregamento dinâmico
+    $processedLines = $lines[$startIndex..($lines.Count-1)]
+    $processedContent = $processedLines -join "`r`n"
+    Write-Host "[INFO] Código principal extraído a partir da linha $startIndex" -ForegroundColor Cyan
     
     # Remover trechos que contenham <##>
     $processedContent = $processedContent -replace '.*<##>.*\r?\n?', ''
@@ -349,7 +395,9 @@ catch {
     Pop-Location
     exit 1
 }
+#endregion
 
+#region Write Artifact
 # Escrever arquivo compilado
 Update-Progress "Finalizando compilação..." 95
 try {
@@ -371,54 +419,37 @@ catch {
     Pop-Location
     exit 1
 }
+#endregion
 
+#region Validate Artifact Syntax
 # Validar sintaxe do arquivo compilado
 Update-Progress -Activity "Validando" -StatusMessage "Verificando sintaxe do arquivo compilado" -Percent 0
 try {
-    $null = Get-Command -Syntax ".\$OutputName" -ErrorAction Stop
+    $tokens = $null
+    $parseErrors = $null
+    $null = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $workingdir $OutputName), [ref]$tokens, [ref]$parseErrors)
+
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        foreach ($parseError in $parseErrors) {
+            Write-Host "[ERRO-SINTAXE] $($parseError.Message) (linha $($parseError.Extent.StartLineNumber), coluna $($parseError.Extent.StartColumnNumber))" -ForegroundColor Red
+        }
+        throw "Foram encontrados $($parseErrors.Count) erro(s) de sintaxe no arquivo compilado."
+    }
+
     Write-Host "[VALIDAÇÃO] Sintaxe do arquivo compilado está correta" -ForegroundColor Green
 }
 catch {
-    Write-Warning "Aviso de sintaxe no arquivo compilado: $($_.Exception.Message)"
-    if (-not $Debug) {
-        Write-Host "Execute com -Debug para manter arquivos temporários e investigar" -ForegroundColor Yellow
-    }
+    Write-Error "Falha de sintaxe no arquivo compilado: $($_.Exception.Message)"
+    Pop-Location
+    exit 1
 }
 Write-Progress -Activity "Validando" -Completed
+#endregion
 
-# Limpeza de arquivos temporários (se não estiver em modo debug)
-if (-not $Debug) {
-    # Remover arquivos temporários se existirem
-    Get-ChildItem -Path "." -Filter "*.tmp" -File | Remove-Item -Force -ErrorAction SilentlyContinue
-    Get-ChildItem -Path "." -Filter "*_temp.ps1" -File | Remove-Item -Force -ErrorAction SilentlyContinue
-}
-else {
-    Write-Host "[DEBUG] Modo debug ativo - arquivos temporários mantidos" -ForegroundColor Yellow
-}
-
-# Executar arquivo compilado se solicitado
-if ($Run) {
-    Write-Host "`n[EXECUÇÃO] Iniciando arquivo compilado..." -ForegroundColor Magenta
-    
-    $script = "& '$workingdir\$OutputName' $Arguments"
-    $powershellcmd = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
-    $processCmd = if (Get-Command wt.exe -ErrorAction SilentlyContinue) { "wt.exe" } else { $powershellcmd }
-
-    try {
-        Start-Process $processCmd -ArgumentList "$powershellcmd -NoProfile -ExecutionPolicy Bypass -Command $script"
-        Write-Host "[SUCESSO] Arquivo compilado executado em nova janela" -ForegroundColor Green
-    }
-    catch {
-        Write-Warning "Erro ao executar arquivo compilado: $($_.Exception.Message)"
-        Write-Host "Tente executar manualmente: .\$OutputName" -ForegroundColor Yellow
-    }
-}
-
+#region Exit Summary
 Pop-Location
 
 Write-Host "`n=== COMPILAÇÃO CONCLUÍDA ==="
 Write-Host "Para executar: .\$OutputName" -ForegroundColor White
-Write-Host "Para recompilar: .\Build-PostInstall.ps1" -ForegroundColor White
-if ($Debug) {
-    Write-Host "Modo debug ativo - verifique arquivos temporários para troubleshooting" -ForegroundColor Yellow
-}
+Write-Host "Para recompilar: .\Builder.ps1" -ForegroundColor White
+#endregion
