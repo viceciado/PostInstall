@@ -43,11 +43,11 @@
     # fazendo-o lançar — o que encerra o script e "orfa" a MainWindow.
     # Com Handled = $true, a exceção é absorvida: o handler é logado e a UI continua.
     [System.Windows.Application]::Current.add_DispatcherUnhandledException({
-            param($sender, $e)
+            param($wpfSender, $wpfArgs)
             try {
-                Write-InstallLog "Exceção não tratada na interface: $($e.Exception.Message)" -Status "ERRO"
+                Write-InstallLog "Exceção não tratada na interface: $($wpfArgs.Exception.Message)" -Status "ERRO"
             } catch {}
-            $e.Handled = $true
+            $wpfArgs.Handled = $true
         })
 
     Write-InstallLog "Aplicação WPF inicializada com recursos compartilhados de estilos"

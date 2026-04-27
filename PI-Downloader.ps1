@@ -11,7 +11,7 @@ do {
 } while ($true)
 
 $r = Invoke-RestMethod -Uri "https://api.github.com/repos/viceciado/PostInstall/releases/latest" -Headers @{"User-Agent" = "PowerShell" } -TimeoutSec 30
-$a = $r.assets | ? { $_.name -eq "PostInstall.ps1" }
+$a = $r.assets | Where-Object { $_.name -eq "PostInstall.ps1" }
 
 if (-not (Test-Path $p)) {
     New-Item -ItemType Directory -Path $p -Force | Out-Null

@@ -43,45 +43,47 @@
         [Parameter(Mandatory = $false)]
         [string]$AppId = "Configuração do Windows"
     )
-    
-    try {
-        # Carregar a API de notificações do Windows
-        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+
+    process {
+        try {
+            # Carregar a API de notificações do Windows
+            [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
         
-        # Obter template de notificação com título e texto
-        $Template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+            # Obter template de notificação com título e texto
+            $Template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
         
-        # Converter para XML manipulável
-        $RawXml = [xml] $Template.GetXml()
+            # Converter para XML manipulável
+            $RawXml = [xml] $Template.GetXml()
         
-        # Configurar título (primeiro elemento de texto)
-        ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "1" }).AppendChild($RawXml.CreateTextNode($Title)) > $null
+            # Configurar título (primeiro elemento de texto)
+            ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "1" }).AppendChild($RawXml.CreateTextNode($Title)) > $null
         
-        # Configurar texto principal (segundo elemento de texto)
-        ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "2" }).AppendChild($RawXml.CreateTextNode($Message)) > $null
+            # Configurar texto principal (segundo elemento de texto)
+            ($RawXml.toast.visual.binding.text | Where-Object { $_.id -eq "2" }).AppendChild($RawXml.CreateTextNode($Message)) > $null
         
-        # Criar documento XML serializado
-        $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
-        $SerializedXml.LoadXml($RawXml.OuterXml)
+            # Criar documento XML serializado
+            $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
+            $SerializedXml.LoadXml($RawXml.OuterXml)
         
-        # Criar notificação toast
-        $Toast = [Windows.UI.Notifications.ToastNotification]::new($SerializedXml)
-        $Toast.Tag = $AppId
-        $Toast.Group = $AppId
-        $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes($ExpirationMinutes)
+            # Criar notificação toast
+            $Toast = [Windows.UI.Notifications.ToastNotification]::new($SerializedXml)
+            $Toast.Tag = $AppId
+            $Toast.Group = $AppId
+            $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes($ExpirationMinutes)
         
-        # Criar notificador e exibir
-        $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($AppId)
-        $Notifier.Show($Toast)
+            # Criar notificador e exibir
+            $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($AppId)
+            $Notifier.Show($Toast)
         
-    } catch {        
-        # Fallback: tentar usar Show-MessageDialog se disponível
-        if (Get-Command Show-MessageDialog -ErrorAction SilentlyContinue) {
-            Write-InstallLog "Usando Show-MessageDialog como fallback" 
-            Show-MessageDialog -Message $Message -Title $Title
-        } else {
-            # Último recurso: Write-Host
-            Write-Host "NOTIFICAÇÃO: $Title - $Message" -ForegroundColor Yellow
+        } catch {        
+            # Fallback: tentar usar Show-MessageDialog se disponível
+            if (Get-Command Show-MessageDialog -ErrorAction SilentlyContinue) {
+                Write-InstallLog "Usando Show-MessageDialog como fallback" 
+                Show-MessageDialog -Message $Message -Title $Title
+            } else {
+                # Último recurso: Write-Host
+                Write-Host "NOTIFICAÇÃO: $Title - $Message" -ForegroundColor Yellow
+            }
         }
     }
 }

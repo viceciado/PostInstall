@@ -47,12 +47,11 @@
 
         #  Botão OK: executa finalização 
         $finalizeOkButton.Add_Click({
-                param($sender, $e)
-                $wnd = [System.Windows.Window]::GetWindow($sender)
+                param($wpfSender, $wpfArgs)
+                $wnd = [System.Windows.Window]::GetWindow($wpfSender)
                 if (-not $wnd) { $wnd = $finalizeDialogWindow }
 
                 $statusText = $wnd.FindName("FinalizeStatusText")
-                $exitRadio = $wnd.FindName("FinalizeOptionExitRadio")
                 $shutdownRadio = $wnd.FindName("FinalizeOptionShutdownRadio")
                 $restartRadio = $wnd.FindName("FinalizeOptionRestartRadio")
                 $osBox = $wnd.FindName("OsNumberTextBox")
@@ -78,7 +77,7 @@
                         ForEach-Object { $_.Tag.Name }
                 }
 
-                $sender.IsEnabled = $false
+                $wpfSender.IsEnabled = $false
                 if ($statusText) {
                     $statusText.Visibility = "Visible"
                     $statusText.Text = "Finalizando... Aguarde."
@@ -161,7 +160,7 @@
                     catch {}
                 } catch {
                     Show-MessageDialog -Title "Erro" -Message "Falha ao iniciar processo de finalização: $($_.Exception.Message)" -MessageType "Error"
-                    $sender.IsEnabled = $true
+                    $wpfSender.IsEnabled = $true
                     if ($statusText) { $statusText.Text = "Erro na finalização." }
                 }
             })

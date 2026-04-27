@@ -6,7 +6,6 @@
     return {
         param($aboutDialogWindow)
 
-        $systemInfoPanel = $aboutDialogWindow.FindName("SystemInfoPanel")
         $fallbackText = $aboutDialogWindow.FindName("FallbackText")
         $machineSKUText = $aboutDialogWindow.FindName("MachineSKUText")
         $manufacturerText = $aboutDialogWindow.FindName("ManufacturerText")

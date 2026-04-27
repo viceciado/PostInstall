@@ -171,7 +171,7 @@
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Cliente:" />
-                        <TextBox x:Name="ClientNameTextBox" /> 
+                        <TextBox x:Name="ClientNameTextBox" />
                         <!--  Ocupará a largura da coluna "*"  -->
                     </StackPanel>
                 </Grid>
