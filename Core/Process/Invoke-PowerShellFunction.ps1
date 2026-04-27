@@ -14,7 +14,6 @@
         [string]  $FunctionName,
         [hashtable]$Parameters = @{},
         [string]  $ScriptPath,
-        [bool]    $PassThru,
         [bool]    $ForceAsync,
         [ValidateSet('Normal', 'Hidden', 'Minimized', 'Maximized')]
         [string]  $WindowStyle = 'Normal'

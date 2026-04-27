@@ -2,31 +2,37 @@
     <#
     .SYNOPSIS
     Verifica se há conexão com a internet
-    
+
     .DESCRIPTION
     Testa a conectividade com a internet usando ping para um host confiável
-    
+
     .PARAMETER HostName
     Host para testar conectividade. Padrão: www.google.com
-    
+
     .PARAMETER Count
     Número de pings a serem enviados. Padrão: 1
-    
+
     .PARAMETER Timeout
     Timeout em segundos para cada ping. Padrão: 5
-    
+
     .PARAMETER ShowDialog
     Se verdadeiro, mostra diálogo ao usuário quando não há conexão
-    
+
     .EXAMPLE
-    if (Test-InternetConnection) {
-        Write-Host "Conexão com internet disponível"
-    }
-    
+    if (Test-InternetConnection) { Write-Host "Conexão disponível" }
+
     .EXAMPLE
     Test-InternetConnection -ShowDialog $true -HostName "8.8.8.8"
     #>
-    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSReviewUnusedParameter', 'HostName',
+        Justification = 'Usado em Test-ConnectionInternal (nested function no mesmo escopo)')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSReviewUnusedParameter', 'Count',
+        Justification = 'Usado em Test-ConnectionInternal (nested function no mesmo escopo)')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSReviewUnusedParameter', 'Timeout',
+        Justification = 'Declarado na API pública; reservado para implementação futura de timeout no Test-Connection')]
     param(
         [Parameter(Mandatory = $false)]
         [string]$HostName = "www.google.com",

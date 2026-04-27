@@ -106,25 +106,13 @@ function Update-ButtonUI {
     .PARAMETER Button
     Referência ao botão que será atualizado
     
-    .PARAMETER Icon
-    Ícone a ser definido no botão
-    
-    .PARAMETER ToolTip
-    Tooltip a ser definido no botão
-    
     .EXAMPLE
     Update-ButtonUI -Button $applyThemeButton
     #>
     
     param (
         [Parameter(Mandatory = $true)]
-        [System.Windows.Controls.Button]$Button,
-
-        [Parameter(Mandatory = $false)]
-        [string]$Icon,
-        [string]$ToolTip,
-        [string]$Foreground,
-        [string]$Background
+        [System.Windows.Controls.Button]$Button
     )
 
     $buttonName = $Button.Name
