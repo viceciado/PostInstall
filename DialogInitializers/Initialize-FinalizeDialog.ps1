@@ -48,6 +48,7 @@
         #  Botão OK: executa finalização 
         $finalizeOkButton.Add_Click({
                 param($wpfSender, $wpfArgs)
+                $null = $wpfArgs
                 $wnd = [System.Windows.Window]::GetWindow($wpfSender)
                 if (-not $wnd) { $wnd = $finalizeDialogWindow }
 

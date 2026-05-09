@@ -113,7 +113,9 @@
                     $conv = $bc.ConvertFromString($category.Color)
                     if ($conv) { $colorBrush = $conv }
                 }
-            } catch {}
+            } catch {
+                Write-InstallLog "Cor inválida na categoria '$($category.Name)': '$($category.Color)' — usando branco como fallback" -Status "AVISO"
+            }
 
             $button.Content = $iconText
             $button.Background = $colorBrush

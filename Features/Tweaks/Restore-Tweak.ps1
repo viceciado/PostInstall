@@ -39,11 +39,10 @@
 
         $scriptOk = $true
         foreach ($line in $undoScripts) {
-            try {
-                Invoke-Expression $line
+            $ok = Invoke-TweakScriptLine -Line $line -TweakName $Name -IsUndo
+            if ($ok) {
                 Write-InstallLog "Undo script executado para '$Name': $line"
-            } catch {
-                Write-InstallLog "Erro em Restore-Tweak (script '$Name'): $($_.Exception.Message)" -Status "ERRO"
+            } else {
                 $scriptOk = $false
             }
         }

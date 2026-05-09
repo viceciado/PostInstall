@@ -49,8 +49,7 @@
                     -Parameters   $Parameters `
                     -ScriptPath   $ScriptPath `
                     -ForceAsync   ([bool]$ForceAsync) `
-                    -WindowStyle  $WindowStyle `
-                    -PassThru     ([bool]$PassThru)
+                    -WindowStyle  $WindowStyle
             }
             'Process' {
                 return Invoke-ExternalProcess `

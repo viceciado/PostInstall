@@ -44,6 +44,7 @@
     # Com Handled = $true, a exceção é absorvida: o handler é logado e a UI continua.
     [System.Windows.Application]::Current.add_DispatcherUnhandledException({
             param($wpfSender, $wpfArgs)
+            $null = $wpfSender
             try {
                 Write-InstallLog "Exceção não tratada na interface: $($wpfArgs.Exception.Message)" -Status "ERRO"
             } catch {}

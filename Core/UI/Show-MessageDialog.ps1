@@ -86,6 +86,7 @@
         if ($dialogBorder) {
             $dialogBorder.Add_MouseDown({
                     param($wpfSender, $wpfArgs)
+                    $null = $wpfSender
                     if ($wpfArgs.LeftButton -eq 'Pressed') {
                         $dialog.DragMove()
                     }
@@ -245,6 +246,7 @@
         # Configurar tecla ESC para fechar
         $dialog.Add_KeyDown({
                 param($wpfSender, $wpfArgs)
+                $null = $wpfSender
                 if ($wpfArgs.Key -eq "Escape") {
                     $script:dialogResult = "Cancel"
                     $dialog.Close()

@@ -23,6 +23,7 @@
     if ($dialogBorder) {
         $dialogBorder.Add_MouseDown({
                 param($wpfSender, $wpfArgs)
+                $null = $wpfSender
                 if ($wpfArgs.LeftButton -eq 'Pressed') { $xamlWindow.DragMove() }
             })
     }

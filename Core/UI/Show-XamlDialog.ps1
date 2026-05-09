@@ -65,6 +65,7 @@
         if ($closeButton) {
             $closeButton.Add_Click({
                     param($originControl, $eParam)
+                    $null = $eParam
                     $wnd = [System.Windows.Window]::GetWindow($originControl)
                     if ($wnd) { $wnd.Close() }
                 })
