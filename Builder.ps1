@@ -398,6 +398,20 @@ try {
     # Salvar com UTF-8 BOM usando .NET
     $utf8WithBom = New-Object System.Text.UTF8Encoding($true)
     $content = $script_content -join "`r`n"
+
+    # C12: bloquear regressão de runtime com fallback dot-source.
+    $forbiddenRuntimePatterns = @(
+        "Get-ChildItem '`$rp\Core' -Recurse -Filter '*.ps1' | Sort-Object FullName | ForEach-Object { . `$_.FullName }",
+        "Get-ChildItem '`$rp\Features' -Recurse -Filter '*.ps1' | Sort-Object FullName | ForEach-Object { . `$_.FullName }",
+        "Get-ChildItem '`$rp\DialogInitializers' -Filter '*.ps1' | Sort-Object Name | ForEach-Object { . `$_.FullName }"
+    )
+
+    foreach ($pattern in $forbiddenRuntimePatterns) {
+        if ($content.Contains($pattern)) {
+            throw "Artefato contém padrão proibido de fallback dot-source (C12): $pattern"
+        }
+    }
+
     [System.IO.File]::WriteAllText((Join-Path $workingdir $OutputName), $content, $utf8WithBom)
     Write-Progress -Activity "Compilando PostInstall" -Completed
     

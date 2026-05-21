@@ -191,7 +191,7 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
             Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression {}
+            Mock Invoke-TweakScriptLine { return $true }
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
@@ -214,16 +214,16 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
             Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression {}
+            Mock Invoke-TweakScriptLine { return $true }
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
             Remove-Variable -Name 'ScriptContext' -Scope Global -ErrorAction SilentlyContinue
         }
 
-        It 'Chama Invoke-Expression para o UndoScript' {
+        It 'Chama Invoke-TweakScriptLine para o UndoScript' {
             Restore-Tweak -Name 'TestTweak-Script'
-            Should -Invoke Invoke-Expression -Exactly 1
+            Should -Invoke Invoke-TweakScriptLine -Exactly 1
         }
     }
 
@@ -232,7 +232,7 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
             Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $true }
-            Mock Invoke-Expression {}
+            Mock Invoke-TweakScriptLine { return $true }
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {
@@ -250,7 +250,7 @@ Describe 'Restore-Tweak' -Tag 'Unit' {
             Mock Write-InstallLog {}
             Mock Get-AvailableItems { return $script:SampleTweaks }
             Mock Restore-RegistryEntry { return $false }
-            Mock Invoke-Expression {}
+            Mock Invoke-TweakScriptLine { return $false }
             $global:ScriptContext = @{ IsCompiled = $false }
         }
         AfterAll {

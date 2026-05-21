@@ -5,10 +5,16 @@
     
     if ($xamlWindows -and $xamlWindows.ContainsKey($WindowName)) {
         $variableName = $xamlWindows[$WindowName]
-        return Get-Variable -Name $variableName -ValueOnly -ErrorAction SilentlyContinue
+        $xamlContent = Get-Variable -Name $variableName -ValueOnly -ErrorAction SilentlyContinue
+        if (-not [string]::IsNullOrWhiteSpace($xamlContent)) {
+            return $xamlContent
+        }
+
+        throw "Payload XAML ausente para '$WindowName' (variável '$variableName')."
     }
     
     $availableWindows = if ($xamlWindows) { $xamlWindows.Keys -join ', ' } else { '-' }
-    Write-InstallLog "Janela '$WindowName' não encontrada. Janelas disponíveis: $availableWindows" -Status "AVISO"
-    return $null
+    $message = "Janela '$WindowName' não encontrada no payload compilado. Janelas disponíveis: $availableWindows"
+    Write-InstallLog $message -Status "ERRO"
+    throw $message
 }

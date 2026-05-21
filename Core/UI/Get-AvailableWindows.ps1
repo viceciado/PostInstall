@@ -47,6 +47,7 @@
                             return $script:compiledPrograms
                         }
                     }
+                    throw "Payload compilado de programas não encontrado."
                 }
                 "Tweaks" {
                     if ($script:compiledTweaks) {
@@ -56,6 +57,7 @@
                             return $script:compiledTweaks
                         }
                     }
+                    throw "Payload compilado de tweaks não encontrado."
                 }
                 "TweaksCategories" {
                     if ($script:compiledTweaks) {
@@ -71,9 +73,9 @@
                             return ($names | ForEach-Object { [PSCustomObject]@{ Name = $_; Description = $null; Icon = $null; Color = $null; IsRecommended = $false } })
                         }
                     }
+                    throw "Payload compilado de categorias de tweak não encontrado."
                 }
             }
-            # Se caiu aqui, segue fluxo para tentar arquivo (fallback)
         }
 
         # Modo não compilado ou com JsonPath explícito: resolver caminho do JSON

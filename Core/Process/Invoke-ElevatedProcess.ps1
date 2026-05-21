@@ -21,9 +21,6 @@
         [Parameter(Mandatory = $false, ParameterSetName = 'Function')]
         [hashtable]$Parameters = @{},
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Function')]
-        [string]$ScriptPath,
-
         [Parameter(Mandatory = $false)]
         [switch]$Wait,
 
@@ -47,7 +44,6 @@
                 return Invoke-PowerShellFunction `
                     -FunctionName $FunctionName `
                     -Parameters   $Parameters `
-                    -ScriptPath   $ScriptPath `
                     -ForceAsync   ([bool]$ForceAsync) `
                     -WindowStyle  $WindowStyle
             }

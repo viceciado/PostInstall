@@ -1,4 +1,31 @@
-﻿function Restore-Tweak {
+﻿function Invoke-TweakScriptLine {
+    <#
+    .SYNOPSIS
+        Executa uma linha de script associada a tweak e retorna sucesso/falha.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Line,
+        [Parameter(Mandatory = $true)][string]$TweakName,
+        [switch]$IsUndo
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Line)) {
+        return $true
+    }
+
+    $phase = if ($IsUndo) { 'undo' } else { 'apply' }
+
+    try {
+        Invoke-Expression $Line
+        return $true
+    } catch {
+        Write-InstallLog "Erro em Invoke-TweakScriptLine ($phase '$TweakName'): $($_.Exception.Message)" -Status "ERRO"
+        return $false
+    }
+}
+
+function Restore-Tweak {
     <#
     .SYNOPSIS
         Desfaz um tweak específico, restaurando os valores originais de registro.

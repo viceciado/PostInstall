@@ -1,8 +1,8 @@
 ﻿#Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.0.0' }
 <#
 .SYNOPSIS
-    Smoke test: dot-source todos os arquivos do projeto e verifica que as
-    funções esperadas estão definidas após o carregamento.
+    Smoke test de desenvolvimento: dot-source da árvore de fontes para validar
+    consistência básica de carregamento em ambiente de manutenção.
 
 .NOTES
     - Usa a mesma ordem de carregamento do Main.ps1 (Core→Features→DialogInitializers→Functions)
@@ -62,7 +62,7 @@ AfterAll {
     Remove-Variable -Name 'LogPath', 'ScriptContext' -Scope Global -ErrorAction SilentlyContinue
 }
 
-Describe 'Carregamento dos arquivos fonte' -Tag 'Smoke' {
+Describe 'Carregamento dos arquivos fonte (dev-only)' -Tag 'DevSource' {
 
     It 'Nenhum arquivo deve falhar ao ser dot-sourceado' {
         $script:LoadErrors | Should -BeNullOrEmpty

@@ -8,6 +8,10 @@
     )
     
     try {
+        if ($global:ScriptContext -and $global:ScriptContext.IsCompiled) {
+            throw "Get-XamlContent não é suportado no runtime compilado (C12). Use payload XAML embutido."
+        }
+
         $xamlPath = Join-Path $WindowsPath $XamlFileName
         if (-not (Test-Path $xamlPath)) {
             throw "Arquivo XAML não encontrado: $xamlPath"

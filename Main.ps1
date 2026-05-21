@@ -4,127 +4,15 @@ Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
 Add-Type -AssemblyName System.Management
 
-$global:ScriptContext = @{
-    # Metadados de build (lidos por dialogs e pelo Builder)
-    ScriptVersion = "pre-build"
-
-    # Feature data — acesso de alta frequência por código de feature
-    AvailablePrograms = @()
-    AvailableTweaks = @()
-    AppliedTweaks = @{}
-
-    # Estado de UI
-    UI = @{
-        XamlWindows = @{}
-        MainWindow = $null
-        SplashScreenWindow = $null
-    }
-
-    # Estado do sistema
-    System = @{
-        IsAdministrator = $false
-        isWin11 = $null
-        AvoidSleep = $false
-        Info = $null
-    }
-
-    # Dados de sessão do usuário
-    Config = @{
-        OemKey = $null
-        ClientName = $null
-        TechnicianName = $null
-        OsNumber = $null
-        PersistedSelectedFolders = @()
-    }
+if (-not $global:ScriptContext) {
+    $global:ScriptContext = @{}
 }
 
-# === SISTEMA DE CARREGAMENTO DINÂMICO DE FUNÇÕES ===
-# Carrega em ordem de dependência: Core → Features → DialogInitializers → Functions (legacy)
-try {
-    $sourceDirs = @(
-        @{ Path = Join-Path $PSScriptRoot 'Core'; Recurse = $true }
-        @{ Path = Join-Path $PSScriptRoot 'Features'; Recurse = $true }
-        @{ Path = Join-Path $PSScriptRoot 'DialogInitializers'; Recurse = $false }
-        @{ Path = Join-Path $PSScriptRoot 'Functions'; Recurse = $false }
-    )
-
-    $loadedCount = 0
-    $failedFiles = @()
-
-    foreach ($dir in $sourceDirs) {
-        if (-not (Test-Path $dir.Path)) { continue }
-
-        $files = if ($dir.Recurse) {
-            Get-ChildItem $dir.Path -Recurse -Filter '*.ps1' -File | Sort-Object FullName
-        } else {
-            Get-ChildItem $dir.Path -Filter '*.ps1' -File | Sort-Object Name
-        }
-
-        foreach ($file in $files) {
-            try {
-                . $file.FullName
-                $loadedCount++
-            } catch {
-                Write-Host "[ERRO] Falha ao carregar '$($file.Name)': $($_.Exception.Message)" -ForegroundColor Red
-                $failedFiles += $file.Name
-            }
-        }
-    }
-
-    Write-Host "[SUCESSO] Funções carregadas: $loadedCount" -ForegroundColor Green
-    if ($failedFiles.Count -gt 0) {
-        Write-Host "[AVISO] Falha ao carregar: $($failedFiles -join ', ')" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "[ERRO] Falha crítica no carregamento de funções: $($_.Exception.Message)" -ForegroundColor Red
-    exit 1
-}
-
-# === INICIALIZAÇÃO DO SCRIPT DOT-SOURCING ===
-
-try {
-    # Obter caminho base do script
-    $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $windowsPath = Join-Path $scriptPath "Windows"
-
-    $xamlFiles = Get-ChildItem -Path $windowsPath -Filter "*.xaml" -File
-    
-    if ($xamlFiles.Count -eq 0) {
-        throw "Nenhum arquivo XAML encontrado na pasta Windows"
-    }
-    
-    Write-Host "Descobertos $($xamlFiles.Count) arquivos XAML na pasta Windows" 
-    
-    # Carregar cada arquivo XAML dinamicamente
-    foreach ($file in $xamlFiles) {
-        $fileName = $file.Name
-        $variableName = Get-VariableNameFromFile -FileName $fileName
-        
-        try {
-            $content = Get-XamlContent -XamlFileName $fileName -WindowsPath $windowsPath
-            Set-Variable -Name $variableName -Value $content -Scope Script
-            Write-Host "Variável '$variableName' definida para '$fileName'" -Status "SUCESSO"
-        } catch {
-            Write-Host "Falha ao carregar '$fileName': $($_.Exception.Message)" -Status "ERRO"
-            # Continuar com outros arquivos mesmo se um falhar
-        }
-    }
-    
-    # Listar todas as variáveis XAML carregadas
-    $loadedVariables = $xamlFiles | ForEach-Object { Get-VariableNameFromFile -FileName $_.Name }
-    Write-Host "Variáveis XAML disponíveis: $($loadedVariables -join ', ')" 
-    Write-Host "Sistema de carregamento dinâmico de XAML inicializado com sucesso" -Status "SUCESSO"
-    
-    # Criar hashtable global para facilitar acesso às janelas
-    foreach ($file in $xamlFiles) {
-        $variableName = Get-VariableNameFromFile -FileName $file.Name
-        $global:ScriptContext.UI.XamlWindows[$file.BaseName] = $variableName
-    }
-    
-    Write-Host "Mapeamento de janelas criado: $($global:ScriptContext.UI.XamlWindows.Keys -join ', ')" 
-} catch {
-    Write-Host "Falha crítica no carregamento de XAML: $($_.Exception.Message)" -Status "ERRO"
-    Show-MessageDialog -Message "Erro ao carregar arquivos de interface. Verifique se os arquivos XAML estão presentes na pasta Windows.`n`nDetalhes: $($_.Exception.Message)" -Title "Erro Crítico" -MessageType "Error" 
+# C12 (modo compilado único): Main.ps1 não deve executar via dot-source.
+if ($global:ScriptContext.IsCompiled -ne $true -or
+    [string]::IsNullOrWhiteSpace($global:ScriptContext.CompiledScriptPath) -or
+    -not (Test-Path -LiteralPath $global:ScriptContext.CompiledScriptPath)) {
+    Write-Host "[ERRO] Execução não suportada via fonte. Use o artefato compilado PostInstall.ps1." -ForegroundColor Red
     exit 1
 }
 
