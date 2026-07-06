@@ -1,6 +1,12 @@
 # Release Notes
 
 ## vNEXT
+- PostInstall's Last Dance:
+
+Essa será a última versão do PostInstall tal qual conhecemos. O projeto cresceu e a estrutura utilizada atingiu um teto técnico muito caro para ser ultrapassado. A próxima versão planejada deve ser mais simples no quesito interface (provavelmente CLI-first), mas em compensação, conseguirá trazer maior robustez e confiabilidade, além de novos recursos.
+
+
+Enquanto isso, a versão atual continuará funcionando sem maiores problemas, e poderá receber bugfixes vez ou outra, se necessário.
 
 ## v09-01-2026
 - Corrigido o problema de instalação de programas usando o Winget.
