@@ -1,6 +1,8 @@
 # Release Notes
 
 ## vNEXT
+
+## v06-07-2026
 - PostInstall's Last Dance:
 
 Essa será a última versão do PostInstall tal qual conhecemos. O projeto cresceu e a estrutura utilizada atingiu um teto técnico muito caro para ser ultrapassado. A próxima versão planejada deve ser mais simples no quesito interface (provavelmente CLI-first), mas em compensação, conseguirá trazer maior robustez e confiabilidade, além de novos recursos.
