@@ -1,11 +1,14 @@
 # Release Notes
 
 ## vNEXT
+<<<<<<< HEAD
 - Limpar pasta Downloads agora é desmarcada por padrão nos Tweaks de finalização (evita apagar por engano arquivos pessoais do usuário). Ainda recomendado marcar após formatação/instalação limpa.
 
 NOVOS TWEAKS (Usar com cautela, somente se necessário)
 - Adicionado Tweak para impedir a atualização dos certificados UEFI, que causa crash imediato do sistema.
 - Adicionado Tweaks para corrigir problema do controle de brilho em notebooks antigos.
+=======
+>>>>>>> 7bea03e1e26614b327a9b89b6151e8a22b679d72
 
 ## v06-07-2026
 - PostInstall's Last Dance:
