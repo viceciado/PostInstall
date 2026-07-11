@@ -1,6 +1,8 @@
 # Release Notes
 
 ## vNEXT
+
+## v11-07-2026
 <<<<<<< HEAD
 - Limpar pasta Downloads agora é desmarcada por padrão nos Tweaks de finalização (evita apagar por engano arquivos pessoais do usuário). Ainda recomendado marcar após formatação/instalação limpa.
 
