@@ -40,7 +40,10 @@
     {
       "Name": "Apagar histórico e arquivos temporários",
       "Description": "Apaga o histórico do Edge, de arquivos e pastas abertos pelo usuário atual, além de arquivos temporários",
-      "Category": ["Recommended", "Finalize"],
+      "Category": [
+        "Recommended",
+        "Finalize"
+      ],
       "Win11Only": false,
       "IsBoolean": false,
       "IsRecommended": true,
@@ -61,7 +64,9 @@
     {
       "Name": "Apagar arquivos da instalação",
       "Description": "Apaga os scripts e arquivos de instalação auxiliares criados pelo arquivo de resposta (unattend.xml)",
-      "Category": ["Finalize"],
+      "Category": [
+        "Finalize"
+      ],
       "Win11Only": false,
       "IsBoolean": false,
       "IsRecommended": true,
@@ -72,10 +77,12 @@
     {
       "Name": "Limpar pasta Downloads",
       "Description": "Apaga o conteúdo da pasta Downloads do usuário atual",
-      "Category": ["Recommended", "Finalize"],
+      "Category": [
+        "Finalize"
+      ],
       "Win11Only": false,
       "IsBoolean": false,
-      "IsRecommended": true,
+      "IsRecommended": false,
       "InvokeScript": [
         "Get-ChildItem -Path \"$env:USERPROFILE\\Downloads\" *.* | Remove-Item -Confirm:$false -Force -Recurse"
       ]
@@ -83,7 +90,9 @@
     {
       "Name": "Apagar atalhos na área de trabalho",
       "Description": "Apaga os atalhos na área de trabalho do usuário atual",
-      "Category": ["Recommended", "Finalize"],
+      "Category": [
+        "Finalize"
+      ],
       "Win11Only": false,
       "IsBoolean": false,
       "IsRecommended": false,
@@ -95,7 +104,10 @@
     {
       "Name": "Restaurar o menu de contexto clássico",
       "Description": "Restaurar o menu de contexto clássico do Windows, ideal para PCs fracos",
-      "Category": ["Customization", "Optimization"],
+      "Category": [
+        "Customization",
+        "Optimization"
+      ],
       "Win11Only": true,
       "RefreshRequired": true,
       "IsBoolean": true,
@@ -109,17 +121,27 @@
     {
       "Name": "Desativar timestamp de arquivos",
       "Description": "Desativa o salvamento da informação de 'Último acesso' dos arquivos, evitando overhead do disco. Recomendado para HDDs",
-      "Category": ["Optimization", "Technician"],
+      "Category": [
+        "Optimization",
+        "Technician"
+      ],
       "Win11Only": false,
       "IsBoolean": true,
       "RefreshRequired": false,
-      "InvokeScript": ["fsutil.exe behavior set disableLastAccess 1"],
-      "UndoScript": ["fsutil.exe behavior set disableLastAccess 0"]
+      "InvokeScript": [
+        "fsutil.exe behavior set disableLastAccess 1"
+      ],
+      "UndoScript": [
+        "fsutil.exe behavior set disableLastAccess 0"
+      ]
     },
     {
       "Name": "Esconder o ícone do Spotlight",
       "Description": "Esconde o ícone 'Saiba mais sobre essa imagem' que aparece na área de trabalho quando se usa o papel de parede 'Destaques do Windows'",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": true,
       "IsBoolean": true,
       "RefreshRequired": true,
@@ -136,7 +158,10 @@
     {
       "Name": "Esconder botão Visão de Tarefas",
       "Description": "Esconde o botão Visão de Tarefas da barra de tarefas",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": false,
       "IsBoolean": true,
       "RefreshRequired": true,
@@ -153,7 +178,10 @@
     {
       "Name": "Esconder botão Notícias (Widgets)",
       "Description": "Esconde o menu Notícias da barra de tarefas",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": true,
       "IsBoolean": true,
       "RefreshRequired": true,
@@ -177,7 +205,10 @@
     {
       "Name": "Desativar Bing no Menu Iniciar",
       "Description": "Desativa sugestões de pesquisa do Bing no Menu Iniciar",
-      "Category": ["Optimization", "Recommended"],
+      "Category": [
+        "Optimization",
+        "Recommended"
+      ],
       "Win11Only": false,
       "IsBoolean": true,
       "Registry": [
@@ -193,7 +224,9 @@
     {
       "Name": "Exibir mensagens de boot detalhadas",
       "Description": "Exibe mensagens detalhadas durante o boot ou desligamento do sistema",
-      "Category": ["Technician"],
+      "Category": [
+        "Technician"
+      ],
       "Win11Only": false,
       "IsBoolean": true,
       "Registry": [
@@ -209,7 +242,9 @@
     {
       "Name": "Mostrar arquivos ocultos",
       "Description": "Mostra arquivos ocultos no Explorador de Arquivos",
-      "Category": ["Technician"],
+      "Category": [
+        "Technician"
+      ],
       "Win11Only": false,
       "RefreshRequired": true,
       "IsBoolean": true,
@@ -226,7 +261,9 @@
     {
       "Name": "Alinhar a barra de tarefas à esquerda",
       "Description": "Alinha a barra de tarefas do Windows à esquerda",
-      "Category": ["Customization"],
+      "Category": [
+        "Customization"
+      ],
       "Win11Only": true,
       "IsBoolean": true,
       "RefreshRequired": false,
@@ -243,7 +280,10 @@
     {
       "Name": "Desativar botão do Copilot",
       "Description": "Desativa o botão do Copilot na barra de tarefas",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": true,
       "IsBoolean": true,
       "RefreshRequired": true,
@@ -267,7 +307,9 @@
     {
       "Name": "Mostrar extensões de arquivos",
       "Description": "Mostra as extensões de arquivos no Explorador de Arquivos",
-      "Category": ["Customization"],
+      "Category": [
+        "Customization"
+      ],
       "Win11Only": false,
       "RefreshRequired": true,
       "IsBoolean": true,
@@ -282,9 +324,55 @@
       ]
     },
     {
+      "Name": "Desativar atualização de certificados UEFI (Secure Boot)",
+      "Description": "Impede que o Windows force a escrita de novos certificados de segurança na NVRAM, evitando congelamentos em placas-mãe antigas.",
+      "Category": [
+        "Technician"
+      ],
+      "Win11Only": false,
+      "IsBoolean": true,
+      "Registry": [
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\SecureBoot",
+          "Name": "HighConfidenceOptOut",
+          "Type": "DWord",
+          "Value": "1",
+          "OriginalValue": "0"
+        }
+      ]
+    },
+    {
+      "Name": "Corrigir controle de brilho (Intel HD)",
+      "Description": "Restaura o funcionamento do controle de brilho em telas de notebooks antigos (Positivo, CCE, etc.) forçando o driver a usar o controle de hardware (PWM/ACPI).",
+      "Category": [
+        "Technician"
+      ],
+      "Win11Only": false,
+      "IsBoolean": true,
+      "Registry": [
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000",
+          "Name": "FeatureTestControl",
+          "Type": "DWord",
+          "Value": "65535",
+          "OriginalValue": "61512"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000",
+          "Name": "KMD_EnableBrightnessInterface2",
+          "Type": "DWord",
+          "Value": "0",
+          "OriginalValue": "1"
+        }
+      ]
+    },
+    {
       "Name": "Debloat do Edge",
       "Description": "Remove componentes desnecessários do Microsoft Edge",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": false,
       "IsBoolean": true,
       "RefreshRequired": false,
@@ -497,7 +585,10 @@
     {
       "Name": "Desativar o Fast Startup",
       "Description": "Desativa o modo de inicialização rápida/hibernação ao desligar o computador",
-      "Category": ["Customization", "Technician"],
+      "Category": [
+        "Customization",
+        "Technician"
+      ],
       "Win11Only": false,
       "RefreshRequired": false,
       "IsBoolean": true,
@@ -514,7 +605,9 @@
     {
       "Name": "Desativar tela de novidades pós atualização",
       "Description": "Desativa a tela de novidades que é exibida após alguma atualização do Windows",
-      "Category": ["Recommended"],
+      "Category": [
+        "Recommended"
+      ],
       "Win11Only": true,
       "RefreshRequired": false,
       "IsBoolean": true,
@@ -545,7 +638,10 @@
     {
       "Name": "Desativar efeitos de transparência",
       "Description": "Desativa os efeitos de transparência no Windows",
-      "Category": ["Customization", "Optimization"],
+      "Category": [
+        "Customization",
+        "Optimization"
+      ],
       "Win11Only": false,
       "RefreshRequired": true,
       "IsBoolean": true,
@@ -562,7 +658,10 @@
     {
       "Name": "Desativar animações na barra de tarefas",
       "Description": "Desativa as animações da barra de tarefa do Windows 11",
-      "Category": ["Optimization", "Customization"],
+      "Category": [
+        "Optimization",
+        "Customization"
+      ],
       "Win11Only": true,
       "RefreshRequired": true,
       "IsBoolean": true,
@@ -579,7 +678,10 @@
     {
       "Name": "Esconder botão Reunir agora",
       "Description": "Esconde o botão Reunir agora da barra de tarefas",
-      "Category": ["Customization", "Recommended"],
+      "Category": [
+        "Customization",
+        "Recommended"
+      ],
       "Win11Only": false,
       "RefreshRequired": false,
       "IsBoolean": true,
@@ -596,7 +698,9 @@
     {
       "Name": "Restaurar menu de opções de recuperação com F8",
       "Description": "Reativa o menu de opções de boot ao iniciar o sistema pressionando F8.",
-      "Category": ["Technician"],
+      "Category": [
+        "Technician"
+      ],
       "Win11Only": false,
       "RefreshRequired": false,
       "IsBoolean": true,
@@ -609,7 +713,9 @@
     {
       "Name": "Garantir a atualização do Windows 11",
       "Description": "Aplica pacthes no registro que garantem que o Windows receba atualizações. Aplique somente se necessário.",
-      "Category": ["Technician"],
+      "Category": [
+        "Technician"
+      ],
       "Win11Only": true,
       "RefreshRequired": false,
       "IsBoolean": true,
@@ -639,7 +745,12 @@
           "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\HwReqChk",
           "Name": "HwReqCheckVars",
           "Type": "REG_MULTI_SZ",
-          "Value": ["SQ_SecureBootCapable=TRUE", "SQ_SecureBootEnabled=TRUE", "SQ_TpmVersion=2", "SQ_RamMB=8192"],
+          "Value": [
+            "SQ_SecureBootCapable=TRUE",
+            "SQ_SecureBootEnabled=TRUE",
+            "SQ_TpmVersion=2",
+            "SQ_RamMB=8192"
+          ],
           "OriginalValue": "<RemoveEntry>"
         },
         {
@@ -654,7 +765,9 @@
     {
       "Name": "Criar ponto de restauração",
       "Description": "Cria um ponto de restauração do sistema",
-      "Category": ["Finalize"],
+      "Category": [
+        "Finalize"
+      ],
       "Win11Only": false,
       "RefreshRequired": false,
       "IsBoolean": false,

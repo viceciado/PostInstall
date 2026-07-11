@@ -1,6 +1,13 @@
 # Release Notes
 
 ## vNEXT
+- Limpar pasta Downloads agora é desmarcada por padrão nos Tweaks de finalização (evita apagar por engano arquivos pessoais do usuário). Ainda recomendado marcar após formatação/instalação limpa.
+
+NOVOS TWEAKS (Usar com cautela, somente se necessário)
+- Adicionado Tweak para impedir a atualização dos certificados UEFI, que causa crash imediato do sistema.
+- Adicionado Tweaks para corrigir problema do controle de brilho em notebooks antigos.
+
+## v06-07-2026
 - PostInstall's Last Dance:
 
 Essa será a última versão do PostInstall tal qual conhecemos. O projeto cresceu e a estrutura utilizada atingiu um teto técnico muito caro para ser ultrapassado. A próxima versão planejada deve ser mais simples no quesito interface (provavelmente CLI-first), mas em compensação, conseguirá trazer maior robustez e confiabilidade, além de novos recursos.
